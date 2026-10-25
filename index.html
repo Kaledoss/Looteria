@@ -1477,6 +1477,52 @@ function looteriaTerrainPaint(){
    stroke([[x,y],[x+4+rand()*10,y-1]],i%3?'#bce0d27a':'#f2f4d5a3',.6+rand()*.7);
  }
 
+ // V11.4 Phase 2 – fixed, shared fantasy-realism detailing. The seed above is
+ // constant for every kingdom: scenery never depends on player state.
+ // Subtle terrain contouring gives the hills a layered, hand-painted depth.
+ for(let k=0;k<38;k++){
+   const side=k%2===0, cx=side?X(.1+rand()*4.7):X(19+rand()*4.7);
+   const cy=Y(.7+rand()*Math.max(1,rows-1.5));
+   const span=28+rand()*75;
+   ctx.beginPath();ctx.ellipse(cx,cy,span,10+rand()*16,-.28,Math.PI*.08,Math.PI*.92);
+   ctx.lineWidth=1.2+rand()*1.8;ctx.strokeStyle=k%3===0?'#d6d5a342':'#243f3b39';ctx.stroke();
+ }
+ // Rounded riverbank stones, reed beds and low waterside vegetation.
+ for(let i=0;i<310;i++){
+   const r=.2+rand()*(rows-.4);
+   const c=11.2+2.5*Math.sin(r*.31)+.55*Math.cos(r*.85);
+   const bank=(i%2===0?-1:1)*(1.04+rand()*.54);
+   const xx=X(c+bank),yy=Y(r)+(rand()-.5)*th;
+   if(i%5===0){
+     ellipse(xx+3,yy+3,7,3,'#1d38364c');
+     ellipse(xx,yy,3+rand()*5,2+rand()*3,i%2?'#c4bca0':'#899c89');
+     ellipse(xx-1,yy-1,2,1,'#e3ddc078');
+   }else{
+     for(let j=0;j<3;j++){
+       const bx=xx+(j-1)*4;
+       stroke([[bx,yy],[bx+(rand()-.5)*5,yy-7-rand()*12]],j===1?'#a6aa69':'#476f4c',.9+rand()*.7);
+     }
+   }
+ }
+ // Cobbles along the main road, with subdued edge wear and uneven shapes.
+ for(let i=0;i<480;i++){
+   const c=rand()*24,r=7.2+.55*Math.sin(c*.48)+(rand()-.5)*.24;
+   const xx=X(c),yy=Y(r);
+   ellipse(xx,yy,1.3+rand()*3,.8+rand()*1.7,i%4?'#ead7a44a':'#75684d65',rand()*.6);
+ }
+ // Small lanterns, boundary posts and warm glints make the village readable.
+ for(const [c,r] of [[5.9,7.3],[7.7,7.45],[9.2,7.7],[16.1,7.55],[18.2,7.3]]){
+   const xx=X(c),yy=Y(r);
+   ellipse(xx+5,yy+3,10,4,'#1d302e66');
+   stroke([[xx,yy],[xx,yy-23]],'#4c3a2e',3);
+   poly([[xx-5,yy-23],[xx+5,yy-23],[xx+4,yy-13],[xx-4,yy-13]],'#7b6444','#463e32');
+   ellipse(xx,yy-18,2.8,4,'#f8d993');
+   ellipse(xx,yy-18,12,13,'#f7d58320');
+ }
+ // Thin atmospheric haze between foreground features and the mountain rim.
+ const mist=ctx.createLinearGradient(0,0,0,h);
+ mist.addColorStop(0,'#d7e2c111');mist.addColorStop(.48,'#e2e6c100');mist.addColorStop(1,'#d3d6b80c');
+ ctx.fillStyle=mist;ctx.fillRect(0,0,w,h);
  // Atmospheric daylight: bright settlement and darker corners for depth.
  const sunlight=ctx.createRadialGradient(w*.42,h*.34,10,w*.5,h*.52,Math.max(w,h)*.9);sunlight.addColorStop(0,'#fff4bd24');sunlight.addColorStop(.62,'#f7e7bb06');sunlight.addColorStop(1,'#071f253e');ctx.fillStyle=sunlight;ctx.fillRect(0,0,w,h);
 }
