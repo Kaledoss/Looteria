@@ -1,1 +1,4 @@
-{"version": "11.7.6", "notes": "Häuser kosten Holz und Stein; Ofen produziert Cleanstone; Reichserweiterung kostet Cleanstone; Update-Prüfung verifiziert veröffentlichte Version"}
+{
+  "version": "11.7.7",
+  "notes": "Tierpflege-Anzeige entfernt; Gebirge unerforscht bei Start, Stein frei; Holzfäller- und Miner-Level als Rohstoffvoraussetzungen bis Level 150, Berufslevel unbegrenzt"
+}
