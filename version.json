@@ -1,4 +1,4 @@
 {
-  "version": "11.8.10",
-  "notes": "Joblevel benötigen ca. 3,57-mal so viele Gesamt-XP wie zuvor; vorhandene XP bleiben erhalten."
+  "version": "11.8.12",
+  "notes": "Ofengebäude, zeitbasierte Brennaufträge mit einem Slot pro Ofen, Abriss von Häusern und Produktionsgebäuden."
 }
