@@ -1,4 +1,4 @@
 {
-  "version": "11.7.8",
-  "notes": "Berufs-XP pro Sammelklick von 3 auf 1 reduziert; Gebäudeliste als Menüpunkt; regelmäßige Prüfung der Spielserver-Verbindung"
+  "version": "11.8.0",
+  "notes": "Manuelle Mitarbeiterzuweisung: 4/6/8 Mitarbeiter je Produktionsgebäude, 25 % Grundproduktion pro Mitarbeiter; zwei neue Forschungen."
 }
