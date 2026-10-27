@@ -1,4 +1,4 @@
 {
-  "version": "11.7.7",
-  "notes": "Tierpflege-Anzeige entfernt; Gebirge unerforscht bei Start, Stein frei; Holzfäller- und Miner-Level als Rohstoffvoraussetzungen bis Level 150, Berufslevel unbegrenzt"
+  "version": "11.7.8",
+  "notes": "Berufs-XP pro Sammelklick von 3 auf 1 reduziert; Gebäudeliste als Menüpunkt; regelmäßige Prüfung der Spielserver-Verbindung"
 }
