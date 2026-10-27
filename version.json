@@ -1,4 +1,4 @@
 {
-  "version": "11.8.0",
-  "notes": "Manuelle Mitarbeiterzuweisung: 4/6/8 Mitarbeiter je Produktionsgebäude, 25 % Grundproduktion pro Mitarbeiter; zwei neue Forschungen."
+  "version": "11.8.2",
+  "notes": "Mittleres Haus benötigt Cleanstone, Glas und Eichenholz; exponentielle Ausbaukosten bleiben erhalten."
 }
