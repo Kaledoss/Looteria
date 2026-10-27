@@ -1,4 +1,4 @@
 {
-  "version": "11.8.5",
-  "notes": "Berufs-XP nach Ressourcenstufe; neue Ressourcen-Achievements; Forschung ohne Taler; Gebäude trotz fehlender Bauplätze sichtbar."
+  "version": "11.8.6",
+  "notes": "Haus-Upgrades +2 Einwohner; Upgrade-Buttons werden live aktiviert; Crafting-Menü und Ofenforschungen für Cleanstone/Glas."
 }
