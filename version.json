@@ -1,4 +1,4 @@
 {
-  "version": "11.8.2",
-  "notes": "Mittleres Haus benötigt Cleanstone, Glas und Eichenholz; exponentielle Ausbaukosten bleiben erhalten."
+  "version": "11.8.3",
+  "notes": "Builder-Level für Haus- und Produktionsgebäude-Bau/Upgrades; Builder-XP bei Bau und Ausbau; Erd-, Sand- und Kiesgrube."
 }
