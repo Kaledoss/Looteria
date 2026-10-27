@@ -1,4 +1,4 @@
 {
-  "version": "11.8.4",
-  "notes": "Builder-Level für Haus- und Produktionsgebäude-Bau/Upgrades; Builder-XP bei Bau und Ausbau; Erd-, Sand- und Kiesgrube."
+  "version": "11.8.5",
+  "notes": "Berufs-XP nach Ressourcenstufe; neue Ressourcen-Achievements; Forschung ohne Taler; Gebäude trotz fehlender Bauplätze sichtbar."
 }
