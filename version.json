@@ -1,6 +1,6 @@
 {
-  "version": "12.3.5",
+  "version": "12.3.6",
   "name": "Story of Looteria",
-  "notes": "Mobkarten mit Bildern, eigenes Lager-Menü als Liste, erweiterte Kopfzeile mit zwei Boostern und zusätzlicher Jobübersicht; rechte Panels bleiben erhalten.",
-  "build": "12.3.5-full-inventory-header"
+  "notes": "3D-Mobkarten synchronisiert; Booster-only Header; Lager Produktionsaufschlüsselung; einklappbare Gebäudekategorien; Schwarzes Brett Tooltips",
+  "build": "12.3.6-complete-20261028"
 }
