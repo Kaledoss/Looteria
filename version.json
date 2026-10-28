@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.6",
+  "version": "11.9.8.7",
   "name": "Story of Looteria",
-  "notes": "Cloud-Speicher mit Wiederherstellungscode; Supabase SQL Einrichtung erforderlich"
+  "notes": "Sichere Rotation des Wiederherstellungscodes, Hinweise zum Gerätewechsel und Auto-Sync"
 }

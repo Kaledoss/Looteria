@@ -6,7 +6,7 @@ create extension if not exists pgcrypto with schema extensions;
 create table if not exists public.looteria_cloud_saves (
   owner_id uuid primary key references auth.users(id) on delete cascade,
   recovery_hash text not null unique,
-  save jsonb not null,
+  save_data jsonb not null,
   revision bigint not null default 1,
   updated_at timestamptz not null default now()
 );
@@ -40,13 +40,13 @@ begin
     if current_rev <> coalesce(p_revision,0) then
       return jsonb_build_object('conflict',true,'revision',current_rev);
     end if;
-    update public.looteria_cloud_saves set save=p_save,recovery_hash=hashed,
+    update public.looteria_cloud_saves set save_data=p_save,recovery_hash=hashed,
       revision=revision+1,updated_at=now() where owner_id=uid returning revision into next_rev;
   else
     if coalesce(p_revision,0) <> 0 then
       return jsonb_build_object('conflict',true,'revision',0);
     end if;
-    insert into public.looteria_cloud_saves(owner_id,recovery_hash,save)
+    insert into public.looteria_cloud_saves(owner_id,recovery_hash,save_data)
     values(uid,hashed,p_save) returning revision into next_rev;
   end if;
   return jsonb_build_object('ok',true,'revision',next_rev);
@@ -59,10 +59,10 @@ begin
   if (select auth.uid()) is null then raise exception 'Anmeldung erforderlich'; end if;
   select * into r from public.looteria_cloud_saves where owner_id=(select auth.uid());
   if not found then return '{}'::jsonb; end if;
-  return jsonb_build_object('save',r.save,'revision',r.revision,'updated_at',r.updated_at,
-    'player_level',coalesce((r.save->>'level')::integer,1),
-    'taler',coalesce((r.save->>'tradeCoins')::numeric,0),
-    'play_seconds',coalesce((r.save->>'activeSeconds')::numeric,0));
+  return jsonb_build_object('save',r.save_data,'revision',r.revision,'updated_at',r.updated_at,
+    'player_level',coalesce((r.save_data->>'level')::integer,1),
+    'taler',coalesce((r.save_data->>'tradeCoins')::numeric,0),
+    'play_seconds',coalesce((r.save_data->>'activeSeconds')::numeric,0));
 end $$;
 
 create or replace function public.looteria_cloud_claim(p_code text)
