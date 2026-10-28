@@ -1,6 +1,6 @@
 {
-  "version": "12.3.6.1",
+  "version": "12.3.6",
   "name": "Story of Looteria",
-  "notes": "3D-Mobkarten synchronisiert; Booster-only Header; Lager Produktionsaufschlüsselung; einklappbare Gebäudekategorien; Schwarzes Brett Tooltips",
-  "build": "12.3.6.1-card-image-inline"
+  "notes": "Kartenbilder über kurze lokale Dateipfade; 3D-Kistenkammer repariert; Collectibles als Sammelkarten",
+  "build": "12.3.6-bildfix2-short-urls"
 }
