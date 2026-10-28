@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.7",
+  "version": "11.9.8.9",
   "name": "Story of Looteria",
-  "notes": "Sichere Rotation des Wiederherstellungscodes, Hinweise zum Gerätewechsel und Auto-Sync"
+  "notes": "Bereinigtes Release mit Update-Popup unten; prüft neue Versionen automatisch alle 30 Sekunden."
 }
