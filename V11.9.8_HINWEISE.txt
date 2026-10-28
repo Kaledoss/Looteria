@@ -1,0 +1,3 @@
+Story of Looteria V11.9.8
+Neue Forschungsoberfläche, Forschungszentrum, wiederholbare Ressourcenforschungen, Warteschlange und Forschungs-Achievements.
+Hinweis: Bestehende Forschungen bleiben erhalten. Bitte Spielstand vor dem Update exportieren. Browser-/Supabase-End-to-End-Tests sind nicht durchgeführt.
