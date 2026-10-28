@@ -1,6 +1,6 @@
 {
-  "version": "12.3.1",
+  "version": "12.3.2",
   "name": "Story of Looteria",
-  "notes": "Zwei Expeditionsgruppen; Gebietserkundungen mit Kistenfund und Kistenlager; verbesserte Truhenanimation; Ressourcenfreischaltungen aus Dungeonhistorie wiederherstellen.",
-  "build": "12.3.1-expeditions-crates-20261028"
+  "notes": "Schwarzes Brett als breites gemeinsames Panel; separate Dungeonanzeige entfernt; genau eine klassische Dungeon- und eine Gebietserkundungsgruppe; überflüssige Gruppenforschungen und Freischaltungsanzeige entfernt; eingeklappte Panels kompakt.",
+  "build": "12.3.2-sidebar-groups-20261028"
 }
