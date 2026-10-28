@@ -1,4 +1,4 @@
 {
-  "version": "11.9.1",
-  "notes": "Kompakte Achievement-XP-Leiste unter den Ruhmpunkten; Versionsdatei synchronisiert."
+  "version": "11.9.2",
+  "notes": "Achievement-XP-Leiste über beide Werte; Ofenstart und Buttonzustand korrigiert; abgeschlossene Forschungen ausblendbar."
 }
