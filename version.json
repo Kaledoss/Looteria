@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.10",
+  "version": "11.9.8.11",
   "name": "Story of Looteria",
-  "notes": "Forschungswarteschlange mit Info-Hinweisen; stabile, nicht flackernde Lager-Tooltips."
+  "notes": "Gebäudemenü repariert; alte Forschungs-Hoverhinweise entfernt; Anzeige abgeschlossener Forschungen aktualisiert."
 }
