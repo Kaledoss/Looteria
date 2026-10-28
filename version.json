@@ -1,4 +1,4 @@
 {
-  "version": "11.8.12",
-  "notes": "Ofengebäude, zeitbasierte Brennaufträge mit einem Slot pro Ofen, Abriss von Häusern und Produktionsgebäuden."
+  "version": "11.8.13",
+  "notes": "Einzelausgabe je Brennstück, individuelle Rezeptzeiten und 40 % höhere Forschungskosten."
 }
