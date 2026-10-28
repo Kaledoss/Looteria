@@ -1,6 +1,6 @@
 {
-  "version": "12.3.2",
+  "version": "12.3.3",
   "name": "Story of Looteria",
-  "notes": "Schwarzes Brett als breites gemeinsames Panel; separate Dungeonanzeige entfernt; genau eine klassische Dungeon- und eine Gebietserkundungsgruppe; überflüssige Gruppenforschungen und Freischaltungsanzeige entfernt; eingeklappte Panels kompakt.",
-  "build": "12.3.2-sidebar-groups-20261028"
+  "notes": "Booster-Kiste, Bestätigungsfenster, Classic statt Niete, Dungeonzeiten, Ressourcenanzeige, Skillreihenfolge und Dungeonhinweise. 3D-Kistenkammer und lizenzierte Monsterbilder noch offen.",
+  "build": "12.3.3-booster-ui-20261028"
 }
