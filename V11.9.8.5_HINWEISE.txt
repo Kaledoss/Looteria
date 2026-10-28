@@ -1,1 +1,0 @@
-Änderungen: ⇈/⇊ zum Verschieben an Anfang/Ende der Forschungswarteschlange; Builder-XP skaliert mit Ausbaukosten des Forschungszentrums. Cloud-Speicherung des kompletten Spielstands ist noch NICHT implementiert. Dafür sind zusätzliche Supabase-Tabelle, RLS und Synchronisierungslogik erforderlich.
