@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.12",
+  "version": "12.0",
   "name": "Story of Looteria",
-  "notes": "Rohstoff-Meilensteine für Sand und Kies ergänzt; erreichte Meilensteine standardmäßig eingeklappt; Rohstoffforschungen erst nach tatsächlicher Freischaltung startbar."
+  "notes": "Alpha 12.0: Builder-Hinweis, abwechslungsreiche Daily/Weekly-Aufgaben, dynamische Dungeonpreise, Sortierung/Dauer und Offline-Erkundungs-XP."
 }
