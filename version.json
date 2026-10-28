@@ -1,5 +1,5 @@
 {
-  "version": "12.1",
+  "version": "12.2",
   "name": "Story of Looteria",
-  "notes": "Alpha 12.1: Aufgabenfilter, Lagerkategorien, Builder-XP-Anzeigen und Performance-Messwerte."
+  "notes": "Alpha 12.2: Bau-Freischaltungen, Builder-XP, automatische Bauaktualisierung und Schwarzes Brett."
 }
