@@ -1,0 +1,853 @@
+
+'use strict';
+// V8.8: GitHub Pages version.json polling (no forced reload, no local-save key changes).
+const LOOTERIA_VERSION='11.9.1';
+const LOOTERIA_BUILD='11.9.1-progression-cleanup-20261027';
+let looteriaUpdatePending=false;
+function looteriaVersionParts(v){return String(v).split('.').map(x=>Number(x)||0)}
+function looteriaNewer(remote,local){const a=looteriaVersionParts(remote),b=looteriaVersionParts(local);for(let i=0;i<Math.max(a.length,b.length);i++){if((a[i]||0)!==(b[i]||0))return (a[i]||0)>(b[i]||0)}return false}
+async function looteriaCheckUpdate(){
+ if(!navigator.onLine||looteriaUpdatePending)return;
+ try{const url=new URL('version.json',location.href);url.search='?check='+Date.now();const response=await fetch(url.href,{cache:'no-store'});if(!response.ok)return;const info=await response.json();if(!info||typeof info.version!=='string'||!looteriaNewer(info.version,LOOTERIA_VERSION))return;
+ const deployed=await fetch(new URL('index.html?verify='+Date.now(),location.href),{cache:'no-store'});if(!deployed.ok)return;const deployedHtml=await deployed.text();const actual=deployedHtml.match(/const LOOTERIA_VERSION\s*=\s*['"]([^'"]+)['"]/);if(!actual||actual[1]!==info.version)return;looteriaUpdatePending=true;const banner=document.getElementById('looteria-update-banner');document.getElementById('looteria-update-title').textContent='🔔 Neue Version '+info.version+' verfügbar!';if(banner)banner.hidden=false;
+ }catch(e){console.debug('Looteria: Updateprüfung momentan nicht möglich',e)}
+}
+function looteriaApplyUpdate(){
+ try{save()}catch(e){console.error('Spielstand konnte nicht gespeichert werden',e);alert('Spielstand konnte nicht gespeichert werden. Bitte zuerst manuell speichern.');return}
+ const url=new URL(location.href);url.searchParams.set('v',Date.now().toString());location.assign(url.href);
+}
+setTimeout(looteriaCheckUpdate,4000);setInterval(()=>{if(!document.hidden)looteriaCheckUpdate()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)looteriaCheckUpdate()});
+window.addEventListener('online',looteriaCheckUpdate);
+
+// Browser-Online-Flag allein reicht nicht: regelmäßig eine kleine Datei vom Spielserver prüfen.
+let looteriaConnectivityBusy=false;
+async function looteriaCheckConnectivity(){
+ if(looteriaConnectivityBusy)return;
+ const el=document.getElementById('looteria-connection-status');if(!el)return;
+ if(!navigator.onLine){el.className='mp-status mp-offline';el.textContent='Offline';el.title='Browser meldet keine Internetverbindung';return;}
+ looteriaConnectivityBusy=true;
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),7000);
+ try{const u=new URL('version.json',location.href);u.searchParams.set('connection',String(Date.now()));const r=await fetch(u,{cache:'no-store',signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);el.className='mp-status mp-online';el.textContent='Online';el.title='Spielserver erreichbar';}
+ catch(e){el.className='mp-status mp-offline';el.textContent='Verbindung prüfen';el.title='Spielserver nicht erreichbar: '+e.message;}
+ finally{clearTimeout(timer);looteriaConnectivityBusy=false;}
+}
+setTimeout(looteriaCheckConnectivity,1000);
+setInterval(looteriaCheckConnectivity,30000);
+window.addEventListener('online',looteriaCheckConnectivity);
+window.addEventListener('offline',looteriaCheckConnectivity);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)looteriaCheckConnectivity()});
+const KEY='idle-realms-v01-save';
+const R={oak:['🌳','Eichenholz'],birch:['🌿','Birkenholz'],spruce:['🌲','Fichtenholz'],darkoak:['🌳','Schwarzeichenholz'],acacia:['🌴','Akazienholz'],jungle:['🌴','Tropenholz'],mangrove:['🌱','Mangrovenholz'],cherry:['🌸','Kirschholz'],stone:['🪨','Stein'],dirt:['🟤','Erde'],sand:['🏜️','Sand'],gravel:['🪨','Kies'],glass:['🪟','Glas'],cleanstone:['🧱','Cleanstone'],coal:['⚫','Kohle'],copper:['🟠','Kupfererz'],iron:['⛓️','Eisenerz'],amethyst:["💜","Amethyst"],gold:["🟡","Golderz"],lapis:["🔵","Lapis Lazuli"],redstone:["🔴","Redstone"],diamond:["💎","Diamant"],oakplank:['🟤','Eichenbretter'],birchplank:['🤍','Birkenbretter'],spruceplank:['🟫','Fichtenbretter'],cherryplank:['🌸','Kirschbretter'],brick:['🧱','Steinziegel'],copperbar:['🔶','Kupferbarren'],ironbar:['🔩','Eisenbarren'],gear:['⚙️','Zahnräder'],crystal:['🔮','Kristalle'],wheat:['🌾','Weizen'],carrot:['🥕','Karotten'],potato:['🥔','Kartoffeln'],beetroot:['🫜','Rote Bete'],pumpkin:['🎃','Kürbisse'],melon:['🍉','Melonen'],sugarcane:['🎋','Zuckerrohr'],netherwart:['🍄','Netherwarzen'],sweetberry:['🫐','Süßbeeren'],bread:['🍞','Brot'],sugar:['🍬','Zucker'],bakedpotato:['🥔','Ofenkartoffel'],beef:['🥩','Rindfleisch'],pork:['🍖','Schweinefleisch'],chicken:['🍗','Hühnerfleisch'],mutton:['🥩','Hammelfleisch'],leather:['🟤','Leder'],wool:['🧶','Wolle'],feather:['🪶','Federn']};
+const ACTIVE_RESOURCES=new Set(['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry','stone','dirt','sand','gravel','glass','cleanstone','coal','copper','iron','amethyst','gold','lapis','redstone','diamond']);
+const woodRarities={oak:'common',birch:'common',spruce:'uncommon',darkoak:'rare',acacia:'rare',jungle:'epic',mangrove:'legendary',cherry:'mythic'};
+// Keine zufälligen Bonusressourcen durch Holz-Seltenheit. Forschungs- und Achievement-Boni bleiben bestehen.
+const woodRarityNames={common:'Gewöhnlich',uncommon:'Ungewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär',mythic:'Mythisch'};
+function woodRarityLabel(id){const rarity=woodRarities[id];return rarity?`<span class="wood-rarity rarity-${rarity}">✦ ${woodRarityNames[rarity]}</span>`:''}
+const gathers=[{id:'oak',name:'Eichen fällen',icon:'🌳',base:1},{id:'birch',name:'Birken fällen',icon:'🌿',base:1,lv:5},{id:'spruce',name:'Fichten fällen',icon:'🌲',base:1,lv:12},{id:'darkoak',name:'Schwarzeichen fällen',icon:'🌳',base:1,lv:20,},{id:'acacia',name:'Akazien fällen',icon:'🌴',base:1,lv:30,},{id:'jungle',name:'Tropenbäume fällen',icon:'🌴',base:1,lv:42,},{id:'mangrove',name:'Mangroven fällen',icon:'🌱',base:1,lv:55,},{id:'cherry',name:'Kirschbäume fällen',icon:'🌸',base:1,lv:70,},{id:'dirt',name:'Erde graben',icon:'🟤',base:1},{id:'sand',name:'Sand schaufeln',icon:'🏜️',base:1},{id:'gravel',name:'Kies schaufeln',icon:'🪨',base:1},{id:'stone',name:'Stein abbauen',icon:'⛏️',base:1},{id:'coal',name:'Kohle fördern',icon:'⚫',base:1,lv:8},{id:'copper',name:'Kupfer abbauen',icon:'🟠',base:1,lv:18},{id:'iron',name:'Eisen abbauen',icon:'⛓️',base:1,lv:32},{id:'gold',name:'Gold abbauen',icon:'🟡',base:1,lv:45},{id:'lapis',name:'Lapis Lazuli abbauen',icon:'🔵',base:1,lv:52},{id:'redstone',name:'Redstone abbauen',icon:'🔴',base:1,lv:60},{id:'diamond',name:'Diamanten abbauen',icon:'💎',base:1,lv:75}];
+// Freischaltungen: Nur Eichenholz und Stein sind im Startgebiet direkt verfügbar.
+const gatherGates={}; // Holzgebiete benötigen keine Forschung. Erzabbau folgt den Rohstoff-Freischaltungen.
+
+// V9.5: Dauerhafte Rohstoff-Meilensteine. Ausschließlich selbst gesammelt / produziert.
+const resourceProgression=[
+ ['birch','oak',5000],['spruce','birch',15000],['darkoak','spruce',40000],['acacia','darkoak',100000],['jungle','acacia',250000],['mangrove','jungle',600000],['cherry','mangrove',1500000],
+ ['coal','stone',10000],['copper','coal',35000],['iron','copper',100000],['gold','iron',250000],['lapis','gold',400000],['redstone','lapis',650000],['diamond','redstone',1000000]
+];
+const fieldProgression=[
+ ['carrotfarm','wheatfarm','wheat',3,3,5000],['potatofarm','carrotfarm','carrot',4,4,15000],['beetfarm','potatofarm','potato',5,5,40000],['pumpkinfarm','beetfarm','beetroot',6,6,100000],['melonfarm','pumpkinfarm','pumpkin',7,7,250000],['canefarm','melonfarm','melon',8,8,600000],['wartfarm','canefarm','sugarcane',9,9,1500000]
+];
+const livestockProgression=[['pigpen','cowpasture',2,3],['chickencoop','pigpen',3,4],['sheepfold','chickencoop',4,5]];
+function producedTotal(id){return Math.max(0,(s.stats?.['manual_'+id]||0)+(s.stats?.['auto_'+id]||0))}
+function buildingTierCount(id,tier){return (s.buildingTiers?.[id]||[]).filter(n=>n>=tier).length}
+function progressionMissingResource(id){const r=resourceProgression.find(x=>x[0]===id);return r&&producedTotal(r[1])<r[2]?[`${R[r[1]][1]} selbst gesammelt/produziert: ${fmt(producedTotal(r[1]))} / ${fmt(r[2])}`]:[]}
+function progressionMissingBuilding(id){const f=fieldProgression.find(x=>x[0]===id);if(f){const missing=[];if(buildingTierCount(f[1],f[4])<f[3])missing.push(`${f[3]} × ${buildings.find(b=>b.id===f[1])?.name||f[1]} auf Stufe ${f[4]} (${buildingTierCount(f[1],f[4])}/${f[3]})`);if(producedTotal(f[2])<f[5])missing.push(`${R[f[2]][1]} produziert: ${fmt(producedTotal(f[2]))}/${fmt(f[5])}`);return missing}const a=livestockProgression.find(x=>x[0]===id);return a&&buildingTierCount(a[1],a[3])<a[2]?[`${a[2]} × ${buildings.find(b=>b.id===a[1])?.name||a[1]} auf Stufe ${a[3]} (${buildingTierCount(a[1],a[3])}/${a[2]})`]:[]}
+function progressUnlocked(id){if(!resourceProgression.some(r=>r[0]===id)&&!fieldProgression.some(r=>r[0]===id)&&!livestockProgression.some(r=>r[0]===id))return false;s.progressUnlocked??=[];if(s.progressUnlocked.includes(id))return true;const missing=buildings.some(b=>b.id===id)?progressionMissingBuilding(id):progressionMissingResource(id);if(!missing.length){s.progressUnlocked.push(id);return true}return false}
+function progressionRequirements(id){if(progressUnlocked(id))return [];return buildings.some(b=>b.id===id)?progressionMissingBuilding(id):progressionMissingResource(id)}
+function progressCard(id,kind){const b=kind==='building'?buildings.find(x=>x.id===id):null;const r=kind==='resource'?resourceProgression.find(x=>x[0]===id):null;const f=fieldProgression.find(x=>x[0]===id);const a=livestockProgression.find(x=>x[0]===id);const name=b?.name||R[id]?.[1]||id;const requirements=progressionRequirements(id);let rows=[];if(r)rows=[[R[r[1]][1],producedTotal(r[1]),r[2]]];if(f)rows=[[`${buildings.find(x=>x.id===f[1])?.name} Stufe ${f[4]}`,buildingTierCount(f[1],f[4]),f[3]],[R[f[2]][1]+' produziert',producedTotal(f[2]),f[5]]];if(a)rows=[[`${buildings.find(x=>x.id===a[1])?.name} Stufe ${a[3]}`,buildingTierCount(a[1],a[3]),a[2]]];return `<div class="item"><h3>${progressUnlocked(id)?'✅':'🔒'} ${escapeHtml(name)}</h3>${rows.map(([label,current,target])=>`<p class="small">${escapeHtml(label)}: <b>${fmt(Math.min(current,target))} / ${fmt(target)}</b></p><div class="progress"><div class="bar" style="width:${Math.min(100,100*current/target)}%"></div></div>`).join('')}<p class="small">${requirements.length?requirements.map(escapeHtml).join(' · '):'Meilenstein dauerhaft erreicht ✓'}${!progressUnlocked(id)&&kind==='resource'?' · Joblevel und Gebietserkundung sind ebenfalls erforderlich.':''}</p></div>`}
+function progressionPanel(){return `<section class="card"><h2>🔓 Rohstoff-Freischaltungen</h2><p>Manuelles Sammeln und automatische Produktion zählen zusammen. Verbrauch reduziert den Fortschritt nicht. Bereits erreichte Freischaltungen bleiben erhalten. Die Holzgebiete sind nach Freischaltung der jeweiligen Holzart ohne Forschung bereisbar.</p></section><h3>🌳 Holz & ⛏️ Bergbau</h3><div class="grid">${resourceProgression.filter(([id])=>{const chain=woodRarities[id]?resourceProgression.filter(x=>!!woodRarities[x[0]]).map(x=>x[0]):resourceProgression.filter(x=>!woodRarities[x[0]]).map(x=>x[0]);const i=chain.indexOf(id);return progressUnlocked(id)||i===0||progressUnlocked(chain[i-1])}).map(r=>progressCard(r[0],'resource')).join('')}</div>`}
+
+// Joblevel sind unabhängig vom Achievement-Level und besitzen keine Obergrenze.
+const RESOURCE_JOB_LEVELS={
+ oak:1,birch:10,spruce:25,darkoak:45,acacia:65,jungle:90,mangrove:120,cherry:150,
+ stone:1,dirt:1,sand:10,gravel:25,coal:12,copper:30,iron:50,gold:75,lapis:100,redstone:125,diamond:150
+};
+function resourceJob(id){if(['dirt','sand','gravel'].includes(id))return 'digging';return ['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry'].includes(id)?'forestry':'mining'}
+function resourceJobMissing(id){const required=RESOURCE_JOB_LEVELS[id];if(!required)return [];const job=resourceJob(id),actual=jobLevel(job);return actual>=required?[]:[(job==='forestry'?'Holzfäller':job==='digging'?'Gräber':'Miner')+' Level '+required+' benötigt (aktuell '+actual+')']}
+function gateMissing(x){
+ if(x.id==='amethyst')return ['Amethyst wird später über ein besonderes System gefunden'];
+ return [...(discoveredResource(x.id)?[]:['Ressource erst nach Dungeon-Abschluss entdeckt']),...resourceJobMissing(x.id),...progressionMissingResource(x.id)];
+}
+function resourceGateMissing(id){return gateMissing(gathers.find(g=>g.id===id)||{id})}
+const recipes=[{id:'glass',name:'Glas (Ofen)',out:1,cost:{sand:4,coal:1},lv:1},{id:'cleanstone',name:'Cleanstone (Ofen)',out:1,cost:{stone:4,coal:1},lv:1}];
+const blueprintDefs=[]; // Alte Gebiete und ihre exklusiven Baupläne entfernt.
+function hasBlueprint(id){return (s.blueprints||[]).includes(id)}
+// Bevölkerung und Reichsfläche: Häuser schaffen Wohnraum, Land begrenzt Bauplätze.
+function houseTier(i){return Math.max(0,Math.min(5,Number(s.houseUpgrades?.[i])||0))}
+function houseUpgradePrice(i){const tier=houseTier(i),scale=Math.pow(1.8,tier)*Math.pow(1.12,Math.max(0,Number(i)||0));return tier===0?{stone:Math.ceil(60*scale),oak:Math.ceil(40*scale)}:tier===1?{cleanstone:Math.ceil(35*scale),glass:Math.ceil(35*scale),oak:Math.ceil(40*scale)}:{glass:Math.ceil(45*scale),stone:Math.ceil(55*scale),oak:Math.ceil(40*scale)}}
+function houseName(i){return ['Dirthaus','Steinhaus','Mittleres Haus','Großes Haus','Herrenhaus','Prunkhaus'][houseTier(i)]}
+function builderRequirement(kind,tier=0){return kind==='house'?([1,8,25,50,85][Math.min(4,tier)]||120):Math.min(150,1+Math.floor(Math.max(0,tier)*14))}
+function builderMissing(kind,tier=0){const needed=builderRequirement(kind,tier);return jobLevel('building')>=needed?[]:['Builder-Level '+needed+' benötigt (aktuell '+jobLevel('building')+')']}
+function houseUpgrade(i){i=Number(i);if(!Number.isInteger(i)||i<0||i>=(s.houses||1)||houseTier(i)>=5||builderMissing('house',houseTier(i)).length)return;const price=houseUpgradePrice(i);if(!pay(price))return;s.houseUpgrades??=[];s.houseUpgrades[i]=houseTier(i)+1;addSkill('building',12+houseTier(i)*8);updateTalerDisplay();log('🏠 Wohnhaus '+(i+1)+' verbessert: Stufe '+houseTier(i)+'/5 · +2 Einwohner');save();render()}
+function residents(){return Math.max(2,(s.houses||1)*2)+(s.houseUpgrades||[]).slice(0,s.houses||1).reduce((n,_,i)=>n+2*houseTier(i),0)}
+const animalBuildingIds=['cowpasture','pigpen','chickencoop','sheepfold'];
+function animalCount(){return animalBuildingIds.reduce((n,id)=>n+2*Math.max(0,Number(s.buildings?.[id])||0),0)}
+function animalWorkers(){return Math.ceil(animalCount()/5)}
+function staffLimit(){return s.upgrades.includes('staff_pressure')?8:s.upgrades.includes('staff_capacity')?6:4}
+function assignedExtraWorkers(){syncBuildingTiers();let total=0;for(const b of buildings)for(const n of s.buildingStaff?.[b.id]||[])total+=Math.max(0,Math.min(staffLimit(),Math.floor(Number(n)||0)));return total}
+function buildingWorkers(){return assignedExtraWorkers()}
+function adjustBuildingStaff(id,i,delta){syncBuildingTiers();if(!buildings.some(b=>b.id===id)||i<0||i>=(s.buildings[id]||0))return;s.buildingStaff??={};const arr=s.buildingStaff[id]??=[];const max=staffLimit(),current=Math.max(0,Math.floor(Number(arr[i])||0));if(delta>0&&freeResidents()<1)return;arr[i]=Math.max(0,Math.min(max,current+(delta>0?1:-1)));save();render()}
+function workersNeededForBuild(b){return animalBuildingIds.includes(b.id)?Math.ceil((animalCount()+2)/5)-animalWorkers():1}
+function researchWorkers(){return (s.researches||[]).length}
+function activeDungeons(){return Array.isArray(s.dungeons)?s.dungeons:[]}
+function dungeonSlots(){return s.upgrades.includes('dungeon_group3')?3:s.upgrades.includes('dungeon_group2')?2:1}
+function expeditionWorkers(){return activeDungeons().length*2}
+function constructionWorkers(){return (s.constructions||[]).length}
+function occupiedResidents(){return buildingWorkers()+researchWorkers()+expeditionWorkers()+constructionWorkers()}
+function freeResidents(){return Math.max(0,residents()-occupiedResidents())}
+function usedPlots(){return Object.values(s.buildings||{}).reduce((a,n)=>a+(Number(n)||0),0)+(s.houses||1)+(s.constructions||[]).length}
+function plotLimit(){return 8+(s.realmLevel||0)*5}
+function housePrice(){const n=Math.max(0,(s.houses||1)-1);return {dirt:Math.ceil(60*Math.pow(1.65,n))}}
+function expansionPrice(){return {cleanstone:Math.ceil(200*Math.pow(1.8,s.realmLevel||0))}}
+function updateTalerDisplay(){const el=document.getElementById('trade-coins');if(el)el.textContent='💰 '+fmt(s.tradeCoins??250)+' Looterianische Taler'}
+function buyHouse(){const price=housePrice();if(builderMissing('house',0).length||usedPlots()>=plotLimit()||!pay(price))return;s.houses=(s.houses||1)+1;s.houseUpgrades??=[];addSkill('building',12);log('🏠 Wohnhaus gekauft · Einwohner '+residents());save();render()}
+// Reichstitel sind an Reichserweiterungen gebunden; jede Stufe besitzt einen eigenen Namen.
+const realmRankNames=['Siedlung','Weiler','Dorf','Großdorf','Marktflecken','Kleinstadt','Stadt','Handelsstadt','Festungsstadt','Freie Stadt','Grafschaft','Markgrafschaft','Fürstentum','Herzogtum','Großherzogtum','Königreich','Großkönigreich','Kaiserreich','Imperium','Weltreich','Legendäres Reich','Mythisches Reich'];
+function realmRankName(stage=s.realmLevel||0){stage=Math.max(0,Math.floor(Number(stage)||0));return realmRankNames[stage]||('Ewiges Reich · Rang '+(stage-realmRankNames.length+2))}
+function realmName(){return typeof s.realmName==='string'&&s.realmName.trim()?s.realmName.trim():'Looteria'}
+function renameRealm(){const proposed=prompt('Wie soll dein Reich heißen? (2–28 Zeichen)',realmName());if(proposed===null)return;const name=proposed.trim().replace(/\s+/g,' ');if(name.length<2||name.length>28||/[<>\x00-\x1f]/.test(name)){notify('❌ Reichsname: 2–28 Zeichen, keine Sonderzeichen < oder >.');return}s.realmName=name;save();render();notify('🏰 Dein Reich heißt jetzt '+name)}
+function updateRealmHeader(){const name=document.getElementById('realm-display-name'),rank=document.getElementById('realm-display-title');if(name)name.textContent=realmName();if(rank)rank.textContent='('+realmRankName()+')'}
+function realmExpansionAchievement(){const stage=Math.max(0,Math.floor(s.realmLevel||0)),next=stage+1;return `<section class="card realm-achievement"><h3>🏰 Reichserweiterungen · Herrschertitel</h3><p>Dein Reich: <b>${escapeHtml(realmName())}</b> <span class="rarity-label rarity-${milestoneRarity(stage)}">(${escapeHtml(realmRankName(stage))})</span></p><span class="badge earned">Stufe ${stage}</span> <span class="small rarity-label rarity-${milestoneRarity(stage)}">${rarityNames[milestoneRarity(stage)]}</span><p class="small">Jede Reichserweiterung schaltet einen neuen, einzigartigen Titel frei. Bereits erreichte Titel bleiben in der Chronik erhalten.</p><div class="progress"><div class="bar" style="width:100%"></div></div><div class="milestone-reward">🎁 Je Erweiterung: <b>+10 Ruhmpunkte</b>, XP und ein neuer Reichstitel.<br>✨ Nächste Erweiterung: <b>+${fmt(xpForRealm(next))} XP</b><br>🏅 Nächster Titel (Stufe ${next}): <b>${escapeHtml(realmRankName(next))}</b><br>🧱 Nächste Erweiterung: ${costText(expansionPrice())} · +5 Bauplätze</div><details><summary>📜 Bisher erreichte Reichstitel</summary><p class="small">${Array.from({length:Math.min(stage+1,200)},(_,i)=>`${i===stage?'👑':'✓'} Stufe ${i}: ${escapeHtml(realmRankName(i))}`).join('<br>')}${stage>=200?'<br>… weitere Titel erreicht':''}</p></details></section>`}
+function expandRealm(){const price=expansionPrice();if(!pay(price))return;s.realmLevel=(s.realmLevel||0)+1;s.coins+=10;log('🏆 Reichserweiterung Stufe '+s.realmLevel+': '+realmRankName()+' (+10 Ruhmpunkte)');notify('🏆 Neuer Reichstitel: '+realmRankName()+' · +10 Ruhmpunkte');syncAchievementXp();save();render()}
+const MAX_BUILDING_TIER=10;
+function syncBuildingTiers(){s.buildingTiers??={};for(const [id,count] of Object.entries(s.buildings||{})){let arr=s.buildingTiers[id];if(!Array.isArray(arr)){arr=Array(Math.max(0,count)).fill(0);if(arr.length)arr[0]=Math.min(MAX_BUILDING_TIER,Math.max(0,Number(s.buildingUpgrades?.[id])||0));s.buildingTiers[id]=arr;}while(arr.length<count)arr.push(0);if(arr.length>count)arr.length=count;s.buildingStaff??={};const staff=s.buildingStaff[id]??=[];while(staff.length<count)staff.push(0);if(staff.length>count)staff.length=count;for(let i=0;i<count;i++)staff[i]=Math.max(0,Math.min(staffLimit(),Math.floor(Number(staff[i])||0)));}}
+function buildingTier(id,i){syncBuildingTiers();return s.buildingTiers[id]?.[i]||0}
+function buildingUpgradeCost(b,i=0){const tier=buildingTier(b.id,i);const products=Object.entries(b.prod||{}).filter(([id])=>ACTIVE_RESOURCES.has(id));return Object.fromEntries(products.map(([id,rate])=>[id,Math.ceil((18+rate*55)*Math.pow(1.8,tier)*Math.pow(1.12,Math.max(0,i)))]))}
+
+function buildingUpgradeMissing(b,i=0){const tier=buildingTier(b.id,i);if(tier>=MAX_BUILDING_TIER)return ['Maximalstufe erreicht'];return [...builderMissing('building',tier),...Object.entries(buildingUpgradeCost(b,i)).filter(([id,n])=>(s.res[id]||0)<n).map(([id,n])=>fmt(n)+' '+(R[id]?.[1]||id)+' benötigt')]}
+function upgradeBuilding(id,i=0){const b=buildings.find(x=>x.id===id);if(!b||i<0||i>=(s.buildings[id]||0))return;const price=buildingUpgradeCost(b,i);if(buildingUpgradeMissing(b,i).length||!pay(price))return;s.buildingTiers[id][i]++;addSkill('building',10+(s.buildingTiers[id][i]*6));s.buildingUpgrades[id]=Math.max(...s.buildingTiers[id]);log('⬆️ '+b.name+' #'+(i+1)+' verbessert auf Stufe '+s.buildingTiers[id][i]);save();render()}
+function buildingInstancesPanel(b){syncBuildingTiers();return Array.from({length:s.buildings[b.id]||0},(_,i)=>{const tier=buildingTier(b.id,i),max=tier>=MAX_BUILDING_TIER,price=buildingUpgradeCost(b,i),missing=buildingUpgradeMissing(b,i);return `<div class="building-instance"><b class="${max?'map-max-upgrade':missing.length?'map-no-upgrade':''}">${b.icon} ${b.name} #${i+1}</b><span>Stufe ${tier}/${MAX_BUILDING_TIER} · +${tier*10}% Ertrag</span>${max?'<strong class="map-max-upgrade">✓ Vollständig ausgebaut</strong>':`<span>${costText(price)}${missing.length?' · '+missing.join(', '):''}</span><button type="button" onclick="upgradeBuilding('${b.id}',${i})" ${missing.length?'disabled':''}>⬆️ Dieses Gebäude verbessern</button>`}</div>`}).join('')}
+function researchTalerCost(u){return 0}
+function canFinanceResearch(u){return true}
+function realmPanel(showHouseUpgrades=true){return `<section class="card"><h2>🏰 Reich & Bevölkerung</h2><div class="row"><span>👥 Einwohner: <b>${residents()}</b></span><span>👷 Belegt: <b>${occupiedResidents()}</b></span><span>🟢 Frei: <b>${freeResidents()}</b></span><span>🧪 Forschung: <b>${researchWorkers()}</b></span><span>🧭 Expedition: <b>${expeditionWorkers()}</b></span><span>🏗️ Baustellen: <b>${constructionWorkers()}</b></span><span>🏠 Wohnhäuser: <b>${s.houses||1}</b></span></div><div class="row"><span>🗺️ Belegte Bauplätze</span><b>${usedPlots()} / ${plotLimit()}</b></div><div class="progress"><div class="bar" style="width:${Math.min(100,usedPlots()/plotLimit()*100)}%"></div></div><p class="small">Ein Wohnhaus bietet zunächst Platz für 2 Einwohner. Mit 5 Wohnhaus-Upgrades schafft jedes Haus bis zu 12 Plätze (+2 pro Stufe). Jedes Haus belegt 1 Bauplatz. Produktionsgebäude benötigen manuell zugewiesene Mitarbeiter aus der Gebäudeliste: zunächst maximal 4, mit Forschungen 6 und schließlich 8 je Gebäude. Weitere Gebäude desselben Typs kosten jeweils 65 % mehr Materialien; auch spätere Gebäude-Upgrades werden teurer. Gebäude haben eine Bauzeit. Jede Baustelle benötigt vorübergehend 1 Einwohner und 1 Bauplatz. Weitere parallele Baustellen schaltest du durch Bauforschung frei.</p><div class="row"><span>🏠 Neues Wohnhaus · ${costText(housePrice())}</span>${button('Haus kaufen','buyHouse()',usedPlots()>=plotLimit()||!canPay(housePrice())||builderMissing('house',0).length>0)}</div>${showHouseUpgrades?`<h3>🏠 Wohnhäuser ausbauen</h3><p class="small">Jedes Wohnhaus besitzt 5 Ausbaustufen. Pro Upgrade erhältst du dauerhaft Platz für 2 zusätzliche Einwohner. Maximal 12 Einwohner pro Haus.</p><div class="grid">${Array.from({length:s.houses||1},(_,i)=>`<div class="item"><b>🏠 Wohnhaus ${i+1}</b><div class="small">Stufe ${houseTier(i)}/5 · 👥 ${2+2*houseTier(i)}/12 Einwohner</div>${houseTier(i)<5?`<div class="small">⬆️ Nächste Stufe: 💰 ${fmt(houseUpgradePrice(i))} Taler</div>${button('Haus verbessern',`houseUpgrade(${i})`,s.tradeCoins<houseUpgradePrice(i))}`:'<div class="small" style="color:#8fe2a9">✓ Vollständig ausgebaut</div>'}</div>`).join('')}</div>`:''}<div class="row"><span>🗺️ +5 Bauplätze · ${costText(expansionPrice())}</span>${button('Reich erweitern','expandRealm()',!canPay(expansionPrice()))}</div></section>`}
+function buildingMissing(b){return [...((s.constructions||[]).length>=constructionSlots()?["Alle Bauplätze für gleichzeitige Bauaufträge belegt"]:[]),...(b.tech&&!s.upgrades.includes(b.tech)?['Forschung: '+(allTechs.find(x=>x.id===b.tech)?.name||b.tech)]:[]),...(freeResidents()<workersNeededForBuild(b)?[workersNeededForBuild(b)+' freie Einwohner benötigt']:[]),...(b.blueprint&&!hasBlueprint(b.blueprint)?['Bauplan: '+(blueprintDefs.find(x=>x.id===b.blueprint)?.name||b.blueprint)]:[]),...Object.keys(b.prod).flatMap(id=>resourceGateMissing(id)),...progressionRequirements(b.id),...builderMissing('building',0)]}
+const buildings=[{id:'furnace',name:'Ofen',icon:'🔥',desc:'Brennt Cleanstone und Glas. Jeder Ofen ermöglicht einen gleichzeitigen Brennvorgang.',prod:{},cost:{stone:70,oak:45,coal:12},lv:1,tech:'kiln_cleanstone'},{id:'oakgrove',name:'Eichenforst',icon:'🌳',desc:'Produziert Eichenholz.',prod:{oak:.28},cost:{oak:18,stone:8},lv:2},{id:'birchgrove',name:'Birkenforst',icon:'🌿',desc:'Produziert Birkenholz.',prod:{birch:.23},cost:{birch:24,stone:14},lv:5},{id:'sprucegrove',name:'Fichtenforst',icon:'🌲',desc:'Produziert Fichtenholz.',prod:{spruce:.22},cost:{spruce:28,stone:18},lv:12},{id:'quarry',name:'Steinbruch',icon:'🏔️',desc:'Fördert Stein.',prod:{stone:.4},cost:{oak:20,stone:18},lv:2},{id:'coalMine',name:'Kohlemine',icon:'⚫',desc:'Fördert Kohle.',prod:{coal:.25},cost:{oak:35,stone:35,oakplank:8},lv:8},{id:'copperMine',name:'Kupfermine',icon:'🟠',desc:'Fördert Kupfererz.',prod:{copper:.18},cost:{stone:70,oakplank:18,brick:8},lv:18},{id:'ironMine',name:'Eisenmine',icon:'⛓️',desc:'Fördert Eisenerz.',prod:{iron:.14},cost:{stone:100,oakplank:28,copperbar:8},lv:32},{id:'ancient_sawmill',name:'Uraltes Sägewerk',icon:'📜',desc:'Spezialgebäude aus einem Expeditionsbauplan. Produziert Eichen- und Birkenbretter.',prod:{oakplank:.25,birchplank:.12},cost:{oakplank:90,birchplank:35,brick:45},lv:12,blueprint:'ancient_sawmill'},{id:'magma_forge',name:'Magmaschmiede',icon:'🔥',desc:'Spezialgebäude aus einem Expeditionsbauplan. Schmilzt Metallbarren.',prod:{copperbar:.12,ironbar:.06},cost:{spruceplank:65,brick:120,ironbar:18},lv:32,blueprint:'magma_forge'},{id:'ether_collector',name:'Ätherkollektor',icon:'🌌',desc:'Spezialgebäude aus einem Expeditionsbauplan. Sammelt Kristalle.',prod:{crystal:.08},cost:{cherryplank:20,gear:22,ironbar:80},lv:70,blueprint:'ether_collector'},{id:'wheatfarm',name:'Weizenfeld',icon:'🌾',desc:'Erntet Weizen automatisch.',prod:{wheat:.35},cost:{oak:25,stone:12},lv:2,tech:'agriculture'},
+{id:'carrotfarm',name:'Karottenfeld',icon:'🥕',desc:'Erntet Karotten.',prod:{carrot:.26},cost:{oak:40,stone:22,wheat:30},lv:5,tech:'rootcrops'},
+{id:'potatofarm',name:'Kartoffelfeld',icon:'🥔',desc:'Erntet Kartoffeln.',prod:{potato:.26},cost:{oak:40,stone:22,wheat:30},lv:5,tech:'rootcrops'},
+{id:'beetfarm',name:'Rote-Bete-Feld',icon:'🫜',desc:'Erntet Rote Bete.',prod:{beetroot:.22},cost:{oak:55,stone:35,carrot:20},lv:8,tech:'advancedfarming'},
+{id:'pumpkinfarm',name:'Kürbisfeld',icon:'🎃',desc:'Erntet Kürbisse.',prod:{pumpkin:.16},cost:{oak:70,stone:40,potato:35},lv:10,tech:'advancedfarming'},
+{id:'melonfarm',name:'Melonenfeld',icon:'🍉',desc:'Erntet Melonen.',prod:{melon:.18},cost:{oak:85,stone:45,carrot:40},lv:12,tech:'advancedfarming'},
+{id:'canefarm',name:'Zuckerrohrplantage',icon:'🎋',desc:'Erntet Zuckerrohr.',prod:{sugarcane:.2},cost:{oak:95,stone:60,melon:20},lv:14,tech:'sugarfarming'},
+{id:'berryfarm',name:'Süßbeerenhecke',icon:'🫐',desc:'Erntet Süßbeeren.',prod:{sweetberry:.3},cost:{oak:60,stone:30},lv:8,tech:'advancedfarming'},
+{id:'wartfarm',name:'Netherwarzenbeet',icon:'🍄',desc:'Züchtet Netherwarzen.',prod:{netherwart:.11},cost:{stone:180,brick:100,crystal:12},lv:32,tech:'netherfarming'},
+{id:'cowpasture',name:'Kuhweide',icon:'🐄',desc:'Züchtet Kühe: Fleisch und Leder.',prod:{beef:.08,leather:.035},cost:{oak:65,stone:35,wheat:45},lv:5,tech:'animalhusbandry'},
+{id:'pigpen',name:'Schweinestall',icon:'🐖',desc:'Züchtet Schweine für Fleisch.',prod:{pork:.1},cost:{oak:80,stone:40,carrot:35},lv:7,tech:'animalhusbandry'},
+{id:'chickencoop',name:'Hühnerstall',icon:'🐔',desc:'Züchtet Hühner für Fleisch und Federn.',prod:{chicken:.075,feather:.07},cost:{oak:75,stone:40,wheat:45},lv:6,tech:'animalhusbandry'},
+{id:'sheepfold',name:'Schafweide',icon:'🐑',desc:'Züchtet Schafe: Hammelfleisch und Wolle.',prod:{mutton:.075,wool:.055},cost:{oak:95,stone:45,wheat:65},lv:9,tech:'animalhusbandry'},
+{id:'arcane',name:'Kristallbohrer',icon:'✨',desc:'Sammelt seltene Kristalle.',prod:{crystal:.035},cost:{gear:10,ironbar:25,brick:70},lv:50}];
+
+buildings.push({id:'goldMine',name:'Golderz-Mine',icon:'🟡',desc:'Fördert Golderz.',prod:{gold:0.085},cost:{stone:165,iron:45},lv:45,tech:'mining1'});
+buildings.push({id:'lapisMine',name:'Lapis Lazuli-Mine',icon:'🔵',desc:'Fördert Lapis Lazuli.',prod:{lapis:0.069},cost:{stone:230,iron:65},lv:52,tech:'mining1'});
+buildings.push({id:'redstoneMine',name:'Redstone-Mine',icon:'🔴',desc:'Fördert Redstone.',prod:{redstone:0.058},cost:{stone:295,iron:85},lv:60,tech:'mining1'});
+buildings.push({id:'diamondMine',name:'Diamant-Mine',icon:'💎',desc:'Fördert Diamant.',prod:{diamond:0.05},cost:{stone:360,iron:105},lv:75,tech:'mining1'});
+const farmTechs=[];
+const upgrades=[{id:'axe',name:'Stärkere Werkzeuge',desc:'+1 pro manuellem Sammeln.',cost:{oak:30,stone:25},lv:2,duration:45},{id:'tools2',name:'Verstärkte Werkzeuge',desc:'+2 pro manuellem Sammeln.',cost:{ironbar:12,oakplank:30},lv:5,requires:'axe',duration:180},{id:'engines',name:'Verbesserte Antriebe',desc:'+50 % automatische Produktion.',cost:{coal:45,brick:25,oakplank:20},lv:4,duration:120},{id:'automation',name:'Automationskern',desc:'Verdoppelt automatische Produktion.',cost:{gear:15,crystal:5},lv:8,requires:'engines',duration:480}];
+const techs=[
+{id:'staff_capacity',name:'Erweiterte Mitarbeiterkapazität',branch:'Bauwesen',desc:'Erhöht die Mitarbeitergrenze je Holz-, Stein- und Erzgebäude von 4 auf 6.',cost:{oak:300,stone:250,coal:60},duration:900,lv:5},
+{id:'staff_pressure',name:'Erhöhter Mitarbeiterdruck',branch:'Bauwesen',desc:'Erhöht die Mitarbeitergrenze je Holz-, Stein- und Erzgebäude von 6 auf 8.',cost:{oak:750,stone:650,coal:180,iron:50},duration:2700,lv:10,requires:['staff_capacity']},
+{id:'science',name:'Wissenschaftliche Grundlagen',branch:'Wissenschaft',desc:'Erschließt Forschungslabore.',cost:{oak:45,stone:40},duration:90,lv:2},
+{id:'lab1',name:'Forschungslabor I',branch:'Wissenschaft',desc:'Schaltet den zweiten Forschungsplatz frei.',cost:{oakplank:35,brick:25},duration:300,lv:3,requires:['science'],slots:2},
+{id:'lab2',name:'Forschungslabor II',branch:'Wissenschaft',desc:'Schaltet den dritten Forschungsplatz frei.',cost:{copperbar:25,ironbar:15,gear:5},duration:1800,lv:6,requires:['lab1','engines'],slots:3,skill:{research:8}},
+{id:'lab3',name:'Forschungszentrum',branch:'Wissenschaft',desc:'Schaltet den vierten Forschungsplatz frei.',cost:{gear:40,ironbar:70,crystal:15},duration:14400,lv:9,requires:['lab2','automation'],slots:4,skill:{research:20}},
+{id:'lab4',name:'Wissenschaftsakademie',branch:'Wissenschaft',desc:'Schaltet den fünften Forschungsplatz frei.',cost:{gear:160,ironbar:250,crystal:100},duration:86400,lv:12,requires:['lab3','deep'],slots:5,skill:{research:35}},
+{id:'construction2',name:'Parallele Bauplanung I',branch:'Bauwesen',desc:'Erlaubt 2 gleichzeitige Baustellen.',cost:{oakplank:35,stone:65},duration:300,lv:4,requires:['science'],constructionSlots:2},
+{id:'construction3',name:'Parallele Bauplanung II',branch:'Bauwesen',desc:'Erlaubt 3 gleichzeitige Baustellen.',cost:{brick:90,copperbar:20},duration:1200,lv:10,requires:['construction2'],constructionSlots:3},
+{id:'construction4',name:'Königliche Bauverwaltung',branch:'Bauwesen',desc:'Erlaubt 4 gleichzeitige Baustellen.',cost:{ironbar:55,gear:20},duration:3600,lv:20,requires:['construction3'],constructionSlots:4},
+{id:'mining1',name:'Geologie',branch:'Bergbau',desc:'Grundlage für tiefere Lagerstätten.',cost:{stone:65,coal:15},duration:180,lv:3},
+{id:'mining2',name:'Tiefenbergbau',branch:'Bergbau',desc:'Neue Methoden für tiefe Erzlager.',cost:{ironbar:20,brick:50},duration:3600,lv:6,requires:['mining1','tools2'],skill:{mining:12}},
+{id:'deep',name:'Edelsteinbergbau',branch:'Bergbau',desc:'Fortgeschrittene Förderung seltener Erze.',cost:{diamond:15,redstone:70},duration:604800,lv:70,requires:['mining2','automation'],skill:{mining:35}},
+{id:'dungeon_group2',name:'Erkundungstrupp II',branch:'Erkundung',desc:'Erlaubt zwei gleichzeitig reisende Dungeon-Gruppen (je 2 Einwohner).',cost:{oak:120,stone:90},duration:180,lv:2},
+{id:'dungeon_group3',name:'Erkundungstrupp III',branch:'Erkundung',desc:'Erlaubt drei gleichzeitig reisende Dungeon-Gruppen (je 2 Einwohner).',cost:{oak:350,stone:280,coal:45},duration:480,lv:4,requires:['dungeon_group2']},
+{id:'forestry',name:'Nachhaltige Forstwirtschaft',branch:'Natur',desc:'Spezialisierung auf Holzgewinnung.',cost:{oak:90,oakplank:15},duration:600,lv:3,skill:{forestry:5}},
+
+];
+for(const u of upgrades){u.branch=u.id==='engines'||u.id==='automation'?'Industrie':'Handwerk';if(u.requires)u.requires=[u.requires];u.skill=u.id==='tools2'?{mining:5}:undefined}
+const animalTechs=[];
+
+// v11.6.3: Retain legacy save data, but disable removed production chains.
+const REMOVED_BUILDINGS=new Set(['wheatfarm','carrotfarm','potatofarm','beetfarm','pumpkinfarm','melonfarm','canefarm','berryfarm','wartfarm','cowpasture','pigpen','chickencoop','sheepfold','ancient_sawmill','magma_forge','ether_collector','arcane']);
+for(let i=buildings.length-1;i>=0;i--)if(REMOVED_BUILDINGS.has(buildings[i].id)||Object.keys(buildings[i].prod).some(k=>!ACTIVE_RESOURCES.has(k)))buildings.splice(i,1);
+// Obsolete recipe materials are replaced with basic resources to keep research and construction accessible.
+// Gräber-Produktionsgebäude: Mitarbeiter werden wie bei Minen manuell zugewiesen.
+buildings.push(
+ {id:'dirtpit',name:'Erdgrube',icon:'🟤',desc:'Fördert Erde.',prod:{dirt:.35},cost:{dirt:35,oak:20,stone:10},lv:1},
+ {id:'sandpit',name:'Sandgrube',icon:'🏜️',desc:'Fördert Sand nach Entdeckung der Wüste.',prod:{sand:.24},cost:{sand:35,oak:30,stone:25},lv:10},
+ {id:'gravelpit',name:'Kiesgrube',icon:'🪨',desc:'Fördert Kies nach Entdeckung des Gebirges.',prod:{gravel:.2},cost:{gravel:40,oak:35,stone:40},lv:25}
+);
+function basicCost(cost){const out={};for(const [k,v] of Object.entries(cost||{})){const to=ACTIVE_RESOURCES.has(k)?k:(/iron|copper|gear/.test(k)?'stone':'oak');out[to]=(out[to]||0)+v}return out}
+for(const b of buildings)b.cost=basicCost(b.cost);
+for(const t of [...upgrades,...techs])t.cost=Object.fromEntries(Object.entries(basicCost(t.cost)).map(([id,n])=>[id,Math.ceil(n*1.4)]));
+
+// Unavailable blueprint buildings must not be advertised as unlockable.
+blueprintDefs.splice(0,blueprintDefs.length);
+techs.push(
+ {id:'kiln_cleanstone',name:'Steinbrennofen',branch:'Handwerk',desc:'Schaltet das Cleanstone-Rezept im Crafting-Menü frei.',cost:{stone:70,coal:12,oak:35},duration:120,lv:1},
+ {id:'kiln_glass',name:'Glasschmelze',branch:'Handwerk',desc:'Schaltet das Glas-Rezept im Crafting-Menü frei.',cost:{sand:80,coal:20,stone:50},duration:240,lv:1,requires:['kiln_cleanstone']}
+);
+function recipeResearch(id){return id==='cleanstone'?'kiln_cleanstone':id==='glass'?'kiln_glass':null}
+function recipeUnlocked(id){const tech=recipeResearch(id);return !tech||s.upgrades.includes(tech)}
+// Je Rohstoff zwei verknüpfte Forschungen: bessere Handgewinnung und Automatisierung.
+const RESOURCE_RESEARCH_IDS=['oak','stone','dirt','birch','coal','sand','spruce','copper','gravel','iron','darkoak','gold','acacia','lapis','jungle','redstone','mangrove','diamond','cherry'];
+const RESOURCE_RESEARCH_CHAINS={};
+for(const id of RESOURCE_RESEARCH_IDS){
+ const job=['dirt','sand','gravel'].includes(id)?'digging':(['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry'].includes(id)?'forestry':'mining'),level=RESOURCE_JOB_LEVELS[id]||1,order=RESOURCE_RESEARCH_IDS.filter(k=>(['dirt','sand','gravel'].includes(k)?'digging':(['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry'].includes(k)?'forestry':'mining'))===job),idx=order.indexOf(id);
+ const prev=idx>0?order[idx-1]:null;
+ const primary=id==='oak'?'oak':id==='stone'?'stone':id==='dirt'?'dirt':prev;
+ const previousYield=prev?'yield_'+prev:null;
+ const rawCost=Math.max(25,Math.ceil(30*Math.pow(1.42,idx)));
+ const cost={ [primary]:rawCost, ...(idx>0?{oak:Math.ceil(rawCost*.45)}:{}) };
+ const yieldId='yield_'+id,autoId='auto_research_'+id;
+ RESOURCE_RESEARCH_CHAINS[id]={yieldId,autoId};
+ techs.push({id:yieldId,name:R[id][1]+' – Ertrag I',branch:'Gewinnung · '+(job==='forestry'?'Holzfäller':job==='digging'?'Gräber':'Miner'),desc:'Beim manuellen Sammeln von '+R[id][1]+' +1 Stück pro Klick.',cost,duration:Math.max(90,Math.ceil(100*Math.pow(1.24,idx))),requires:previousYield?[previousYield]:[],jobRequired:{[job]:level}});
+ techs.push({id:autoId,name:R[id][1]+' – Automatisierung',branch:'Automatisierung · '+(job==='forestry'?'Holzfäller':job==='digging'?'Gräber':'Miner'),desc:'Erlaubt die automatische Produktion von '+R[id][1]+' in passenden Produktionsgebäuden.',cost:{[primary]:Math.ceil(rawCost*2.4),stone:Math.ceil(30+rawCost*.35)},duration:Math.max(150,Math.ceil(180*Math.pow(1.24,idx))),requires:[yieldId],jobRequired:{[job]:level}});
+}
+const allTechs=[...upgrades,...techs,...farmTechs,...animalTechs];
+function skillLevel(k){return Math.floor(Math.sqrt((s.skillXp?.[k]||0)/50))+1}
+function jobLevel(k){return skillLevel(k)}
+function updateJobHeader(){for(const [id,key,icon,label] of [['job-wood','forestry','🪓','Holzfäller'],['job-miner','mining','⛏️','Miner'],['job-digger','digging','🪏','Gräber'],['job-builder','building','🏗️','Builder']]){const lv=jobLevel(key),xp=s.skillXp?.[key]||0,start=50*(lv-1)**2,end=50*lv**2;document.getElementById(id).innerHTML=icon+' '+label+' Level '+lv+'<small>'+fmt(Math.max(0,xp-start))+' / '+fmt(end-start)+' XP</small>';}}
+function jobProgressHtml(k,icon,name){const xp=s.skillXp?.[k]||0,lv=skillLevel(k),start=50*(lv-1)**2,end=50*lv**2;return `<div class="job-progress"><div class="row"><b>${icon} ${name} · Level ${lv}</b><span class="small">${fmt(xp)} / ${fmt(end)} XP</span></div><div class="progress"><div class="bar" style="width:${Math.max(0,Math.min(100,100*(xp-start)/(end-start)))}%"></div></div></div>`}
+
+function addSkill(k,n){s.skillXp??={};if(['forestry','mining','building'].includes(k))n*=prestigeMultiplier();s.skillXp[k]=(s.skillXp[k]||0)+n;checkMilestones()}
+function constructionSlots(){return Math.max(1,...allTechs.filter(u=>s.upgrades.includes(u.id)).map(u=>u.constructionSlots||1))}
+function slots(){return Math.max(1,...allTechs.filter(u=>s.upgrades.includes(u.id)).map(u=>u.slots||1))}
+function researchMissing(u){let a=[];for(const id of u.requires||[])if(!s.upgrades.includes(id))a.push('Forschung: '+(allTechs.find(x=>x.id===id)?.name||id));for(const [k,v] of Object.entries(u.jobRequired||{}))if(jobLevel(k)<v)a.push('Joblevel '+({forestry:'Holzfäller',mining:'Miner',digging:'Gräber'}[k]||k)+' '+v+' benötigt');for(const [k,v] of Object.entries(u.skill||{}))if(skillLevel(k)<v)a.push('Skill '+({research:'Wissenschaft',mining:'Bergbau',forestry:'Forstwirtschaft'}[k]||k)+' '+v);return a}
+function researchQueueAvailable(){return s.upgrades.includes('lab2')}
+function startQueued(){if(!researchQueueAvailable())return;let changed=false;while(s.researches.length<slots()&&s.queue.length){const id=s.queue[0],u=allTechs.find(x=>x.id===id);if(!u||s.upgrades.includes(id)||s.researches.some(x=>x.id===id)){s.queue.shift();changed=true;continue}if(researchMissing(u).length||!canPay(u.cost)||!canFinanceResearch(u)||freeResidents()<1)break;s.queue.shift();pay(u.cost);const now=Date.now();s.researches.push({id,started:now,ends:now+Math.max(10,Math.round(u.duration*(1-achievementBonus('research'))))*1000});completePinnedTarget('research',id);log('🧪 Warteschlange gestartet: '+u.name);changed=true}if(changed)save()}
+function queueResearch(id){const u=allTechs.find(x=>x.id===id);if(!researchQueueAvailable()||!u||s.queue.includes(id)||s.researches.some(x=>x.id===id)||s.upgrades.includes(id)||s.queue.length>=8)return;s.queue.push(id);save();render()}
+function unqueue(id){s.queue=s.queue.filter(x=>x!==id);save();render()}
+const progressionAchievements=[...resourceProgression.map(([id,prev,n])=>['unlock_'+id,'Rohstoffmeister: '+R[id][1],'Produziere '+n.toLocaleString('de-DE')+' '+R[prev][1]+'.',id]),...fieldProgression.filter(()=>false).map(([id])=>['unlock_'+id,'Feldmeister: '+(buildings.find(b=>b.id===id)?.name||id),'Erfülle die Feldvoraussetzungen.',id]),...livestockProgression.filter(()=>false).map(([id])=>['unlock_'+id,'Viehzuchtmeister: '+(buildings.find(b=>b.id===id)?.name||id),'Erfülle die Tierzuchtvoraussetzungen.',id])];
+const achievements=[['first','Erste Schritte','Sammle deine erste Ressource.'],['builder','Baumeister','Errichte ein Gebäude.'],['hundred','Sammler','Besitze insgesamt 100 Ressourcen.'],['factory','Industriepionier','Besitze 10 Gebäude.'],['explorer','Entdecker','Entdecke drei Gebiete.'],['scholar','Forscher','Erforsche zwei Verbesserungen.'],['taskmaster','Aufgabenmeister','Schließe 5 Tages- oder Wochenaufgaben ab.'],['homeowner','Siedler','Besitze 5 Wohnhäuser.'],['expeditions','Abenteurer','Schließe eine Expedition ab.'],['upgrader','Optimierer','Kaufe ein Produktivitäts-Upgrade.'],['marketman','Kaufmann','Verkaufe 100 Ressourcen.'],['playtime','Zeitreisender','Spiele insgesamt 60 Minuten aktiv.']].concat(progressionAchievements.map(([id,name,desc])=>[id,name,desc]));
+const additionalResourceAchievements=['dirt','sand','gravel','cleanstone','glass','amethyst','gold','lapis','redstone','diamond'].filter(id=>R[id]&&ACTIVE_RESOURCES.has(id));
+for(const id of additionalResourceAchievements)for(const [amount,label] of [[1,'Entdecker'],[100,'Sammler'],[1000,'Meister']])achievements.push(['resource_'+id+'_'+amount,R[id][1]+'-'+label,'Erhalte insgesamt '+amount.toLocaleString('de-DE')+' '+R[id][1]+'.']);
+achievements.push(...[['prestige_bronze','Bronze Prestige','Erreiche das erste Achievement-Prestige.'],['prestige_silver','Silber Prestige','Erreiche das zweite Achievement-Prestige.'],['prestige_gold','Gold Prestige','Erreiche das dritte Achievement-Prestige.'],['prestige_platinum','Platin Prestige','Erreiche das vierte Achievement-Prestige.']]);
+const regions=[
+{id:'oak',name:'Eichenwald',icon:'🌳',desc:'Heimat der Eichen. Startgebiet.',wood:'oak'},
+{id:'birch',name:'Birkenwald',icon:'🌿',desc:'Hier wachsen Birken.',wood:'birch'},
+{id:'spruce',name:'Fichtenwald',icon:'🌲',desc:'Dichte Wälder voller Fichten.',wood:'spruce'},
+{id:'darkoak',name:'Schwarzeichenwald',icon:'🌳',desc:'Dunkle Wälder mit mächtigen Schwarzeichen.',wood:'darkoak'},
+{id:'acacia',name:'Akazienwald',icon:'🌴',desc:'Warme Landschaften mit Akazien.',wood:'acacia'},
+{id:'jungle',name:'Tropenwald',icon:'🌴',desc:'Üppiger Wald mit Tropenbäumen.',wood:'jungle'},
+{id:'mangrove',name:'Mangrovenwald',icon:'🌱',desc:'Feuchte Mangrovenwälder.',wood:'mangrove'},
+{id:'cherry',name:'Kirschhain',icon:'🌸',desc:'Blühende Kirschbäume.',wood:'cherry'},
+{id:'mountains',name:'Gebirge',icon:'🏔️',desc:'Stein, Kies, Kohle und Eisenerz.',resources:['stone','gravel','coal','iron']},
+{id:'dripstone',name:'Tropfsteinhöhle',icon:'🪨',desc:'Kupfererz in Tropfsteinhöhlen.',resources:['copper']},
+{id:'desert',name:'Wüste',icon:'🏜️',desc:'Sandvorkommen.',resources:['sand']},
+{id:'badlands',name:'Badlands',icon:'🏜️',desc:'Golderz in trockenen Schluchten.',resources:['gold']},
+{id:'deep',name:'Tiefer Untergrund',icon:'🌑',desc:'Lapis Lazuli, Redstone und Diamanten.',resources:['lapis','redstone','diamond']}
+];
+const regionResourceOrder=['dirt','sand','gravel','glass','stone','dirt','sand','gravel','glass','cleanstone','coal','copper','iron','gold','lapis','redstone','diamond'];
+function resourceRegion(id){return regions.find(r=>r.resources?.includes(id))}
+function regionUnlockResource(r){if(r.wood)return r.wood;if(r.id==='mountains')return 'stone';return r.resources?.[0]}
+function discoveredResource(id){return id==='oak'||id==='stone'||id==='dirt'||id==='glass'||regions.some(r=>s.regions.includes(r.id)&&(r.wood===id||r.resources?.includes(id)))}
+function regionUnlocked(r){return r.id==='oak'||s.regions.includes(r.id)}
+function regionVisible(r){if(regionUnlocked(r))return true;const chain=r.wood?['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry']:['mountains','desert','dripstone','badlands','deep'];const idx=chain.indexOf(r.id);return idx>=0&&(idx===0||regionUnlocked(regions.find(x=>x.id===chain[idx-1])))}
+// Erkundungslevel regeln den Zugang zum Dungeon, Ressourcenlevel die darin auffindbare Beute.
+const REGION_EXPLORATION_LEVELS={oak:1,mountains:1,birch:5,desert:10,spruce:20,dripstone:30,darkoak:40,acacia:60,badlands:75,jungle:85,mangrove:110,deep:120,cherry:150};
+function regionExplorationLevel(r){return REGION_EXPLORATION_LEVELS[r.id]||1}
+function expeditionMissing(r){if(!r)return ['Unbekanntes Gebiet'];const required=regionExplorationLevel(r),actual=skillLevel('exploration');return actual<required?['Erkundungslevel '+required+' benötigt (aktuell '+actual+')']:[]}
+
+function travelToRegion(id){const r=regions.find(x=>x.id===id);if(!r||!regionUnlocked(r))return;s.currentRegion=id;log('🧭 Nach '+r.name+' gereist.');save();render()}
+function dungeonResourceText(r){return (r.wood?[r.wood]:(r.resources||[])).map(id=>{const missing=gateMissing({id}),unlocked=missing.length===0;return `<div class="small" style="${unlocked?'':'text-decoration:line-through;opacity:.6'}">${escapeHtml(R[id]?.[1]||id)}${!unlocked?' 🔒 ('+escapeHtml(missing.join(' · '))+')':''}</div>`}).join('')}
+function expeditionChance(r){const base=r.chance??100;const bonus=Math.min(15,Math.floor((skillLevel('exploration')-1)/3)*2);const streak=(s.expeditionFails?.[r.id]||0);return Math.min(98,base+bonus+Math.min(35,streak*10))}
+function expeditionBlueprint(r){const b=blueprintDefs.find(x=>x.region===r.id);if(!b)return null;s.blueprints??=[];if(!s.blueprints.includes(b.id)){s.blueprints.push(b.id);record('blueprints',1);return b.name}return null}
+
+function initial(){return {version:1,res:Object.fromEntries(Object.keys(R).map(k=>[k,0])),xp:0,coins:0,tradeCoins:250,houses:1,houseUpgrades:[],realmLevel:0,realmName:"Looteria",buildingUpgrades:{},buildingTiers:{},buildingStaff:{},tradeStats:{bought:0,sold:0,earned:0,spent:0},buildings:{},upgrades:[],regions:['oak'],currentRegion:'oak',blueprints:[],expedition:null,dungeons:[],constructions:[],smelting:[],animalCrafted:0,taskClaims:{},taskProgress:{},merchantLastSlot:-1,merchantDeals:0,expeditionHistory:[],expeditionFails:{},achievements:[],crafted:0,gathered:0,research:null,researches:[],queue:[],skillXp:{},stats:{},milestones:{},achievementXpPaid:{normal:{},milestones:{},realm:0},prestigeStage:0,prestigeStatBaseline:{},prestigeAchievementBaseline:{},pinnedMaterials:[],pinnedTargets:[],logs:['Willkommen in Story of Looteria! Fälle verschiedene Baumarten und baue dein Reich auf.'],last:Date.now(),activeSeconds:0,dailyDrops:{date:"",seconds:0,claimed:0,history:[]}}}
+let s=initial(),tab='Sammeln',toastTimer;
+let hideEarnedAchievements=false;
+function toggleEarnedAchievements(){hideEarnedAchievements=!hideEarnedAchievements;render()}
+function level(){return Math.floor(Math.sqrt(Math.max(0,s.xp)/30))+1}function fmt(n){return new Intl.NumberFormat('de-DE',{maximumFractionDigits:n<10?2:1}).format(n)}
+function costText(cost,source='Materialbedarf'){return Object.entries(cost).map(([k,v])=>{const have=s.res[k]||0;const enough=have+1e-8>=v;return `<span class="cost-resource ${enough?'cost-available':'cost-missing-static'}" title="Vorhanden: ${fmt(have)} / Benötigt: ${fmt(v)}">${R[k][0]} ${fmt(v)} ${R[k][1]}</span>`}).join(' ')}
+function targetDef(type,id){return type==='building'?buildings.find(x=>x.id===id):type==='recipe'?recipes.find(x=>x.id===id):type==='research'?allTechs.find(x=>x.id===id):type==='expedition'?regions.find(x=>x.id===id):null}
+function targetCost(type,id,count){const d=targetDef(type,id);if(!d)return {};if(type==='building'){const out={};const owned=(s.buildings[id]||0)+(s.constructions||[]).filter(x=>x.id===id).length;for(let i=0;i<count;i++)for(const [k,v] of Object.entries(d.cost||{}))out[k]=(out[k]||0)+Math.ceil(v*Math.pow(1.65,owned+i));return out}const out={};for(const [k,v] of Object.entries(d.cost||{}))out[k]=v*(type==='recipe'?count:1);return out}
+function pinTarget(type,id){if(!targetDef(type,id)||(type==='research'&&s.upgrades.includes(id)))return;s.pinnedTargets??=[];if(s.pinnedTargets.some(x=>x.type===type&&x.id===id))return;s.pinnedTargets.push({type,id,count:1});save();render()}
+function completePinnedTarget(type,id,amount=1){if(type==='research'){s.pinnedTargets=(s.pinnedTargets||[]).filter(x=>!(x.type==='research'&&x.id===id));return}const x=(s.pinnedTargets||[]).find(x=>x.type===type&&x.id===id);if(!x)return;x.count-=amount;if(x.count<=0)s.pinnedTargets=s.pinnedTargets.filter(t=>t!==x)}
+function changeTarget(index,delta){const x=s.pinnedTargets?.[index];if(!x)return;x.count=Math.max(1,Math.min(9999,x.count+delta));save();render()}
+function unpinTarget(index){s.pinnedTargets.splice(index,1);save();render()}
+function targetPinButton(type,id){const pinned=(s.pinnedTargets||[]).some(x=>x.type===type&&x.id===id);return `<button type="button" class="target-pin-btn" onclick="pinTarget('${type}','${id}')" ${pinned?'disabled':''}>${pinned?'📌 Angepinnt':'📌 Als Ziel anpinnen'}</button>`}
+function jumpTarget(type,id){tab=({building:'Gebäude',recipe:'Crafting',research:'Forschung',expedition:'Weltkarte'})[type]||'Sammeln';render();const el=document.getElementById(({building:'building-',recipe:'recipe-',research:'research-',expedition:'region-'})[type]+id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('material-focus');setTimeout(()=>el.classList.remove('material-focus'),2500)}}
+function unpinMaterial(index){s.pinnedMaterials.splice(index,1);save();render()}
+function goToMaterial(id){
+ const recipe=recipes.find(r=>r.id===id);
+ const gatherer=gathers.find(g=>g.id===id&&gateMissing(g).length===0);
+ const building=buildings.find(b=>Object.hasOwn(b.prod,id));
+ const lockedRecipe=recipes.find(r=>r.id===id);
+ const lockedGather=gathers.find(g=>g.id===id);
+ let targetId, destination;
+ if(recipe){destination='Crafting';targetId='recipe-'+recipe.id}
+ else if(gatherer){destination='Sammeln';targetId='gather-'+gatherer.id}
+ else if(building){destination='Gebäude';targetId='building-'+building.id}
+ else if(lockedRecipe){destination='Crafting';targetId='recipe-'+lockedRecipe.id}
+ else if(lockedGather){destination='Sammeln';targetId='gather-'+lockedGather.id}
+ else {notify('Für '+R[id][1]+' gibt es noch keine direkte Herstellungsstelle.');return}
+ tab=destination;render();
+ requestAnimationFrame(()=>{let el=document.getElementById(targetId);if(!el){notify('Die Herstellung ist noch gesperrt. Prüfe die Voraussetzungen.');return}el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('material-focus');setTimeout(()=>el.classList.remove('material-focus'),2400)});
+}
+function materialUnlockInfo(id){
+ const sources=[];
+ for(const g of gathers.filter(x=>x.id===id)){
+  const missing=[];
+  missing.push(...gateMissing(g));
+  sources.push({name:'⛏️ Sammeln',missing});
+ }
+ for(const r of recipes.filter(x=>x.id===id)){
+  const missing=[];
+  
+  if(r.tech&&!s.upgrades.includes(r.tech))missing.push('Forschung: '+(allTechs.find(u=>u.id===r.tech)?.name||r.tech));
+  sources.push({name:'🔨 Crafting',missing});
+ }
+ for(const b of buildings.filter(x=>Object.hasOwn(x.prod,id))){
+  const missing=[];
+  if(Object.hasOwn(b.prod,id))missing.push(...resourceJobMissing(id));
+  if(b.tech&&!s.upgrades.includes(b.tech))missing.push('Forschung: '+(allTechs.find(u=>u.id===b.tech)?.name||b.tech));
+  sources.push({name:'🏗️ '+b.name,missing});
+ }
+ if(!sources.length)return '<div class="pin-unlock">ℹ️ Noch keine direkte Herstellungs- oder Sammelmöglichkeit verfügbar.</div>';
+ if(sources.some(x=>!x.missing.length))return '';
+ const best=sources.sort((a,b)=>a.missing.length-b.missing.length)[0];
+ return '<div class="pin-unlock">🔒 '+escapeHtml(best.name)+' – Fehlt: '+best.missing.map(escapeHtml).join(' · ')+'</div>';
+}
+function renderMaterialPins(){s.pinnedTargets??=[];s.pinnedTargets=s.pinnedTargets.filter(x=>!(x.type==='research'&&(s.upgrades.includes(x.id)||s.researches.some(r=>r.id===x.id))));const box=document.getElementById('material-pins');if(!box)return;if(!s.pinnedTargets.length){box.innerHTML='';box.style.display='none';return}box.style.display='block';box.innerHTML='<h3>📌 Angepinnte Ziele</h3><p class="small">Gebäude, Rezepte und Forschungen verfolgen. Mengen mit + / − ändern.</p>'+s.pinnedTargets.map((x,i)=>{const d=targetDef(x.type,x.id);if(!d)return '';const qty=x.type==='building'||x.type==='recipe'?x.count:1;const cost=targetCost(x.type,x.id,qty);const missing=Object.entries(cost).filter(([k,v])=>(s.res[k]||0)<v);const typeName={building:'🏗️ Gebäude',recipe:'🔨 Crafting',research:'🧪 Forschung',expedition:'🧭 Expedition'}[x.type]||'';const completed=x.type==='research'&&s.upgrades.includes(x.id);const requirements=x.type==='research'?researchMissing(d):x.type==='building'?buildingMissing(d):x.type==='recipe'?[]:x.type==='expedition'?expeditionMissing(d):[];return `<div class="pin-entry"><div class="pin-head"><button class="material-jump" type="button" onclick="jumpTarget('${x.type}','${x.id}')">${escapeHtml(typeName)} · ${escapeHtml(d.name)} ↗</button><button type="button" onclick="unpinTarget(${i})" aria-label="Ziel entfernen">×</button></div>${x.type==='building'||x.type==='recipe'?`<div class="target-quantity"><span>Menge: <b>${qty}</b></span><button type="button" onclick="changeTarget(${i},-1)" ${qty<=1?'disabled':''}>−</button><button type="button" onclick="changeTarget(${i},1)">+</button></div>`:''}<div class="small">${completed?'✅ Bereits erforscht':missing.length?'🔴 Noch '+missing.length+' Materialarten fehlen':'🟢 Alle Materialien vorhanden'}</div>${Object.entries(cost).map(([k,v])=>{const have=s.res[k]||0,short=Math.max(0,v-have),pct=v?Math.min(100,100*have/v):100,rate=production()[k]||0;return `<div class="target-resource"><button type="button" class="material-jump" onclick="goToMaterial('${k}')">${R[k][0]} ${R[k][1]} ↗</button><span class="${short?'target-short':'target-ready'}">${fmt(have)} / ${fmt(v)}${short?' · Fehlen '+fmt(short)+(rate>0?' · +'+fmt(rate)+'/Sek.':' · +0/Sek.'):' ✓'}</span><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${short?materialUnlockInfo(k):''}</div>`}).join('')}${requirements.length?`<div class="pin-unlock">🔒 ${requirements.map(escapeHtml).join(' · ')}</div>`:''}</div>`}).join('')}
+
+function canPay(cost){return Object.entries(cost).every(([k,v])=>(s.res[k]||0)+1e-8>=v)}
+function pay(cost){if(!canPay(cost))return false;for(const [k,v] of Object.entries(cost))s.res[k]-=v;return true}
+function gain(k,n){if(!ACTIVE_RESOURCES.has(k))return;s.res[k]=(s.res[k]||0)+n;if(n>0){s.stats??={};s.stats['earned_resource_'+k]=(s.stats['earned_resource_'+k]||0)+n}}
+function renderRealmSidebar(){
+ const box=document.getElementById('realm-sidebar-content');if(!box)return;
+ const occupied=usedPlots(),max=plotLimit();
+ box.innerHTML=`<div class="realm-stat"><span>👥 Einwohner</span><b>${fmt(residents())}</b></div><div class="realm-stat"><span>👷 Einwohner belegt</span><b>${fmt(occupiedResidents())}</b></div><div class="realm-stat"><span>🟢 Einwohner frei</span><b>${fmt(freeResidents())}</b></div><div class="realm-stat"><span>🧪 Forschung</span><b>${researchWorkers()}</b></div><div class="realm-stat"><span>🧭 Expedition</span><b>${expeditionWorkers()}</b></div><div class="realm-stat"><span>🏠 Wohnhäuser</span><b>${fmt(s.houses||1)}</b></div><div class="realm-stat"><span>🗺️ Bauplätze</span><b>${fmt(occupied)} / ${fmt(max)}</b></div><div class="progress"><div class="bar" style="width:${Math.min(100,100*occupied/Math.max(1,max))}%"></div></div><p class="small">${fmt(Math.max(0,max-occupied))} freie Bauplätze · Nächste Erweiterung: ${costText(expansionPrice())}</p><p class="small">🏠 Nächstes Wohnhaus: ${costText(housePrice())}</p>`;
+}
+function log(t){
+ // Direkt aufeinanderfolgende Verkäufe derselben Ressource zusammenfassen.
+ const sale=/^🏪 Verkauft: ([\d.,]+) × (.+) \(\+?([\d.,]+) Looterianische Taler\)$/.exec(t);
+ if(sale&&s.logs.length){
+  const previous=/^🏪 Verkauft: ([\d.,]+) × (.+) \(\+?([\d.,]+) Looterianische Taler\)$/.exec(s.logs[0]);
+  if(previous&&previous[2]===sale[2]){
+   const num=x=>Number(x.replace(/\./g,'').replace(',','.'));
+   const totalQty=num(previous[1])+num(sale[1]);
+   const totalCoins=num(previous[3])+num(sale[3]);
+   s.logs[0]='🏪 Verkauft: '+fmt(totalQty)+' × '+sale[2]+' ('+fmt(totalCoins)+' Looterianische Taler)';
+   return;
+  }
+ }
+ // Gleichartige, direkt aufeinanderfolgende Gebäudebauten als ein Ereignis zählen.
+ const match=/^🏗️ (.+) errichtet$/.exec(t);
+ if(match&&s.logs.length){
+  const previous=/^🏗️ (.+) errichtet(?: × (\d+))?$/.exec(s.logs[0]);
+  if(previous&&previous[1]===match[1]){
+   s.logs[0]='🏗️ '+match[1]+' errichtet × '+(Number(previous[2]||1)+1);
+   return;
+  }
+ }
+ s.logs.unshift(t);s.logs=s.logs.slice(0,14)
+}
+function positionAchievementPopups(){const box=document.getElementById('toast-area'),near=document.getElementById('near-achievements');if(!box||!near)return;const r=near.getBoundingClientRect();if(r.width>0&&window.innerWidth>1050){const room=window.innerWidth-r.right-10;box.style.left=Math.min(window.innerWidth-220,r.right+10)+'px';box.style.top=Math.max(12,r.top)+'px';box.style.width=Math.max(190,Math.min(310,room-10))+'px'}else{box.style.left='auto';box.style.right='12px';box.style.top='90px';box.style.width='min(340px,90vw)'}}
+window.addEventListener('resize',positionAchievementPopups);
+function notify(t){positionAchievementPopups();const area=document.getElementById('toast-area');if(!area)return;const e=document.createElement('div');e.className='toast'+(t.startsWith('🏆')?' achievement-toast':'');e.textContent=t;area.appendChild(e);while(area.children.length>3)area.firstElementChild.remove();setTimeout(()=>e.remove(),4200)}
+// V9.1: Achievement-XP werden einmalig und auch rückwirkend gutgeschrieben.
+const achievementXpByRarity={common:25,uncommon:75,rare:200,epic:500,legendary:1250,mythic:3000};
+function xpForAchievement(id){if(prestigeIds.includes(id))return 500;return achievementXpByRarity[achievementRarities[id]||'common']||25}
+function xpForMilestone(stage){return achievementXpByRarity[milestoneRarity(stage)]||25}
+function xpForRealm(stage){return Math.min(3000,25+stage*25)}
+function syncAchievementXp(announce=false){
+ s.achievementXpPaid??={normal:{},milestones:{},realm:0};
+ const paid=s.achievementXpPaid;paid.normal??={};paid.milestones??={};paid.realm=Math.max(0,Number(paid.realm)||0);
+ let gained=0;
+ for(const id of s.achievements||[]){if(!paid.normal[id]){gained+=xpForAchievement(id);paid.normal[id]=true}}
+ for(const [key,value] of Object.entries(s.milestones||{})){
+  const count=Math.max(0,Math.min(1000,Math.floor(Number(value)||0)));
+  let previous=Math.max(0,Math.floor(Number(paid.milestones[key])||0));
+  for(let stage=previous+1;stage<=count;stage++)gained+=xpForMilestone(stage);
+  paid.milestones[key]=Math.max(previous,count);
+ }
+ const realm=Math.max(0,Math.floor(Number(s.realmLevel)||0));
+ for(let stage=paid.realm+1;stage<=realm;stage++)gained+=xpForRealm(stage);
+ paid.realm=Math.max(paid.realm,realm);
+ if(gained){s.xp+=gained;log('✨ Achievement-Erfahrung: +'+fmt(gained)+' XP'+(announce?' (inklusive rückwirkender Belohnungen)':''));if(announce)notify('🏆 Achievement-XP gutgeschrieben: +'+fmt(gained)+' XP')}
+ return gained;
+}
+function earnedAchievementXp(){const paid=s.achievementXpPaid||{};let total=0;for(const id of Object.keys(paid.normal||{}))if(paid.normal[id])total+=xpForAchievement(id);for(const count of Object.values(paid.milestones||{}))for(let i=1;i<=Math.min(1000,Math.floor(Number(count)||0));i++)total+=xpForMilestone(i);for(let i=1;i<=Math.max(0,Math.floor(Number(paid.realm)||0));i++)total+=xpForRealm(i);return total}
+function migrateAchievementLevel(){// Existing saves: remove legacy activity XP without losing credited achievement XP.
+ if(s.achievementLevelMigrated)return;
+ s.xp=earnedAchievementXp();s.achievementLevelMigrated=true;
+}
+const prestigeNames=['Bronze Prestige','Silber Prestige','Gold Prestige','Platin Prestige'];
+const prestigeIds=['prestige_bronze','prestige_silver','prestige_gold','prestige_platinum'];
+const prestigeRequiredLevel=100;
+const prestigeKeepStats=new Set(['clicks','active_time','daily_drops']);
+function prestigeMultiplier(){return 1+0.25*prestigeStage()}
+function prestigeStage(){return Math.max(0,Math.min(4,Number(s.prestigeStage)||0))}
+function prestigePanel(){const stage=prestigeStage(),xp=s.xp||0,lv=level(),start=30*(lv-1)**2,end=30*lv**2;return `<section class="card"><h2>✨ Achievement-Level ${lv}</h2><div class="row"><span>Fortschritt bis Achievement-Level ${lv+1}</span><span class="small">${fmt(xp)} / ${fmt(end)} XP</span></div><div class="progress"><div class="bar" style="width:${Math.max(0,Math.min(100,100*(xp-start)/(end-start)))}%"></div></div><p class="small">🎁 Aktiver Prestige-Bonus: +${25*stage}% Job-XP und +${25*stage}% Grundressourcen (manuell, automatisch und Dungeon-Beute).</p><h3 style="margin-top:20px">🏅 Achievement-Prestige · ${stage}/4</h3><p><b>Prestige ist ein vollständiger Neustart:</b> Alle Ressourcen, Währungen, Gebäude, Reichserweiterungen, Forschungen, Gebietsfreischaltungen, Dungeons, Joblevel und normalen Achievements werden zurückgesetzt. Erhalten bleiben die Prestige-Stufen (+25 % Job-XP und +25 % Grundressourcengewinnung je Prestige) sowie Gesamtspielzeit, Sammelklicks und erhaltene Drops.</p>${stage===4?'<p class="badge earned">🏆 Platin Prestige erreicht!</p>':`<p><b>Nächste Stufe:</b> ${prestigeNames[stage]} · Voraussetzung: Achievement-Level ${prestigeRequiredLevel}</p>${button('🏅 '+prestigeNames[stage]+' starten', 'performPrestige()',lv<prestigeRequiredLevel,'action')}`}<p class="small">Prestige-Level: ${stage} · Bereits erhalten: ${prestigeNames.slice(0,stage).join(', ')||'Keine'}</p></section>`}
+function performPrestige(){
+ const stage=prestigeStage();
+ if(stage>=4||level()<prestigeRequiredLevel)return;
+ if(!confirm(`${prestigeNames[stage]} starten? ACHTUNG: Das setzt das gesamte Reich auf den Anfang zurück: Ressourcen und Währungen auf 0, alle Gebäude und Forschungen weg, Reich und Berufe auf Start. Nur Prestige-Erfolge, Gesamtspielzeit, Sammelklicks und erhaltene Drops bleiben. Dies kann nicht rückgängig gemacht werden.`))return;
+ if(!confirm('Letzte Bestätigung: Wirklich den gesamten Spielfortschritt für '+prestigeNames[stage]+' zurücksetzen?'))return;
+ const previous=s;
+ const next=initial();
+ next.prestigeStage=stage+1;
+ next.achievements=prestigeIds.slice(0,next.prestigeStage);
+ next.activeSeconds=Math.max(0,Number(previous.activeSeconds)||0);
+ // Nur die drei lebenslangen Statistiken bleiben erhalten.
+ next.stats={};
+ for(const key of prestigeKeepStats)next.stats[key]=Math.max(0,Number(previous.stats?.[key])||0);
+ // Der Zähler erhaltener Drops bleibt bestehen, nicht die vorherigen Drop-Belohnungen.
+ next.dailyDrops={...next.dailyDrops,claimed:Math.max(0,Number(previous.dailyDrops?.claimed)||0)};
+ // Die Meilensteine der beibehaltenen Zähler dürfen nicht doppelt ausgezahlt werden.
+ next.milestones=Object.fromEntries(Object.entries(previous.milestones||{}).filter(([key])=>prestigeKeepStats.has(key)));
+ next.achievementXpPaid={normal:{},milestones:{},realm:0};
+ next.prestigeStatBaseline={};next.prestigeAchievementBaseline={};
+ next.achievementLevelMigrated=true;
+ s=next;
+ syncAchievementXp();
+ log('🏅 '+prestigeNames[stage]+' erreicht! Dein Reich beginnt von vorn.');
+ save();render();notify('🏅 '+prestigeNames[stage]+' erreicht!');
+}
+function checkAchievements(){const tests={first:s.gathered>0,builder:Object.values(s.buildings).reduce((a,b)=>a+b,0)>=1,crafter:s.crafted>0,hundred:Object.entries(s.res).filter(([id])=>ACTIVE_RESOURCES.has(id)).reduce((a,[,b])=>a+b,0)>=100,factory:Object.values(s.buildings).reduce((a,b)=>a+b,0)>=10,explorer:s.regions.length>=3,scholar:s.upgrades.filter(id=>allTechs.some(t=>t.id===id)).length>=2,livestock:['cowpasture','pigpen','chickencoop','sheepfold'].some(k=>(s.buildings[k]||0)>0),merchant:(s.merchantDeals||0)>=1,taskmaster:(s.tasksDone||0)>=5,farmer:Object.keys(s.buildings).some(k=>k.endsWith('farm')&&(s.buildings[k]||0)>0),homeowner:(s.houses||1)>=5,expeditions:(s.expeditionHistory||[]).length>=1,blueprinter:(s.blueprints||[]).length>=1,upgrader:Object.values(s.buildingUpgrades||{}).some(n=>n>0),marketman:(s.tradeStats?.sold||0)>=100,playtime:(s.activeSeconds||0)>=3600};for(const id of additionalResourceAchievements)for(const amount of [1,100,1000])tests['resource_'+id+'_'+amount]=(s.stats?.['earned_resource_'+id]||0)>=amount;for(const [id,,,target] of progressionAchievements)tests[id]=progressUnlocked(target);for(const [id,name] of achievements){if(s.prestigeStage>0&&id==='first'&&s.gathered<=(s.prestigeAchievementBaseline?.gathered||0))tests[id]=false;if(s.prestigeStage>0&&id==='builder'&&Object.values(s.buildings||{}).reduce((a,b)=>a+b,0)<=(s.prestigeAchievementBaseline?.buildings||0))tests[id]=false;if(tests[id]&&!s.achievements.includes(id)){s.achievements.push(id);s.coins+=25;log('🏆 Achievement: '+name+' (+25 Ruhmpunkte)');notify('🏆 Achievement freigeschaltet: '+name)}}syncAchievementXp()}
+function gatherXp(id){const g=gathers.find(x=>x.id===id);const rarityBonus={common:0,uncommon:1,rare:2,epic:3,legendary:5,mythic:7}[woodRarities[id]]||0;return Math.min(14,3+rarityBonus+Math.floor(Math.max(0,(g?.lv||1)-1)/5))}
+const manualClickTimes=[];const lastManualByResource={};let blockedClickNoticeAt=0;
+function allowManualGather(id){const now=performance.now();while(manualClickTimes.length&&now-manualClickTimes[0]>1000)manualClickTimes.shift();if(now-(lastManualByResource[id]??-Infinity)<90||manualClickTimes.length>=14){if(now-blockedClickNoticeAt>4500){blockedClickNoticeAt=now;notify('🛡️ Klickschutz: Zu viele Sammelaktionen in kurzer Zeit.')}return false}lastManualByResource[id]=now;manualClickTimes.push(now);return true}
+// XP per manual click increases gradually with each resource tier within its profession.
+const jobResourceOrder={forestry:['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry'],mining:['stone','coal','copper','iron','gold','lapis','redstone','diamond'],digging:['dirt','sand','gravel']};
+function resourceJob(id){return Object.entries(jobResourceOrder).find(([,ids])=>ids.includes(id))?.[0]||'mining'}
+function resourceClickXp(id){const ids=jobResourceOrder[resourceJob(id)]||[];return Math.max(1,ids.indexOf(id)+1)}
+function gather(id){let g=gathers.find(x=>x.id===id);if(!g||gateMissing(g).length||!allowManualGather(id))return;const amount=1+(s.upgrades.includes('axe')?1:0)+(s.upgrades.includes('tools2')?2:0)+(s.upgrades.includes('yield_'+id)?1:0);const yieldExtra=Math.random()<achievementBonus('yield')?1:0;const gathered=(amount+yieldExtra)*prestigeMultiplier();gain(id,gathered);s.gathered+=gathered;record('clicks',1);record('manual_'+id,gathered);if(['oak','birch','spruce','darkoak','acacia','jungle','mangrove','cherry'].includes(id))record('manual_wood',gathered);addSkill(resourceJob(id),resourceClickXp(id)*gathered);checkAchievements();render()}
+function scaledCraftCost(cost,amount){return Object.fromEntries(Object.entries(cost).map(([k,v])=>[k,v*amount]))}
+function furnaceSlots(){return Math.max(0,Number(s.buildings?.furnace)||0)}
+function smeltDuration(id,amount){return (id==='glass'?25:20)*amount}
+function craft(id,amount=1){const r=recipes.find(x=>x.id===id);amount=Number(amount);if(!Number.isSafeInteger(amount)||amount<1||amount>10000||!r||!recipeUnlocked(id)||!canPay(scaledCraftCost(r.cost,amount)))return;
+ s.smelting??=[];if(s.smelting.length>=furnaceSlots()){notify('🔥 Kein freier Ofen. Baue weitere Öfen oder warte.');return}
+ if(!pay(scaledCraftCost(r.cost,amount)))return;
+ const now=Date.now();s.smelting.push({id,amount,completed:0,started:now,ends:now+smeltDuration(id,amount)*1000});log('🔥 Brennvorgang gestartet: '+amount+'× '+R[id][1]);save();render();
+}
+function updateCraftAmount(id){
+ const r=recipes.find(x=>x.id===id),input=document.getElementById('craft-qty-'+id),btn=document.getElementById('craft-start-'+id),label=document.getElementById('craft-total-'+id);
+ if(!r||!input||!btn)return;
+ const qty=Number(input.value),valid=Number.isSafeInteger(qty)&&qty>=1&&qty<=10000;
+ btn.disabled=!valid||!recipeUnlocked(id)||!canPay(scaledCraftCost(r.cost,valid?qty:1))||(s.smelting||[]).length>=furnaceSlots();
+ if(label)label.textContent=valid?'Gesamtzeit: '+timeLeft(smeltDuration(id,qty))+' · '+qty+' Stück':'Bitte 1–10.000 Stück eingeben';
+}
+function finishSmelting(){
+ s.smelting??=[];let changed=false;const now=Date.now();
+ for(const job of [...s.smelting]){
+  const r=recipes.find(x=>x.id===job.id);if(!r)continue;
+  const perItem=smeltDuration(job.id,1)*1000;
+  const total=Math.max(1,Math.floor(Number(job.amount)||1));
+  // Backward compatibility with smelting jobs saved before individual payouts.
+  const elapsed=Math.max(0,now-Number(job.started||now));
+  const earned=Math.min(total,Math.floor(elapsed/perItem));
+  const already=Math.max(0,Math.min(total,Number(job.completed)||0));
+  if(earned>already){const delta=earned-already;gain(job.id,r.out*delta);s.crafted+=delta;record('crafts',delta);record('crafted_'+job.id,r.out*delta);addSkill('crafting',5*delta);job.completed=earned;changed=true;}
+  if(earned>=total){s.smelting.splice(s.smelting.indexOf(job),1);log('🔥 Fertig gebrannt: '+total+'× '+R[job.id][1]);notify('🔥 '+R[job.id][1]+' fertig!');changed=true;}
+ }
+ if(changed){checkAchievements();save()}
+}
+function demolishHouse(i){i=Number(i);if(!Number.isInteger(i)||i<0||i>=(s.houses||1)||s.houses<=1)return;const capacity=2+2*houseTier(i);if(residents()-capacity<occupiedResidents()){notify('❌ Erst Einwohner von Arbeitsplätzen abziehen oder Gruppen zurückholen.');return}if(!confirm('Wohnhaus #'+(i+1)+' wirklich abreißen? Materialien werden nicht erstattet.'))return;s.houses--;s.houseUpgrades.splice(i,1);log('🏚️ Wohnhaus abgerissen');save();render()}
+function demolishBuilding(id,i){const b=buildings.find(x=>x.id===id);i=Number(i);if(!b||!Number.isInteger(i)||i<0||i>=(s.buildings[id]||0))return;if(b.id==='furnace'&&(s.smelting||[]).length>=furnaceSlots()){notify('🔥 Zuerst laufende Brennvorgänge abschließen.');return}if(!confirm(b.name+' #'+(i+1)+' wirklich abreißen? Materialien werden nicht erstattet.'))return;syncBuildingTiers();s.buildingTiers[id]?.splice(i,1);s.buildingStaff[id]?.splice(i,1);s.buildings[id]--;s.buildingUpgrades[id]=Math.max(0,...(s.buildingTiers[id]||[]));log('🏚️ '+b.name+' abgerissen');save();render()}
+function cancelConstruction(i){const c=s.constructions?.[i];if(!c||!confirm('Bauauftrag abbrechen? Verwendete Materialien werden nicht erstattet.'))return;s.constructions.splice(i,1);save();render()}
+function renderSmeltingSidebar(){const box=document.getElementById('smelting-sidebar-content');if(!box)return;const active=s.smelting||[];box.innerHTML='<p class="small">🔥 '+active.length+' / '+furnaceSlots()+' Öfen belegt</p>'+(active.length?active.map(job=>{const total=Math.max(1,job.ends-job.started),pct=Math.max(0,Math.min(100,100*(Date.now()-job.started)/total));const done=Number(job.completed)||0;return '<div class="research-entry"><div class="research-name">🔥 '+escapeHtml(R[job.id]?.[1]||job.id)+' · '+fmt(done)+' / '+fmt(job.amount)+' fertig</div><div class="research-time"><span>Nächstes Stück in</span><b>'+timeLeft(Math.max(0,(job.started+(done+1)*smeltDuration(job.id,1)*1000-Date.now())/1000))+'</b></div><div class="progress"><div class="bar" style="width:'+pct+'%"></div></div></div>'}).join(''):'<p class="small">Kein aktiver Brennvorgang.</p>')}
+
+function buildingCost(b){const owned=(s.buildings[b.id]||0)+(s.constructions||[]).filter(x=>x.id===b.id).length;return Object.fromEntries(Object.entries(b.cost).map(([k,v])=>[k,Math.ceil(v*Math.pow(1.65,owned))]))}
+const achievementRewardMap={production:['factory','upgrader','farmer','livestock'],yield:['first','hundred','explorer'],build:['builder','homeowner'],research:['scholar','blueprinter']};
+const achievementRewardLabels={production:'🏭 Automatische Produktion +2,5 %',yield:'⛏️ Chance auf Extra-Sammelertrag +2,5 %',build:'🏗️ Bauzeit −2,5 %',research:'🧪 Forschungszeit −2,5 %'};
+function achievementRewardText(id){const rewards=Object.entries(achievementRewardMap).filter(([,ids])=>ids.includes(id)).map(([type])=>achievementRewardLabels[type]);return rewards.length?rewards.join(' · '):'Kein direkter Produktionsbonus (25 Ruhmpunkte)'}
+// Each long-term achievement grants a small, visible, permanent bonus.
+const milestoneBonusTypes={production:['auto_wood','auto_stone','auto_coal','auto_copper','auto_iron','auto_crystal'],yield:['clicks','manual_wood','manual_stone','manual_coal','manual_copper','manual_iron','manual_crystal'],build:['buildings'],research:['researches'],};
+const milestoneBonusNames={production:'🏭 Automatische Produktion +0,2 %',yield:'⛏️ Extra-Sammelertrag +0,2 %',build:'🏗️ Bauzeit −0,2 %',research:'🧪 Forschungszeit −0,2 %',cooking:'🍳 Extra-Gericht-Chance +0,2 %'};
+function milestoneBonusType(key){return Object.keys(milestoneBonusTypes).find(type=>milestoneBonusTypes[type].includes(key))||'production'}
+function achievementBonus(type){
+ const count=(s.achievements||[]).filter(id=>(achievementRewardMap[type]||[]).includes(id)).length;
+ const milestones=Object.entries(s.milestones||{}).filter(([key])=>(milestoneBonusTypes[type]||[]).includes(key)).reduce((n,[,v])=>n+v,0);
+ return Math.min(type==='cooking'?.25:.20,count*.025+milestones*.002);
+}
+function buildingDuration(b){return Math.max(10,Math.round((45+Math.max(0,(b.lv||1)-1)*12+Object.values(b.cost).reduce((a,n)=>a+n,0)*0.6)*(1-achievementBonus('build'))))}
+function build(id){
+ const b=buildings.find(x=>x.id===id);
+ if(!b||usedPlots()>=plotLimit()||(s.constructions||[]).length>=constructionSlots()||freeResidents()<Math.max(1,workersNeededForBuild(b))||buildingMissing(b).length||!canPay(buildingCost(b)))return;
+ const cost=buildingCost(b);if(!pay(cost))return;
+ const now=Date.now();s.constructions??=[];s.constructions.push({id,started:now,ends:now+buildingDuration(b)*1000});
+ log('🏗️ Bau begonnen: '+b.name);save();render();
+}
+function finishConstructions(){
+ if(!Array.isArray(s.constructions))s.constructions=[];
+ let changed=false;
+ for(const c of [...s.constructions]){
+  if(Date.now()<c.ends)continue;
+  s.constructions.splice(s.constructions.indexOf(c),1);
+  const b=buildings.find(x=>x.id===c.id);if(!b)continue;
+  s.buildings[c.id]=(s.buildings[c.id]||0)+1;syncBuildingTiers();
+  completePinnedTarget('building',c.id);record('buildings',1);addSkill('building',18);
+  log('🏗️ '+b.name+' fertiggestellt');notify('🏗️ '+b.name+' fertiggestellt!');changed=true;
+ }
+ if(changed){checkAchievements();save();}
+}
+function upgrade(id){const u=allTechs.find(x=>x.id===id);if(!u||s.upgrades.includes(id)||s.researches.some(x=>x.id===id)||s.queue.includes(id)||s.researches.length>=slots()||freeResidents()<1||researchMissing(u).length||!canFinanceResearch(u)||!pay(u.cost))return;const now=Date.now();s.researches.push({id,started:now,ends:now+Math.max(10,Math.round(u.duration*(1-achievementBonus('research'))))*1000});completePinnedTarget('research',id);log('🧪 Forschung gestartet: '+u.name);save();render()}
+function finishResearch(){let changed=false;for(const r of [...s.researches]){if(Date.now()<r.ends)continue;s.researches=s.researches.filter(x=>x!==r);const u=allTechs.find(x=>x.id===r.id);if(u&&!s.upgrades.includes(u.id)){s.upgrades.push(u.id);addSkill('research',12);record('researches',1);s.pinnedTargets=(s.pinnedTargets||[]).filter(x=>!(x.type==='research'&&x.id===u.id));log('🧪 Forschung abgeschlossen: '+u.name);notify('🧪 '+u.name+' abgeschlossen!');changed=true}}if(changed){checkAchievements();save()}startQueued()}
+function timeLeft(seconds){seconds=Math.max(0,Math.ceil(seconds));return seconds>=3600?`${Math.floor(seconds/3600)} Std. ${Math.floor(seconds%3600/60)} Min.`:seconds>=60?`${Math.floor(seconds/60)} Min. ${seconds%60} Sek.`:`${seconds} Sek.`}
+function explore(id){
+ const r=regions.find(x=>x.id===id);
+ if(!r||r.id==='oak'||!regionVisible(r)||expeditionMissing(r).length||activeDungeons().length>=dungeonSlots()||freeResidents()<2)return;
+ const now=Date.now();s.dungeons??=[];s.dungeons.push({id,started:now,ends:now+60000});
+ log('⚔️ Dungeon '+r.name+' betreten (2 Einwohner, 60 Sekunden).');save();render();
+}
+function finishExpedition(){
+ if(!Array.isArray(s.dungeons))s.dungeons=[];
+ let changed=false;
+ for(const e of [...s.dungeons]){
+  if(Date.now()<e.ends)continue;
+  s.dungeons.splice(s.dungeons.indexOf(e),1);
+  const r=regions.find(x=>x.id===e.id);if(!r)continue;
+  if(!s.regions.includes(r.id)){s.regions.push(r.id);record('regions',1)}
+  record('expeditions',1);record('expedition_success',1);addSkill('exploration',24+Math.floor(regionExplorationLevel(r)/3));
+  s.coins+=100;
+  s.expeditionHistory??=[];const loot=[];
+  if(regionUnlocked(r)){
+   const pool=(r.wood?[r.wood]:(r.resources||[])).filter(id=>id!=='amethyst'&&ACTIVE_RESOURCES.has(id)&&resourceJobMissing(id).length===0);
+   for(const id of pool){
+    const explorationLevel=skillLevel('exploration');const amount=Math.max(1,Math.floor((4+Math.random()*5)*(1+Math.sqrt(Math.max(0,explorationLevel-1))/3)*prestigeMultiplier()));
+    gain(id,amount);record('manual_'+id,amount,false);loot.push({id,amount});
+   }
+  }
+  s.expeditionHistory.unshift({id:r.id,success:true,at:Date.now(),loot});s.expeditionHistory=s.expeditionHistory.slice(0,12);
+  log('🏆 Dungeon abgeschlossen: '+r.name+' · '+(loot.length?loot.map(x=>fmt(x.amount)+' × '+R[x.id][1]).join(', '):'Gebiet entdeckt')+' (+100 Ruhmpunkte)');notify('⚔️ Dungeon abgeschlossen: '+r.name+(loot.length?' · Beute erhalten!':''));changed=true;
+ }
+ if(changed){checkAchievements();save();render()}
+}
+const rareRecipePlans=[];
+// Ein Kochplatz bearbeitet eine Sorte in einer frei wählbaren Stückzahl.
+const taskDefs=[
+{id:'daily_gather',period:'daily',name:'Rohstoffsammler',desc:'Sammle 200 Ressourcen per Hand.',key:'gathered',goal:200,reward:175},
+{id:'daily_craft',period:'daily',name:'Fleißiger Handwerker',desc:'Stelle 25 Crafting-Produkte her.',key:'crafted',goal:25,reward:250},
+{id:'weekly_gather',period:'weekly',name:'Große Ernte',desc:'Sammle 2.000 Ressourcen per Hand.',key:'gathered',goal:2000,reward:1100},
+{id:'weekly_build',period:'weekly',name:'Reichsausbau',desc:'Errichte 8 Gebäude.',key:'buildings',goal:8,reward:1500},
+{id:'weekly_gather_plus',period:'weekly',name:'Sammelwoche',desc:'Sammle 5.000 Ressourcen.',key:'gathered',goal:5000,reward:1400}];
+function taskWindow(period){const d=new Date();if(period==='daily')return d.toISOString().slice(0,10);const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));const year=x.getUTCFullYear();const start=new Date(Date.UTC(year,0,1));return year+'-W'+String(Math.ceil((((x-start)/86400000)+1)/7)).padStart(2,'0')}
+function taskValue(k){return k==='gathered'?s.gathered||0:k==='crafted'?s.crafted||0:k==='buildings'?s.stats?.buildings||0:k==='sold'?s.tradeStats?.sold||0:0}
+function taskState(t){s.taskProgress??={};const key=t.period+':'+taskWindow(t.period)+':'+t.id+':'+t.goal;if(!(key in s.taskProgress))s.taskProgress[key]=taskValue(t.key);return {key,progress:Math.max(0,taskValue(t.key)-s.taskProgress[key])}}
+function claimTask(id){const t=taskDefs.find(x=>x.id===id);if(!t)return;const {key,progress}=taskState(t);if(progress<t.goal||s.taskClaims?.[key])return;s.taskClaims[key]=true;s.tradeCoins+=t.reward;s.tasksDone=(s.tasksDone||0)+1;log('📜 Aufgabe abgeschlossen: '+t.name+' · +'+t.reward+' Taler');checkAchievements();save();render()}
+function tasksPanel(){return `<section class="card"><h2>📜 Tägliche & wöchentliche Aufgaben</h2><p class="small">Tägliche Aufgaben wechseln um 00:00 UTC, wöchentliche am Montag. Belohnungen werden einmal pro Zeitraum ausgezahlt.</p>${taskDefs.map(t=>{const q=taskState(t),done=!!s.taskClaims?.[q.key];return `<div class="worker-row"><div><b>${t.period==='daily'?'☀️ Täglich':'🗓️ Wöchentlich'} · ${t.name}</b><p class="small">${t.desc} · 💰 ${fmt(t.reward)} Taler</p><div class="small">${fmt(Math.min(q.progress,t.goal))} / ${fmt(t.goal)}</div></div>${button(done?'✓ Abgeholt':'Belohnung abholen',`claimTask('${t.id}')`,done||q.progress<t.goal)}</div>`}).join('')}</section>`}
+function renderTasksSidebar(){
+ const el=document.getElementById('tasks-sidebar');if(!el)return;
+ const signature=taskDefs.map(t=>{const q=taskState(t);return q.key+':'+Math.min(q.progress,t.goal)+':'+(s.taskClaims?.[q.key]?1:0)}).join('|');
+ if(el.dataset.signature===signature)return;
+ el.dataset.signature=signature;
+ el.innerHTML=`<section class="card task-card"><h3>📜 Aufgaben</h3><p class="small">☀️ Täglich · 🗓️ Wöchentlich</p>${['daily','weekly'].map(period=>`<div class="task-group"><h4>${period==='daily'?'☀️ Daily':'🗓️ Weekly'}</h4>${taskDefs.filter(t=>t.period===period).map(t=>{const q=taskState(t),done=!!s.taskClaims?.[q.key],pct=Math.min(100,100*q.progress/t.goal);return `<div class="task-entry"><b>${escapeHtml(t.name)}</b><p class="small">${escapeHtml(t.desc)}</p><div class="task-progress"><span>${fmt(Math.min(q.progress,t.goal))} / ${fmt(t.goal)}</span><span>💰 ${fmt(t.reward)}</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><span class="task-action ${done?'task-claimed':q.progress<t.goal?'task-pending':'task-ready'}">${button(done?'✓ Abgeholt':q.progress>=t.goal?'💰 Abholbar':'Noch offen',`claimTask('${t.id}')`,done||q.progress<t.goal)}</span></div>`}).join('')}</div>`).join('')}<p class="small">Reset: Daily 00:00 UTC · Weekly Montag</p></section>`;
+}
+const merchantOffers=[{name:'Seltene Lederlieferung',give:{wheat:100},receive:{leather:25}},{name:'Federn gegen Stein',give:{stone:130},receive:{feather:35}},{name:'Wolle gegen Holz',give:{oak:160},receive:{wool:30}},{name:'Königlicher Talerhandel',give:{ironbar:12},taler:600},{name:'Viehzüchter-Paket',give:{wheat:75,carrot:50},receive:{beef:25,pork:25}}];
+function merchantSlot(){return Math.floor(Date.now()/10800000)}
+function merchantOffer(){return merchantOffers[merchantSlot()%merchantOffers.length]}
+function merchantTrade(){return;const slot=merchantSlot(),offer=merchantOffer();if(s.merchantLastSlot===slot||!canPay(offer.give))return;pay(offer.give);for(const [k,n] of Object.entries(offer.receive||{}))gain(k,n);s.tradeCoins+=(offer.taler||0);s.merchantLastSlot=slot;s.merchantDeals=(s.merchantDeals||0)+1;log('🧳 Wandernder Händler: '+offer.name);checkAchievements();save();render()}
+function merchantPanel(){const offer=merchantOffer(),used=s.merchantLastSlot===merchantSlot(),left=(merchantSlot()+1)*10800000-Date.now();const cost=Object.entries(offer.give).map(([k,n])=>R[k][0]+' '+fmt(n)+' '+R[k][1]).join(', '),reward=Object.entries(offer.receive||{}).map(([k,n])=>R[k][0]+' '+fmt(n)+' '+R[k][1]).join(', ')+(offer.taler?'💰 '+fmt(offer.taler)+' Taler':'');return `<section class="card"><h2>🧳 Wandernder Händler</h2><p>Alle 3 Stunden erscheint ein besonderes, einmaliges Angebot. Der Händler wechselt sein Angebot automatisch.</p><div class="item"><h3>${offer.name}</h3><p>Gib: ${cost}</p><p>Erhalte: <b>${reward}</b></p><p class="small">⏳ Neues Angebot in <span id="merchant-countdown">${timeLeft(left/1000)}</span></p>${button(used?'✓ Bereits gehandelt':'Sonderhandel abschließen','merchantTrade()',used||!canPay(offer.give))}</div></section>`}
+function animalsPanel(){const ids=['cowpasture','pigpen','chickencoop','sheepfold'];return `<section class="card"><h2>🐄 Tierzucht</h2><p>Baue Weiden und Ställe. Jedes Tiergebäude belegt einen Bauplatz und beherbergt 2 Tiere. Ein Einwohner versorgt bis zu 5 Tiere (tierartenübergreifend). Leder, Wolle und Federn sind Materialien für Crafting-Rezepte.</p></section><div class="grid">${buildings.filter(b=>ids.includes(b.id)).map(b=>{const missing=buildingMissing(b),cost=buildingCost(b);return `<div class="item"><h3>${b.icon} ${b.name} × ${s.buildings[b.id]||0}</h3><p>${b.desc}</p><p class="small">🐾 2 Tiere pro Gebäude · 👷 1 Einwohner während des Baus · ⏱️ ${timeLeft(buildingDuration(b))} · 🗺️ 1 Bauplatz</p><p class="small">${Object.entries(b.prod).map(([k,v])=>R[k][0]+' '+R[k][1]+' +'+fmt(v)+'/Sek.').join(' · ')}</p><p class="small">${costText(cost)}</p>${missing.length?'<p class="small">🔒 '+missing.map(escapeHtml).join(' · ')+'</p>':''}${button('Bau starten',`build('${b.id}')`,missing.length||usedPlots()>=plotLimit()||!canPay(cost))}</div>`}).join('')}</div>`}
+
+function farmingPanel(){const farms=buildings.filter(b=>b.id.endsWith('farm'));return `<section class="card"><h2>🌾 Landwirtschaft</h2><p>Baue Minecraft-Feldfrüchte automatisch an. Jedes Feld braucht genau einen Bauplatz und einen Einwohner. Neue Sorten werden über Forschungen freigeschaltet.</p></section><div class="grid">${farms.map(b=>{const missing=buildingMissing(b),cost=buildingCost(b),owned=s.buildings[b.id]||0;const blockers=[...missing,...(usedPlots()>=plotLimit()?['Keine freien Bauplätze im Reich']:[]),...(!canPay(cost)?['Materialien für den nächsten Bau fehlen (steigende Preise beachten)']:[])];return `<div class="item ${blockers.length?'preview-locked':''}"><h3>${b.icon} ${b.name} × ${owned}</h3><p>${b.desc} · +${fmt(Object.values(b.prod)[0])}/Sek. pro Feld</p><p class="small">🏗️ Bauzeit: ${timeLeft(buildingDuration(b))}</p><p class="small">${Object.entries(cost).map(([k,n])=>`${R[k][0]} ${R[k][1]} ${fmt(s.res[k]||0)}/${fmt(n)}`).join(' · ')}</p><p class="small">👥 Freie Einwohner: ${freeResidents()} · 🗺️ Freie Bauplätze: ${Math.max(0,plotLimit()-usedPlots())} · 🏗️ Freie Baustellen: ${Math.max(0,constructionSlots()-(s.constructions||[]).length)}</p>${blockers.length?`<p class="small" style="color:#ff9c9c">🔒 ${blockers.map(escapeHtml).join(' · ')}</p>`:''}${button('Feldbau starten',`build('${b.id}')`,blockers.length>0)}</div>`}).join('')}</div>`}
+function production(){const out={};const mult=(s.upgrades.includes('engines')?1.5:1)*(s.upgrades.includes('automation')?2:1)*(1+achievementBonus('production'))*prestigeMultiplier();syncBuildingTiers();for(const b of buildings)for(const [k,v] of Object.entries(b.prod).filter(([k])=>ACTIVE_RESOURCES.has(k)&&s.upgrades.includes('auto_research_'+k)&&discoveredResource(k)&&resourceJobMissing(k).length===0)){out[k]=(out[k]||0)+v*(s.buildingTiers[b.id]||[]).reduce((sum,tier,i)=>sum+0.25*(s.buildingStaff?.[b.id]?.[i]||0)*(1+0.1*tier),0)*mult}return out}
+// Aktive Spielzeit zählt nur bei geöffnetem Spiel; der tägliche Drop-Zähler beginnt jeden lokalen Kalendertag neu.
+function localDayKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function dailyDropState(){s.dailyDrops??={date:'',seconds:0,claimed:0};const today=localDayKey();if(s.dailyDrops.date!==today)s.dailyDrops={date:today,seconds:0,claimed:0,history:[]};s.dailyDrops.history??=[];return s.dailyDrops}
+// 1, 3, 6, 10, 15, 21 ... Minuten kumulierte Spielzeit pro Tag.
+function nextDropAt(claimed){return 60*(claimed+1)*(claimed+2)/2}
+function dailyDropPool(){const pool=gathers.filter(g=>!gateMissing(g).length).map(g=>g.id);for(const [id,building] of [['wheat','wheatfarm'],['carrot','carrotfarm'],['potato','potatofarm'],['beetroot','beetrootfarm'],['pumpkin','pumpkinfarm'],['melon','melonfarm'],['sugarcane','sugarcanefarm']])if((s.buildings[building]||0)>0)pool.push(id);return pool.length?pool:['oak','stone']}
+function awardDailyDrop(){const pool=dailyDropPool(),id=pool[Math.floor(Math.random()*pool.length)],g=gathers.find(x=>x.id===id);const tier=Math.max(1,g?.lv||1);const relevantJob=jobLevel(resourceJob(id));const cap=Math.min(40,3+Math.floor(relevantJob/5));const qty=Math.max(1,Math.floor((2+Math.random()*5)*(1+Math.min(relevantJob,100)/45)/(1+tier/45)));const amount=Math.min(cap,qty);gain(id,amount);dailyDropState().history.unshift({id,amount,at:Date.now()});dailyDropState().history=dailyDropState().history.slice(0,200);record('daily_drops',1,false);log('🎁 Tagesdrop: '+amount+' × '+(R[id]?.[1]||id));notify('🎁 Tagesdrop: '+amount+' × '+(R[id]?.[1]||id))}
+function advanceDailyDrops(dt){if(!Number.isFinite(dt)||dt<=0)return;const d=dailyDropState();d.seconds+=dt;s.activeSeconds=(s.activeSeconds||0)+dt;record('active_time',dt,false);let count=0;while(d.seconds>=nextDropAt(d.claimed)&&count++<12){awardDailyDrop();d.claimed++}}
+let dailyDropHistoryOpen=false;function toggleDailyDropHistory(){dailyDropHistoryOpen=!dailyDropHistoryOpen;renderDailyDropSidebar()}
+function renderDailyDropSidebar(){const box=document.getElementById('daily-drop-content');if(!box)return;const d=dailyDropState(),left=Math.max(0,nextDropAt(d.claimed)-d.seconds);box.innerHTML=`<p class="small">Nächster zufälliger Materialdrop in <b>${timeLeft(left)}</b></p><div class="progress"><div class="bar" style="width:${Math.min(100,100*(d.seconds-(d.claimed?nextDropAt(d.claimed-1):0))/(nextDropAt(d.claimed)-(d.claimed?nextDropAt(d.claimed-1):0)))}%"></div></div><p class="small">🎁 Heute erhalten: ${d.claimed} · ⏱️ Aktive Spielzeit: ${timeLeft(s.activeSeconds||0)}</p><p class="small">Start nach 1 Minute, danach steigen die Abstände. Täglicher Reset um Mitternacht. Nur bereits freigeschaltete Rohstoffe.</p><button class="drop-toggle" type="button" onclick="toggleDailyDropHistory()" aria-expanded="${dailyDropHistoryOpen}">📜 Heutige Drops ${dailyDropHistoryOpen?'▲ Schließen':'▼ Anzeigen'} (${d.history.length})</button>${dailyDropHistoryOpen?`<div class="drop-history">${d.history.length?d.history.map(x=>`<div class="drop-history-entry">🎁 <b>${fmt(x.amount)} × ${escapeHtml(R[x.id]?.[1]||x.id)}</b><br><span class="small">${new Date(x.at).toLocaleTimeString('de-DE')}</span></div>`).join(''):'<p class="small">Heute noch keine Drops erhalten.</p>'}</div>`:''}` }
+function tick(dt,offline=false){finishSmelting();finishConstructions();finishResearch();finishExpedition();dt=Math.max(0,Math.min(dt,86400));if(!offline)advanceDailyDrops(dt);for(const [k,v] of Object.entries(production())){const previous=Math.max(0,Number(s.stats?.['auto_'+k])||0),amount=v*dt;gain(k,amount);record('auto_'+k,amount,false);const whole=Math.max(0,Math.floor(previous+amount+1e-8)-Math.floor(previous+1e-8));if(whole)addSkill(resourceJob(k),whole)}checkMilestones();checkAchievements()}
+function migratePlanks(){if(!s.res)return;const n=Number(s.res.plank)||0;if(n)s.res.oakplank=(s.res.oakplank||0)+n;delete s.res.plank;for(const x of s.pinnedTargets||[])if(x.type==='recipe'&&x.id==='plank')x.id='oakplank';s.blueprints??=[];for(const b of blueprintDefs)if(s.regions.includes(b.region)&&!s.blueprints.includes(b.id))s.blueprints.push(b.id)}
+function migrateWood(){if(!s.res||typeof s.res!=='object')return; if(Object.prototype.hasOwnProperty.call(s.res,'wood')){s.res.oak=(s.res.oak||0)+(Number(s.res.wood)||0);delete s.res.wood;}if(Array.isArray(s.pinnedMaterials)){for(const pin of s.pinnedMaterials){if(pin.id==='wood')pin.id='oak';}}}
+function migrateWoodRegions(){s.regions=Array.isArray(s.regions)?s.regions.filter(id=>regions.some(r=>r.id===id)):[];if(!s.regions.includes('oak'))s.regions.push('oak');if(!((s.expeditionHistory||[]).some(e=>e.id==='mountains'&&e.success)))s.regions=s.regions.filter(id=>id!=='mountains');if(!regions.some(r=>r.id===s.currentRegion)||progressionMissingResource(s.currentRegion).length)s.currentRegion='oak';if(s.expedition&&!regions.some(r=>r.id===s.expedition.id))s.expedition=null;s.dungeons=Array.isArray(s.dungeons)?s.dungeons.filter(e=>regions.some(r=>r.id===e.id)&&Number.isFinite(e.ends)):[];s.expedition=null;}
+function migrateResearch(){if(!Array.isArray(s.researches))s.researches=[];if(s.research&&!s.researches.some(x=>x.id===s.research.id))s.researches.push(s.research);s.research=null;if(!Array.isArray(s.queue))s.queue=[];if(!s.skillXp||typeof s.skillXp!=='object')s.skillXp={};if(!s.stats||typeof s.stats!=='object')s.stats={};if(!s.expedition||typeof s.expedition!=='object'||!regions.some(r=>r.id===s.expedition.id)||!Number.isFinite(s.expedition.ends))s.expedition=null;if(!s.milestones||typeof s.milestones!=='object')s.milestones={};if(!Array.isArray(s.expeditionHistory))s.expeditionHistory=[]}
+let pendingOfflineSummary=null;
+function offlineSnapshot(){return {res:{...s.res},xp:s.xp,coins:s.coins,tradeCoins:s.tradeCoins,upgrades:[...s.upgrades],regions:[...s.regions],achievements:[...s.achievements],expeditionHistory:(s.expeditionHistory||[]).length}}
+function showOfflineSummary(report){
+ const overlay=document.getElementById('offline-overlay'),box=document.getElementById('offline-summary');if(!overlay||!box)return;
+ const rows=Object.entries(report.gains).filter(([,n])=>n>0.00001).sort((a,b)=>b[1]-a[1]);
+ const resourceHtml=rows.length?rows.map(([id,n])=>`<div class="offline-row"><span>${escapeHtml((R[id]||['📦',id])[0])} ${escapeHtml((R[id]||['📦',id])[1])}</span><b>+${fmt(n)}</b></div>`).join(''):'<p class="small">Keine Ressourcen automatisch produziert.</p>';
+ const extras=[];
+ if(report.xp>0)extras.push(`⭐ +${fmt(report.xp)} Spieler-XP`);
+ if(report.coins>0)extras.push(`🏆 +${fmt(report.coins)} Ruhmpunkte`);
+ if(report.tradeCoins>0)extras.push(`💰 +${fmt(report.tradeCoins)} Looterianische Taler`);
+ if(report.techs.length)extras.push('🧪 Forschungen abgeschlossen: '+report.techs.map(escapeHtml).join(', '));
+ if(report.regions.length)extras.push('🗺️ Gebiete entdeckt: '+report.regions.map(escapeHtml).join(', '));
+ if(report.achievements.length)extras.push('🏅 Achievements: '+report.achievements.map(escapeHtml).join(', '));
+ if(report.expeditions>0)extras.push('🧭 Abgeschlossene Expeditionen: '+report.expeditions);
+ box.innerHTML=`<p>Du warst <strong>${timeLeft(report.elapsed)}</strong> nicht im Spiel.${report.capped?' Die Produktion wurde auf maximal 24 Stunden begrenzt.':''}</p><h3>📦 Automatisch gesammelte Ressourcen</h3>${resourceHtml}${extras.length?'<h3>✨ Weitere Fortschritte</h3>'+extras.map(x=>`<div class="offline-row"><span>${x}</span></div>`).join(''):''}`;
+ overlay.hidden=false;document.getElementById('offline-close').focus();
+}
+function closeOfflineSummary(){document.getElementById('offline-overlay').hidden=true;pendingOfflineSummary=null}
+function migrateLumber(){const n=Math.max(0,Number(s.buildings?.lumber)||0);if(n){s.buildings.oakgrove=(Number(s.buildings.oakgrove)||0)+n;delete s.buildings.lumber;s.buildingUpgrades??={};s.buildingUpgrades.oakgrove=Math.max(Number(s.buildingUpgrades.oakgrove)||0,Number(s.buildingUpgrades.lumber)||0);delete s.buildingUpgrades.lumber}}
+function load(){try{const raw=localStorage.getItem(KEY);if(!raw)return;const d=JSON.parse(raw);if(d.version!==1||!d.res||!d.buildings)throw Error('Unbekanntes Speicherformat');s={...initial(),...d,res:{...initial().res,...d.res}};if(!Number.isFinite(s.tradeCoins))s.tradeCoins=250;s.logs=(s.logs||[]).filter(x=>!/^🔨 .* hergestellt$/.test(x));migrateResearch();migrateAchievementLevel();migrateWood();migrateWoodRegions();migratePlanks();s.researches=(s.researches||[]).filter(r=>allTechs.some(t=>t.id===r.id));s.queue=(s.queue||[]).filter(id=>allTechs.some(t=>t.id===id));s.pinnedTargets=(s.pinnedTargets||[]).filter(t=>t.type!=='research'||allTechs.some(u=>u.id===t.id));if(!Number.isFinite(s.houses)||s.houses<1)s.houses=1;if(!Number.isFinite(s.realmLevel))s.realmLevel=0;s.houseUpgrades=Array.isArray(s.houseUpgrades)?s.houseUpgrades:[];s.buildingUpgrades??={};syncBuildingTiers();s.tavernStock??={};s.expeditionFails??={};s.activeSeconds=Number.isFinite(s.activeSeconds)?Math.max(0,s.activeSeconds):0;s.dailyDrops??={date:"",seconds:0,claimed:0};if(!Array.isArray(d.tavernOrders))s.tavernOrders=d.tavernOrder?[d.tavernOrder]:[];s.tavernOrder=null;s.smelting=Array.isArray(s.smelting)?s.smelting.filter(j=>recipes.some(r=>r.id===j.id)&&Number.isFinite(j.ends)&&j.amount>0):[];s.constructions=Array.isArray(s.constructions)?s.constructions.filter(c=>buildings.some(b=>b.id===c.id)&&Number.isFinite(c.ends)):[];s.taskClaims??={};s.taskProgress??={};migrateLumber();const realElapsed=Math.max(0,(Date.now()-Number(s.last||Date.now()))/1000),elapsed=Math.min(86400,realElapsed);const before=offlineSnapshot();syncAchievementXp(true);tick(elapsed,true);finishResearch();if(elapsed>30){const after=offlineSnapshot();pendingOfflineSummary={elapsed,capped:realElapsed>86400,gains:Object.fromEntries(Object.keys(after.res).map(k=>[k,Math.max(0,(after.res[k]||0)-(before.res[k]||0))])),xp:Math.max(0,after.xp-before.xp),coins:Math.max(0,after.coins-before.coins),tradeCoins:Math.max(0,after.tradeCoins-before.tradeCoins),techs:after.upgrades.filter(id=>!before.upgrades.includes(id)).map(id=>allTechs.find(x=>x.id===id)?.name||id),regions:after.regions.filter(id=>!before.regions.includes(id)).map(id=>regions.find(x=>x.id===id)?.name||id),achievements:after.achievements.filter(id=>!before.achievements.includes(id)).map(id=>achievements.find(x=>x.id===id)?.name||id),expeditions:Math.max(0,after.expeditionHistory-before.expeditionHistory)};log('💤 Offline-Fortschritt für '+fmt(elapsed/60)+' Minuten gutgeschrieben.')}s.last=Date.now()}catch(e){console.error(e);notify('Spielstand konnte nicht geladen werden.')}}
+function syncProgression(){for(const [id] of resourceProgression)progressUnlocked(id);for(const [id] of fieldProgression)progressUnlocked(id);for(const [id] of livestockProgression)progressUnlocked(id)}
+function save(show=false){syncProgression();s.last=Date.now();try{localStorage.setItem(KEY,JSON.stringify(s));if(show)notify('💾 Spiel gespeichert!')}catch(e){notify('Speichern fehlgeschlagen: Browser-Speicher prüfen.')}}
+function exportSave(){save();const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='story-of-looteria-spielstand.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+async function importSave(e){const file=e.target.files?.[0];if(!file)return;try{const d=JSON.parse(await file.text());if(d.version!==1||!d.res||!d.buildings||!Array.isArray(d.upgrades)||!Array.isArray(d.regions))throw Error();if(!confirm('Aktuellen Spielstand durch diese Datei ersetzen?'))return;s={...initial(),...d,res:{...initial().res,...d.res},last:Date.now()};if(!Number.isFinite(s.tradeCoins))s.tradeCoins=250;s.logs=(s.logs||[]).filter(x=>!/^🔨 .* hergestellt$/.test(x));migrateResearch();migrateAchievementLevel();migrateWood();migrateWoodRegions();migratePlanks();if(!Number.isFinite(s.houses)||s.houses<1)s.houses=1;if(!Number.isFinite(s.realmLevel))s.realmLevel=0;s.houseUpgrades=Array.isArray(s.houseUpgrades)?s.houseUpgrades:[];s.buildingUpgrades??={};syncBuildingTiers();s.tavernStock??={};s.expeditionFails??={};if(!Array.isArray(d.tavernOrders))s.tavernOrders=d.tavernOrder?[d.tavernOrder]:[];s.tavernOrder=null;migrateLumber();syncAchievementXp(true);save();log('📥 Spielstand importiert');render();notify('Import erfolgreich')}catch(err){notify('Ungültige Spielstand-Datei')}e.target.value=''}
+function resetGame(){if(!confirm('Neues Spiel starten? Dein aktueller Fortschritt wird vollständig überschrieben.'))return;if(!confirm('Letzte Bestätigung: Wirklich alle Gebäude, Einwohner, Forschungen und Ressourcen löschen? Dieser Schritt kann nicht rückgängig gemacht werden.'))return;s=initial();tab='Sammeln';save();render();notify('👑 Neues Spiel gestartet')}
+const tabs=[['🔓','Freischaltungen'],['⛏️','Sammeln'],['🔨','Crafting'],['🏭','Gebäude'],['📋','Gebäudeliste'],['👷','Arbeitskräfte'],['🧪','Forschung'],['🌍','Weltkarte'],['🏆','Achievements'],['📊','Statistik'],['⭐','Skills'],['🥇','Ranglisten']];
+function button(label,fn,disabled=false,cls=''){return `<button class="${cls}" ${disabled?'disabled':''} onclick="${fn}">${label}</button>`}
+
+const skillDefs=[['mining','⛏️','Miner'],['forestry','🪓','Holzfäller'],['crafting','🔨','Handwerk'],['research','🔬','Wissenschaft'],['farming','🌾','Landwirtschaft'],['fishing','🎣','Angeln'],['hunting','🏹','Jagd'],['combat','⚔️','Kampf'],['magic','✨','Magie'],['alchemy','⚗️','Alchemie'],['smithing','🛠️','Schmieden'],['building','🏗️','Builder'],['engineering','⚙️','Maschinenbau'],['automation','🤖','Automatisierung'],['energy','⚡','Energietechnik'],['exploration','🧭','Erkundung'],['logistics','🚚','Logistik'],['cooking','🍲','Kochen'],['enchanting','📖','Verzauberung']];
+const statDefs=[['clicks','🖱️','Manuelle Sammelklicks'],['manual_wood','🌲','Holz von Hand'],['manual_stone','🪨','Stein von Hand'],['manual_coal','⚫','Kohle von Hand'],['manual_copper','🟠','Kupfer von Hand'],['manual_iron','⛓️','Eisen von Hand'],['manual_amethyst','💜','Amethyst von Hand'],['manual_gold','🟡','Golderz von Hand'],['manual_lapis','🔵','Lapis Lazuli von Hand'],['manual_redstone','🔴','Redstone von Hand'],['manual_diamond','💎','Diamant von Hand'],['buildings','🏗️','Errichtete Gebäude'],['researches','🔬','Abgeschlossene Forschungen'],['regions','🧭','Entdeckte zusätzliche Gebiete'],['expeditions','🧭','Abgeschlossene Expeditionen'],['expedition_success','✅','Erfolgreiche Expeditionen'],['expedition_fail','⚠️','Gescheiterte Expeditionen'],['auto_wood','🏭','Automatisch produziertes Holz'],['auto_stone','🏭','Automatisch produzierter Stein'],['auto_coal','🏭','Automatisch produzierte Kohle'],['auto_copper','🏭','Automatisch produziertes Kupfer'],['auto_iron','🏭','Automatisch produziertes Eisen'],['auto_amethyst','🏭','Automatisch produziertes Amethyst'],['auto_gold','🏭','Automatisch produziertes Golderz'],['auto_lapis','🏭','Automatisch produziertes Lapis Lazuli'],['auto_redstone','🏭','Automatisch produziertes Redstone'],['auto_diamond','🏭','Automatisch produziertes Diamant'],['active_time','⌛','Aktive Spielzeit (Sekunden)'],['daily_drops','🎁','Erhaltene Tagesdrops']];
+const statNames=Object.fromEntries(statDefs.map(([k,name])=>[k,name]));
+const milestoneSteps=[1,10,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000];
+function threshold(n){return n<milestoneSteps.length?milestoneSteps[n]:1000000*Math.pow(10,Math.floor((n-milestoneSteps.length)/3)+1)*[1,2,5][(n-milestoneSteps.length)%3]}
+function record(k,n,check=true){s.stats??={};s.stats[k]=(s.stats[k]||0)+n;if(check)checkMilestones()}
+function checkMilestones(){s.milestones??={};for(const [key,name] of statDefs){let n=s.milestones[key]||0,cur=prestigeKeepStats.has(key)?(s.stats?.[key]||0):Math.max(0,(s.stats?.[key]||0)-(s.prestigeStatBaseline?.[key]||0)),steps=0;while(n<1000&&cur>=threshold(n)){n++;steps++}if(steps){s.milestones[key]=n;s.coins+=steps*10;log('🏆 '+name+' – Meilenstein '+n+' (+ '+(steps*10)+' Ruhmpunkte)');if(steps<5)notify('🏆 '+name+': Stufe '+n)} }syncAchievementXp()}
+const skillLeveling={building:'Noch nicht levelbar – Builder-Aktivitäten werden später hinzugefügt.',mining:'Stein, Kohle und Erze manuell sammeln (+3 Skill-XP pro Klick).',forestry:'Holzarten manuell fällen (+3 Skill-XP pro Klick).',crafting:'Gegenstände im Crafting herstellen (+5 Skill-XP pro Herstellung).',research:'Forschungen abschließen (+12 Skill-XP pro Forschung).',exploration:'Expeditionen abschließen (+24 Skill-XP bei Erfolg, +12 bei Fehlschlag).'};
+function skillPanel(){return `<section class="card"><h2>⭐ Skills (20)</h2><p class="small">Aktive Skills steigen durch passende Tätigkeiten. Weitere Skills sind für künftige Spielsysteme vorbereitet.</p></section><div class="grid">${skillDefs.map(([k,ico,name])=>{const xp=s.skillXp?.[k]||0,lv=skillLevel(k),base=50*(lv-1)**2,next=50*lv**2;return `<div class="item"><h3>${ico} ${name} · Level ${lv}</h3><div class="progress"><div class="bar" style="width:${100*(xp-base)/(next-base)}%"></div></div><p class="small">${fmt(xp)} XP · nächstes Level bei ${fmt(next)} XP</p><p class="small" style="margin-top:8px"><b>📈 So levelst du:</b> ${skillLeveling[k]||'Noch nicht levelbar – das passende Spielsystem wird später ergänzt.'}</p></div>`}).join('')}</div>`}
+function milestonePanel(){const total=Object.values(s.milestones||{}).reduce((a,b)=>a+b,0);return `<section class="card"><h2>🏆 Langzeit-Achievements</h2><p>Erreichte Meilensteine: <b>${total}</b> · Jeder Meilenstein bringt 10 Ruhmpunkte, XP entsprechend seiner Seltenheit und einen dauerhaften Bonus von 0,2 %. Die Boni sind pro Kategorie zusammen mit den normalen Achievement-Boni begrenzt (20 %, Extra-Gerichte 25 %). Mythisch wird erst ab Meilenstein-Stufe 100 erreicht. Die Ziele wachsen ohne feste Endstufe.</p><p class="small">🎁 Aktive Boni: Produktion +${fmt(achievementBonus('production')*100)} % · Extra-Sammelertrag ${fmt(achievementBonus('yield')*100)} % · Bauzeit −${fmt(achievementBonus('build')*100)} % · Forschungszeit −${fmt(achievementBonus('research')*100)} % · Extra-Gerichte ${fmt(achievementBonus('cooking')*100)} % (maximal 25 %).</p></section><div class="grid">${statDefs.map(([k,ico,name])=>{const stage=s.milestones?.[k]||0,val=s.stats?.[k]||0,target=threshold(stage);return `<div class="item achievement-rarity rarity-${milestoneRarity(stage)}"><h3>${ico} ${name}</h3><span class="badge earned">Stufe ${stage}</span> <span class="small rarity-label">${rarityNames[milestoneRarity(stage)]}</span><p>${fmt(val)} / ${fmt(target)}</p><div class="milestone-reward">🎁 Pro Stufe: ${milestoneBonusNames[milestoneBonusType(k)]}<br>✅ Bisher durch dieses Achievement: ${stage?((stage*.2).toLocaleString('de-DE',{maximumFractionDigits:1})):'0'} % · +10 Ruhmpunkte je Stufe<br>✨ Nächste Stufe: +${fmt(xpForMilestone(stage+1))} XP</div><div class="progress"><div class="bar" style="width:${Math.min(100,100*val/target)}%"></div></div></div>`}).join('')}</div>`}
+function statsPanel(){return `<section class="card"><h2>📊 Persönliche Statistiken</h2><p class="small">Die Zählung beginnt mit Version 0.4. Ältere Klick- und Produktionszahlen lassen sich nicht zuverlässig nachträglich rekonstruieren.</p><div class="grid">${statDefs.map(([k,ico,name])=>`<div class="item"><h3>${ico} ${name}</h3><b>${fmt(s.stats?.[k]||0)}</b></div>`).join('')}</div></section>`}
+// Eigenständige Handelswährung: Ruhmpunkte (s.coins) bleiben unantastbar.
+const marketBase={oak:5,birch:12,spruce:26,darkoak:65,acacia:95,jungle:150,mangrove:260,cherry:420,stone:4,coal:25,copper:65,iron:145,crystal:400,oakplank:11,birchplank:26,spruceplank:50,cherryplank:700,brick:16,copperbar:230,ironbar:500,gear:1500};
+function marketPrice(id){const base=marketBase[id]||10;const hour=Math.floor(Date.now()/3600000);let seed=0;for(const c of id)seed=(seed*31+c.charCodeAt(0))%100003;const fluctuation=1+0.2*Math.sin(hour*0.73+seed);return Math.max(1,Math.round(base*fluctuation))}
+function trade(){return}
+function sellAll(){return}
+function marketPanel(){return ''}
+function refreshMarket(){return}
+
+const SB_URL='https://bmhpcfqhlatikldamtxk.supabase.co';
+const SB_KEY='sb_publishable_rv2Nmo9uOKAyw4jTv2_Lsg_hSjQcVr4';
+const MP_SESSION_KEY='looteria-online-session-v1';
+let mpSession=null,mpRows=[],mpError='',mpLoading=false,mpSyncing=false,mpLastSync=0,mpSort='fame';
+let mpRetryTimer=null;
+function multiplayerStatus(){const el=document.getElementById('mp-global-status');if(!el)return;const state=!navigator.onLine||mpError?'offline':mpLoading||(!mpSession&&navigator.onLine)?'connecting':'online';el.className='mp-status mp-'+state;el.textContent=state==='online'?'Online · Rangliste':state==='connecting'?'Verbinde …':'Offline · Rangliste';el.title=mpError|| (state==='online'?'Mit der Online-Rangliste verbunden':state==='connecting'?'Verbindung wird aufgebaut':'Keine Verbindung zur Rangliste');}
+function multiplayerScheduleRetry(){if(mpRetryTimer||!navigator.onLine)return;mpRetryTimer=setTimeout(()=>{mpRetryTimer=null;if(!mpSession&&!mpLoading)multiplayerConnect();else if(mpSession&&mpError)multiplayerSync()},15000)}
+function multiplayerName(){return (localStorage.getItem('looteria-multiplayer-name')||'').trim()}
+function multiplayerSaveName(){const input=document.getElementById('mp-name');if(!input)return;const name=input.value.trim().slice(0,24);if(name.length<3){notify('⚠️ Spielername muss mindestens 3 Zeichen haben.');return}localStorage.setItem('looteria-multiplayer-name',name);notify('👑 Spielername gespeichert: '+name);render();if(mpSession)multiplayerSync();else multiplayerConnect()}
+async function mpRequest(path,options={}){
+ const headers={'apikey':SB_KEY,'Content-Type':'application/json',...options.headers};
+ if(mpSession?.access_token)headers.Authorization='Bearer '+mpSession.access_token;
+ const r=await fetch(SB_URL+path,{...options,headers});const body=await r.text();let data;try{data=body?JSON.parse(body):null}catch{data=body}
+ if(!r.ok)throw Error((data&&typeof data==='object'&&(data.msg||data.message||data.error_description||data.error))||'HTTP '+r.status);
+ return data;
+}
+async function multiplayerConnect(){if(mpLoading)return;if(!navigator.onLine){mpError='Keine Internetverbindung';multiplayerStatus();return}mpLoading=true;mpError='';multiplayerStatus();try{
+ const stored=JSON.parse(localStorage.getItem(MP_SESSION_KEY)||'null');
+ if(stored?.refresh_token){try{mpSession=await mpRequest('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:stored.refresh_token})});}catch(e){mpSession=null}}
+ if(!mpSession)mpSession=await mpRequest('/auth/v1/signup',{method:'POST',body:JSON.stringify({data:{game:'looteria'}})});
+ if(!mpSession?.access_token||!mpSession?.user?.id)throw Error('Anonyme Anmeldung nicht aktiv. In Supabase Authentication → Providers → Anonymous Sign-Ins aktivieren.');
+ localStorage.setItem(MP_SESSION_KEY,JSON.stringify(mpSession));
+ await multiplayerSync();
+ }catch(e){mpError=e.message||String(e);console.error('Looteria Multiplayer',e);multiplayerScheduleRetry()}finally{mpLoading=false;multiplayerStatus();if(tab==='Ranglisten')render()}
+}
+async function multiplayerSync(){if(!mpSession?.access_token||mpSyncing)return;mpSyncing=true;try{
+ const name=multiplayerName();if(name.length>=3){
+ const data={player_id:mpSession.user.id,player_name:name,fame:Math.max(0,Math.floor(s.coins||0)),player_level:Math.max(1,level()),taler:Math.max(0,Math.floor(s.tradeCoins||0)),play_seconds:Math.max(0,Math.floor(s.activeSeconds||0)),updated_at:new Date().toISOString()};
+ await mpRequest('/rest/v1/looteria_leaderboard?on_conflict=player_id',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(data)});
+ }
+ await multiplayerRefresh();mpLastSync=Date.now();mpError='';
+ }catch(e){mpError=e.message||String(e);multiplayerScheduleRetry();if(tab==='Ranglisten')render()}finally{mpSyncing=false;multiplayerStatus()}
+}
+async function multiplayerRefresh(){try{
+ const allowed=['fame','player_level','taler','play_seconds'];if(!allowed.includes(mpSort))mpSort='fame';
+ mpRows=await mpRequest('/rest/v1/looteria_leaderboard?select=player_id,player_name,fame,player_level,taler,play_seconds,updated_at&order='+mpSort+'.desc&limit=50');
+ mpError='';if(tab==='Ranglisten')render();
+ }catch(e){mpError=e.message||String(e);multiplayerScheduleRetry();multiplayerStatus();if(tab==='Ranglisten')render()}
+}
+function multiplayerSort(sort){mpSort=sort;multiplayerRefresh()}
+function leaderboardPanel(){const cols=[['fame','🏆 Ruhmpunkte'],['player_level','⭐ Level'],['taler','💰 Taler'],['play_seconds','⏱️ Spielzeit']];return `<section class="card"><h2>🌐 Online-Ranglisten (Beta)</h2><p class="small">Ohne E-Mail oder Passwort: Die anonyme Spielerkennung wird in diesem Browser gespeichert. Dein eigentlicher Spielstand bleibt lokal.</p><label for="mp-name">Öffentlicher Spielername</label><div class="row"><input id="mp-name" type="text" maxlength="24" minlength="3" value="${escapeHtml(multiplayerName())}" placeholder="z. B. Kaledoss" style="min-width:180px;flex:1;padding:9px;border-radius:8px;background:#142334;color:#fff;border:1px solid #4b6075"><button type="button" onclick="multiplayerSaveName()">💾 Namen speichern</button></div><div class="row" style="margin-top:10px"><span>${mpSession&&!mpError?'🟢 Online':mpLoading?'🟡 Verbinde …':'🔴 Offline'}</span>${button(mpLoading?'Verbinde …':mpSession?'🔄 Jetzt synchronisieren':'🌐 Multiplayer verbinden',mpSession?'multiplayerSync()':'multiplayerConnect()',mpLoading)}</div>${mpError?`<p style="color:#ff9999">⚠️ ${escapeHtml(mpError)}</p>`:''}<p class="small">${mpLastSync?'Zuletzt synchronisiert: '+new Date(mpLastSync).toLocaleTimeString('de-DE'):'Noch nicht synchronisiert.'} · Automatische Synchronisierung alle 30 Sekunden. Für das erste Verbinden muss in Supabase die Datenbank eingerichtet sein.</p><div class="hint">⚠️ Beta: Ranglistenwerte stammen derzeit aus lokalen Spielständen und können manipuliert werden. Noch keine fairen Wettbewerbsranglisten.</div></section><section class="card"><h2>🥇 Globale Top 50</h2><div class="row">${cols.map(([id,label])=>`<button class="${mpSort===id?'active':''}" onclick="multiplayerSort('${id}')">${label}</button>`).join('')}</div>${!mpRows.length?'<p class="small">Noch keine Online-Einträge geladen. Verbinde dich und speichere einen Spielernamen.</p>':`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th>Platz</th><th>Spieler</th><th>Wert</th></tr></thead><tbody>${mpRows.map((p,i)=>`<tr style="border-bottom:1px solid #354254"><td>${i+1}.</td><td>${escapeHtml(p.player_name)}${p.player_id===mpSession?.user?.id?' 👑':''}</td><td>${mpSort==='play_seconds'?timeLeft(p.play_seconds):fmt(p[mpSort]||0)}</td></tr>`).join('')}</tbody></table></div>`}</section>`}
+
+// Online-Rangliste: alle 30 Sekunden senden und aktualisieren, sofern verbunden.
+setInterval(()=>{if(document.hidden||!navigator.onLine)return;if(mpSession){if(multiplayerName().length>=3)multiplayerSync();else multiplayerRefresh()}},30000);
+// Bestehende anonyme Sitzung nach einem Seiten-Reload automatisch wiederherstellen.
+setTimeout(()=>{multiplayerConnect()},1500);
+window.addEventListener('online',()=>{mpError='';multiplayerStatus();if(mpSession)multiplayerSync();else multiplayerConnect()});
+window.addEventListener('offline',()=>{mpError='Keine Internetverbindung';multiplayerStatus()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&navigator.onLine){if(!mpSession&&!mpLoading)multiplayerConnect();else if(mpSession&&mpError)multiplayerSync()}});
+multiplayerStatus();
+const rarityNames={common:'Gewöhnlich',uncommon:'Ungewöhnlich',rare:'Selten',epic:'Episch',legendary:'Legendär',mythic:'Mythisch'};
+function milestoneRarity(stage){return stage>=100?'mythic':stage>=60?'legendary':stage>=35?'epic':stage>=20?'rare':stage>=10?'uncommon':'common'}
+const achievementRarities={first:'common',builder:'common',crafter:'common',hundred:'uncommon',factory:'rare',explorer:'rare',scholar:'epic',livestock:'uncommon',merchant:'uncommon',taskmaster:'rare',farmer:'common',homeowner:'rare',expeditions:'rare',blueprinter:'epic',upgrader:'uncommon',marketman:'rare',playtime:'rare'};
+function nearAchievements(){
+ const candidates=[];
+ const normal=[
+  ['first','Erste Schritte',s.gathered||0,1],
+  ['builder','Baumeister',Object.values(s.buildings).reduce((a,b)=>a+b,0),1],
+  ['crafter','Handwerker',s.crafted||0,1],
+  ['hundred','Sammler',Object.values(s.res).reduce((a,b)=>a+b,0),100],
+  ['factory','Industriepionier',Object.values(s.buildings).reduce((a,b)=>a+b,0),10],
+  ['explorer','Entdecker',s.regions.length,3],
+  ['scholar','Forscher',s.upgrades.length,2]
+ ];
+ for(const [id,name,value,target] of normal){if(!s.achievements.includes(id))candidates.push({name,icon:'🏆',value,target,ratio:Math.min(1,value/target),kind:'Einmaliges Achievement',rarity:achievementRarities[id]||'common'})}
+ for(const [key,icon,name] of statDefs){const stage=s.milestones?.[key]||0;const value=s.stats?.[key]||0;const target=threshold(stage);if(!Number.isFinite(target)||target<=0)continue;const prev=stage?threshold(stage-1):0;const ratio=Math.max(0,Math.min(1,(value-prev)/(target-prev)));candidates.push({name,icon,value,target,ratio,kind:'Meilenstein '+(stage+1),rarity:milestoneRarity(stage)})}
+ candidates.sort((a,b)=>b.ratio-a.ratio||a.target-a.value);
+ const top=candidates.slice(0,5);
+ return `<section class="card near-card"><h3>🎯 Fast geschafft</h3><p class="small">Deine 5 nächsten Achievements nach Fortschritt</p>${top.map(x=>`<div class="near-entry rarity-${x.rarity}"><strong>${x.icon} ${escapeHtml(x.name)}</strong><span class="small">${escapeHtml(x.kind)} · <span class="rarity-label">${rarityNames[x.rarity]}</span> · ${Math.floor(x.ratio*100)}%</span><div class="progress"><div class="bar" style="width:${x.ratio*100}%"></div></div><span class="small">${fmt(x.value)} / ${fmt(x.target)}</span></div>`).join('')}<button class="near-link" onclick="tab='Achievements';render()">Alle Achievements →</button></section>`;
+}
+const inventoryGroups=[{id:'all',label:'📦 Alle',test:()=>true},{id:'wood',label:'🌳 Holzarten',test:k=>!!woodRarities[k]},{id:'raw',label:'⛏️ Stein & Erze',test:k=>!woodRarities[k]&&ACTIVE_RESOURCES.has(k)}];
+let inventoryFilter='all';
+try{const savedFilter=localStorage.getItem('idle-realms-inventory-filter');if(inventoryGroups.some(g=>g.id===savedFilter))inventoryFilter=savedFilter}catch(e){}
+function setInventoryFilter(id){
+ if(!inventoryGroups.some(g=>g.id===id))return;
+ inventoryFilter=id;
+ try{localStorage.setItem('idle-realms-inventory-filter',id)}catch(e){}
+ renderInventoryDock(production());
+}
+function inventoryUnlockStatus(id){
+ const gatherer=gathers.find(g=>g.id===id);
+ const gatheringMissing=gatherer?gateMissing(gatherer):[];
+ const sources=[];
+ if(gatherer)sources.push({source:'Manuell abbauen / sammeln',missing:gatheringMissing});
+ for(const r of recipes.filter(r=>r.id===id)){
+  const missing=[];
+  
+  if(r.tech&&!s.upgrades.includes(r.tech))missing.push('Forschung: '+(allTechs.find(t=>t.id===r.tech)?.name||r.tech));
+  sources.push({source:'Crafting',missing});
+ }
+ for(const b of buildings.filter(b=>Object.hasOwn(b.prod,id))){
+  const missing=[];
+  if(Object.hasOwn(b.prod,id))missing.push(...resourceJobMissing(id));
+  if(b.tech&&!s.upgrades.includes(b.tech))missing.push('Forschung: '+(allTechs.find(t=>t.id===b.tech)?.name||b.tech));
+  if(b.blueprint&&!hasBlueprint(b.blueprint))missing.push('Bauplan: '+(blueprintDefs.find(x=>x.id===b.blueprint)?.name||b.blueprint));
+  const owned=(s.buildings[b.id]||0)>0;
+  sources.push({source:b.name,missing:owned?[]:missing.length?missing:['Gebäude erst bauen']});
+ }
+ const available=sources.filter(x=>!x.missing.length);
+ const locked=gatherer?gatheringMissing.length>0:available.length===0;
+ const notes=[];
+ if(gatherer)notes.push(gatheringMissing.length?'Manuell noch gesperrt – benötigt: '+gatheringMissing.join(' · '):'Manuell sammeln: freigeschaltet');
+ for(const x of sources.filter(x=>x.source!=='Manuell abbauen / sammeln'))notes.push(x.source+': '+(x.missing.length?'benötigt '+x.missing.join(' · '):'verfügbar'));
+ if(!notes.length)notes.push('Keine Bezugsquelle bekannt.');
+ if((s.res[id]||0)>0)notes.unshift('Bereits im Lager vorhanden.');
+ return {locked,detail:notes.join(' | ')};
+}
+function inventoryResourceVisible(id){
+ if((s.res[id]||0)>0)return true;
+ if(id==='amethyst')return false; // Erst mit späterer Fundmechanik sichtbar.
+ if(id==='oak'||id==='stone'||id==='cleanstone')return true;
+ return discoveredResource(id)&&resourceJobMissing(id).length===0;
+}
+function renderInventoryDock(prod){
+ const filters=document.getElementById('inventory-filters');
+ filters.innerHTML=inventoryGroups.map(g=>`<button type="button" class="inventory-filter ${inventoryFilter===g.id?'active':''}" aria-pressed="${inventoryFilter===g.id}" onclick="setInventoryFilter('${g.id}')">${g.label}</button>`).join('');
+ const strip=document.getElementById('inventory');
+ const selected=inventoryGroups.find(g=>g.id===inventoryFilter)||inventoryGroups[0];
+ const items=Object.entries(R).filter(([k])=>ACTIVE_RESOURCES.has(k)&&selected.test(k)&&inventoryResourceVisible(k));
+ strip.innerHTML=items.map(([k,[ico,name]])=>{const access=inventoryUnlockStatus(k);return `<div tabindex="0" class="inventory-chip ${access.locked?'inventory-locked':''} ${woodRarities[k]?'wood-inventory rarity-'+woodRarities[k]:''}" title="${escapeHtml(name)}: ${escapeHtml(access.detail)}"><span class="inventory-chip-name">${ico} ${escapeHtml(name)}</span><span class="inventory-chip-bottom"><b>${fmt(s.res[k]||0)}</b><small>${prod[k]?`+${fmt(prod[k])}/s`:''}</small></span><span class="inventory-tooltip">${access.locked?'🔒 Noch nicht erhältlich: ':'✓ '}${escapeHtml(access.detail)}</span></div>`}).join('');
+}
+
+function nextLockedOnly(items,unlocked){let seen=false;return items.filter(x=>{if(unlocked(x))return true;if(!seen){seen=true;return true}return false})}
+function lockedPreview(locked,requirements){return locked?`<div class="preview-label">🔒 Nächste Freischaltung · ${escapeHtml(requirements)}</div>`:''}
+function render(){updateRealmHeader();document.getElementById('level').textContent='🏆 Achievement-Level '+level();updateJobHeader();document.getElementById('coins').textContent='🏆 '+fmt(s.coins)+' Ruhmpunkte';updateTalerDisplay();document.getElementById('nav').innerHTML=tabs.map(([ico,t])=>`<button class="${tab===t?'active':''}" onclick="tab='${t}';render()">${ico} ${t}</button>`).join('');const prod=production();renderInventoryDock(prod);let html='';if(tab==='Sammeln'){html=`<section class="card"><h2>⛏️ Ressourcen sammeln</h2><div class="hint">Jede Baumart liefert ausschließlich ihre eigene Holzart. Holzarten haben unterschiedliche Seltenheiten (Gewöhnlich bis Mythisch). Forschungen können den Ertrag pro Klick erhöhen. Für jede tatsächlich erhaltene Ressourceneinheit bekommst du die zugehörigen Job-XP. Einmal entdeckte Ressourcen kannst du jederzeit sammeln, unabhängig vom Gebiet.</div></section><div class="grid">${nextLockedOnly(gathers,g=>gateMissing(g).length===0).map(g=>`<div id="gather-${g.id}" class="item wood-card rarity-${woodRarities[g.id]} ${gateMissing(g).length>0?'preview-locked':''}"><h3>${g.icon} ${R[g.id][1]} <span class="owned-count">(${fmt(s.res[g.id]||0)})</span></h3>${woodRarityLabel(g.id)}${lockedPreview(gateMissing(g).length>0,gateMissing(g).join(' · '))}<div class="wood-rate">${'+'+resourceClickXp(g.id)+' Job-XP pro erhaltener Einheit'}</div><p>${gateMissing(g).length?'Benötigt: '+gateMissing(g).join(' · '):'Sammle diese Ressource per Klick.'}</p>${button('Sammeln',`gather('${g.id}')`,gateMissing(g).length>0,'action')}</div>`).join('')}</div>`}
+if(tab==='Freischaltungen')html=progressionPanel();
+if(tab==='Crafting')html=`<section class="card"><h2>🔥 Ofen & Crafting</h2><p class="small">Zum Brennen benötigst du ein Ofengebäude (unter Gebäude). Jeder Ofen kann genau einen Auftrag gleichzeitig bearbeiten. Die Zutaten werden beim Start verbraucht; jedes fertig gebrannte Stück landet sofort im Lager. 4 Stein + 1 Kohle → Cleanstone; 4 Sand + 1 Kohle → Glas.</p><p>🔥 Öfen: ${furnaceSlots()} · Laufend: ${(s.smelting||[]).length} · Frei: ${Math.max(0,furnaceSlots()-(s.smelting||[]).length)}</p></section><div class="grid">${recipes.map(r=>`<div id="recipe-${r.id}" class="item ${!recipeUnlocked(r.id)?'preview-locked':''}"><h3>${R[r.id][0]} ${r.name} <span class="owned-count">(${fmt(s.res[r.id]||0)})</span></h3>${!recipeUnlocked(r.id)?'<p class="small">🔒 Forschung benötigt: '+escapeHtml(allTechs.find(u=>u.id===recipeResearch(r.id))?.name||'Forschung')+'</p>':''}<p>Ergebnis: ${r.out} × ${R[r.id][1]} pro Herstellung</p><div class="price">${costText(r.cost, r.name)} (1×)</div><div class="craft-amount-actions"><label for="craft-qty-${r.id}">Stückzahl:</label><input id="craft-qty-${r.id}" type="number" min="1" max="10000" step="1" value="1" style="width:105px;background:#101f30;color:#fff;border:1px solid #54718d;border-radius:6px;padding:9px" oninput="updateCraftAmount('${r.id}')"><button type="button" id="craft-start-${r.id}" onclick="craft('${r.id}',Number(document.getElementById('craft-qty-${r.id}').value))">Brennvorgang starten</button><span id="craft-total-${r.id}" class="small"></span></div><p class="small">⏱️ Brennzeit: ${smeltDuration(r.id,1)} Sek. je ${R[r.id][1]}</p>${targetPinButton('recipe',r.id)}</div>`).join('')}</div>`;
+
+if(tab==='Gebäude')html=realmPanel(false)+`<section class="card"><h2>🏭 Automatisierung</h2><p class="small">Gebäude werden erst nach Ablauf ihrer Bauzeit produktiv. Pro Baustelle arbeitet 1 Einwohner. Mit der Forschung „Parallele Bauplanung“ sind mehrere Baustellen gleichzeitig möglich. Offline-Fortschritt wird bis zu 24 Stunden nachberechnet.</p></section><div class="grid">${nextLockedOnly(buildings.filter(b=>!['wheatfarm','carrotfarm','potatofarm','beetfarm','pumpkinfarm','melonfarm','canefarm','berryfarm','wartfarm','cowpasture','pigpen','chickencoop','sheepfold'].includes(b.id)),b=>buildingMissing(b).filter(reason=>!reason.includes('Bauplätze')&&!reason.includes('Einwohner')).length===0).map(b=>{let c=buildingCost(b),count=s.buildings[b.id]||0;return `<div id="building-${b.id}" class="item ${buildingMissing(b).length>0?'preview-locked':''}"><h3>${b.icon} ${b.name}</h3>${lockedPreview(buildingMissing(b).length>0,buildingMissing(b).join(' · '))}<p>${b.desc}</p><div class="small">Besitz: <b>${count}</b> · ${Object.entries(b.prod).map(([k,v])=>`+${fmt(v)}/s ${R[k][1]}`).join('')}</div><div class="price">${costText(c, b.name)}</div><div class="small">🗺️ Bauplätze: ${usedPlots()}/${plotLimit()} · ⏱️ Bauzeit: ${timeLeft(buildingDuration(b))}</div>${usedPlots()>=plotLimit()?'<div class="small" style="color:#ffb3a8">⚠️ Kein freier Bauplatz – Reich erweitern.</div>':''}${button(usedPlots()>=plotLimit()?'🔒 Reich voll':freeResidents()<workersNeededForBuild(b)?'🔒 Einwohner fehlen':'Bau starten',`build('${b.id}')`,buildingMissing(b).length>0||!canPay(c)||usedPlots()>=plotLimit()||freeResidents()<workersNeededForBuild(b),'action')}${targetPinButton('building',b.id)}</div>`}).join('')}</div>`;
+if(tab==='Gebäudeliste'){
+syncBuildingTiers();
+const owned=buildings.filter(b=>b.id!=='furnace'&&(s.buildings[b.id]||0)>0);
+html=`<section class="card"><h2>📋 Gebäudeliste & Personal</h2><p class="small">Jedem Holz-, Stein-, Erz- und Gräbergebäude weist du Einwohner selbst zu. Jeder Mitarbeiter bringt 25 % der Grundproduktion (4 = 100 %, 8 = 200 %). Gebäude-Upgrades wirken zusätzlich. Ohne Mitarbeiter produziert ein Gebäude nichts. Standard: 4 Plätze · Forschung „Erweiterte Mitarbeiterkapazität“: 6 Plätze · „Erhöhter Mitarbeiterdruck“: 8 Plätze.</p><div class="row"><span>🏠 Wohnhäuser</span><b>${fmt(s.houses||1)}</b></div><div class="row"><span>👥 Freie Einwohner</span><b>${fmt(freeResidents())}</b></div><div class="row"><span>👷 Mitarbeiterlimit je Gebäude</span><b>${staffLimit()} / 8</b></div><div class="row"><span>🗺️ Bauplätze belegt</span><b>${fmt(usedPlots())} / ${fmt(plotLimit())}</b></div></section><section class="card"><h3>🏠 Wohnhäuser & Ausbauten</h3><p class="small">Neue Dirthäuser kosten nur Erde. Ausbauten kosten exponentiell mehr Materialien. Ein Dirthaus bietet 2 Einwohner, jede Verbesserung +2.</p><div class="worker-list">${Array.from({length:s.houses||1},(_,i)=>`<div class="worker-row"><div><b>🏠 ${houseName(i)} #${i+1}</b><div class="small">Stufe ${houseTier(i)}/5 · 👥 ${2+2*houseTier(i)} Einwohner</div>${houseTier(i)<5?`<div class="price">Nächster Ausbau: ${costText(houseUpgradePrice(i))} · Builder-Level ${builderRequirement('house',houseTier(i))}</div>`:'<div class="small">✓ Vollständig ausgebaut</div>'}</div><div>${houseTier(i)<5?`<button type="button" data-house-upgrade="${i}" onclick="houseUpgrade(${i})" ${!canPay(houseUpgradePrice(i))||builderMissing('house',houseTier(i)).length>0?'disabled':''}>⬆️ Ausbauen</button>`:''}${(s.houses||1)>1?`<button type="button" onclick="demolishHouse(${i})">🗑️ Abreißen</button>`:''}</div></div>`).join('')}</div></section><section class="card"><h3>🔥 Öfen</h3><p class="small">${furnaceSlots()} Öfen vorhanden · ${(s.smelting||[]).length} in Betrieb</p>${Array.from({length:furnaceSlots()},(_,i)=>`<div class="worker-row"><b>🔥 Ofen #${i+1}</b><button type="button" onclick="demolishBuilding('furnace',${i})" ${(s.smelting||[]).length>=furnaceSlots()?'disabled':''}>🗑️ Abreißen</button></div>`).join('')}</section><section class="card"><h3>🏭 Produktionsgebäude</h3>${owned.length?`<div class="worker-list">${owned.map(b=>Array.from({length:s.buildings[b.id]||0},(_,i)=>{const tier=buildingTier(b.id,i),slots=staffLimit(),workers=s.buildingStaff?.[b.id]?.[i]||0,staffBonus=workers*25,upBonus=tier*10;return `<div class="worker-row"><div><b>${b.icon} ${escapeHtml(b.name)} #${i+1}</b><div class="small">Upgrade-Stufe ${tier}/10 · 👷 ${workers}/${slots} Mitarbeiter · Grundproduktion ${staffBonus}% · Gebäude-Upgrade +${upBonus}%</div><div class="small">${Object.entries(b.prod||{}).map(([id,n])=>`${fmt(n*workers*.25*(1+tier*.1))}/s ${escapeHtml(R[id]?.[1]||id)} (vor globalen Boni)`).join(' · ')}</div></div><div class="worker-numbers">${tier<MAX_BUILDING_TIER?`<span class="small">⬆️ Builder-Level ${builderRequirement('building',tier)}</span><button type="button" data-production-upgrade="${b.id}:${i}" onclick="upgradeBuilding('${b.id}',${i})" ${buildingUpgradeMissing(b,i).length?'disabled':''}>Upgrade · ${costText(buildingUpgradeCost(b,i))}</button>`:''}<button type="button" onclick="adjustBuildingStaff('${b.id}',${i},-1)" ${workers<=0?'disabled':''}>− Einwohner</button><button type="button" onclick="demolishBuilding('${b.id}',${i})">🗑️ Abreißen</button><button type="button" onclick="adjustBuildingStaff('${b.id}',${i},1)" ${workers>=slots||freeResidents()<1?'disabled':''}>+ Einwohner</button></div></div>`}).join('')).join('')}</div>`:'<p class="small">Noch keine Produktionsgebäude errichtet.</p>'}</section>`;
+}
+if(tab==='Arbeitskräfte'){
+const rows=buildings.filter(b=>(s.buildings[b.id]||0)>0||(s.buildingUpgrades?.[b.id]||0)>0);
+html=`<section class="card"><h2>👷 Arbeitskräfte & Gebäude</h2><p class="small">Hier siehst du, in welchen Gebäuden deine Einwohner arbeiten. Produktionsgebäude erhalten ihre Mitarbeiter ausschließlich durch manuelle Zuweisung in der Gebäudeliste. Ohne zugewiesene Einwohner produzieren sie nichts.</p><div class="row"><span>👥 Einwohner gesamt: <b>${fmt(residents())}</b></span><span>👷 Beschäftigt: <b>${fmt(occupiedResidents())}</b></span><span>🟢 Frei: <b>${fmt(freeResidents())}</b></span><span>🧪 Forschung: <b>${researchWorkers()}</b></span><span>🧭 Expedition: <b>${expeditionWorkers()}</b></span><span>🏗️ Baustellen: <b>${constructionWorkers()}</b></span></div><div class="progress"><div class="bar" style="width:${Math.min(100,occupiedResidents()/Math.max(1,residents())*100)}%"></div></div></section><section class="card"><h2>🏭 Belegte Arbeitsplätze</h2>${rows.length?`<div class="worker-list">${rows.map(b=>{const count=Math.max(0,Number(s.buildings[b.id])||0),up=Math.max(0,Number(s.buildingUpgrades?.[b.id])||0),isAnimal=animalBuildingIds.includes(b.id),base=0;return `<div class="worker-row"><div><b>${b.icon} ${b.name}</b><div class="small">${fmt(count)} Gebäude${isAnimal?' · '+fmt(count*2)+' Tiere':''} · Gebäude-Upgrades +${up*10}%</div></div><div class="worker-numbers"><span>🏭 ${fmt(base)} Grundplätze${isAnimal?' (Tierpflege gemeinsam: '+fmt(animalWorkers())+' Einwohner)':''}</span><span>⬆️ ${fmt((s.buildingStaff?.[b.id]||[]).reduce((a,n)=>a+n,0))} manuell zugewiesen</span><b>👷 ${fmt(base+(s.buildingStaff?.[b.id]||[]).reduce((a,n)=>a+n,0))}${isAnimal?' + gemeinsamer Tierpflege-Anteil':''}</b></div></div>`}).join('')}</div>`:'<p class="small">Noch keine Produktionsgebäude vorhanden. Deine Einwohner sind derzeit frei.</p>'}<div class="row"><b>Gesamt beschäftigt</b><b>👷 ${fmt(occupiedResidents())} / ${fmt(residents())}</b></div></section>`;
+}
+if(tab==='Forschung'){
+const branches=[...new Set(allTechs.map(u=>u.branch))];
+html=`<section class="card"><h2>🧪 Technologie- & Skillbaum</h2><div class="hint">${s.researches.length}/${slots()} Forschungsplätze belegt · Maximal 5 Plätze. Forschung läuft auch offline. Neue Plätze durch Wissenschaftsforschungen freischalten.</div><div class="row"><span>⛏️ Bergbau: <b>${skillLevel('mining')}</b></span><span>🌲 Forstwirtschaft: <b>${skillLevel('forestry')}</b></span><span>🔬 Wissenschaft: <b>${skillLevel('research')}</b></span></div><p class="small">Skills steigen durch Aktivitäten und abgeschlossene Forschungen. Forschungslabor II schaltet die Warteschlange frei (max. 8 Einträge). Ressourcen werden erst beim tatsächlichen Start einer Forschung verbraucht.</p>${s.researches.map(r=>{const u=allTechs.find(x=>x.id===r.id);return `<div class="hint research-live" data-research-id="${r.id}"><b>🔬 ${u?.name||r.id}</b><div class="row"><span>Restzeit</span><b class="research-live-time">${timeLeft((r.ends-Date.now())/1000)}</b></div><div class="progress"><div class="bar research-live-bar" style="width:${Math.max(0,Math.min(100,100*(Date.now()-r.started)/(r.ends-r.started)))}%"></div></div></div>`}).join('')}${researchQueueAvailable()?`<h3>📋 Warteschlange (${s.queue.length}/8)</h3>${s.queue.length?s.queue.map((id,i)=>`<div class="row"><span>${i+1}. ${allTechs.find(u=>u.id===id)?.name||id}</span>${button('Entfernen',`unqueue('${id}')`)}</div>`).join(''):'<p class="small">Noch keine Forschungen vorgemerkt.</p>'}`:''}</section>`;
+for(const branch of branches){html+=`<section class="card"><h2>🌿 ${branch}</h2><div class="grid research-tree">${allTechs.filter(u=>u.branch===branch).map(u=>{const done=s.upgrades.includes(u.id),running=s.researches.some(x=>x.id===u.id),queued=s.queue.includes(u.id),missing=researchMissing(u),full=s.researches.length>=slots();const label=done?'✓ Erforscht':running?'⏳ Läuft':queued?'📋 Vorgemerkt':missing.length?'🔒 Voraussetzungen fehlen':full?'🔒 Plätze belegt':'Forschung starten';return `<div id="research-${u.id}" class="item ${missing.length&&!done&&!running&&!queued?'preview-locked':''}" style="border-color:${done?'#36794e':running?'#e3b85c':missing.length?'#6c3b46':'#38698a'}"><h3>${done?'🟢':running?'🟡':missing.length?'🔴':'🔵'} ${u.name}</h3><div class="small tree-dependencies">↳ ${u.requires?.map(id=>escapeHtml(allTechs.find(x=>x.id===id)?.name||id)).join(" → ")||"Ausgangsforschung"}</div>${lockedPreview(missing.length&&!done&&!running&&!queued,missing.join(' · '))}<p>${u.desc}</p><div class="small">⏱️ ${timeLeft(u.duration)}${u.slots?' · 🔬 '+u.slots+' Plätze':''}</div><div class="price">${costText(u.cost, u.name)}</div><div class="small">👷 Benötigt: 1 freier Einwohner (frei: ${freeResidents()})</div><div class="small" style="margin-top:8px">${missing.length?'Benötigt: '+missing.join(' · '):'✓ Voraussetzungen erfüllt'}</div>${button(label,`upgrade('${u.id}')`,done||running||queued||full||freeResidents()<1||!!missing.length||!canPay(u.cost)||!canFinanceResearch(u))}${targetPinButton('research',u.id)}${researchQueueAvailable()&&!done&&!running&&!queued&&s.queue.length<8?button('📋 Vormerken',`queueResearch('${u.id}')`):''}</div>`}).join('')}</div></section>`}
+}
+if(tab==='Weltkarte'){
+ html=`<section class="card"><h2>🌍 Weltkarte · Dungeon-Erkundung</h2><p class="hint">Jedes neue Gebiet muss einmal als Dungeon abgeschlossen werden. Jeder Besuch benötigt für 60 Sekunden 2 freie Einwohner. Auch entdeckte Dungeons kannst du erneut besuchen und dabei levelabhängige Ressourcenbeute erhalten. Durch Erkundungsforschung sind bis zu 3 Gruppen parallel möglich. Eichenwald ist von Anfang an entdeckt. Stein ist sofort sammelbar, das Gebirge muss aber erst erkundet werden. Danach kannst du es erneut erkunden. Nach dem ersten erfolgreichen Abschluss kannst du die dort entdeckten Ressourcen jederzeit sammeln.</p><p>🧭 Erkundungslevel ${skillLevel('exploration')} · ⚔️ Gruppen: ${activeDungeons().length}/${dungeonSlots()}</p></section><div class="grid">${regions.filter(regionVisible).map(r=>{const known=regionUnlocked(r),starter=r.id==='oak',busy=activeDungeons().filter(e=>e.id===r.id).length;return `<div class="item" id="region-${r.id}"><h3>${r.icon} ${r.name} ${known?'✅':'🔒'}</h3><p>${r.desc}</p>${dungeonResourceText(r)}<p class="small">${known?'🟢 Gebiet entdeckt':'⚔️ Noch nicht erkundet'}${busy?' · '+busy+' Gruppe(n) unterwegs':''}</p>${!starter?`<p class="small">🧭 Erkundungslevel ${regionExplorationLevel(r)} · ${expeditionMissing(r).length?'🔒 '+escapeHtml(expeditionMissing(r).join(', ')):'✓ Zugang möglich'}</p>`+button('⚔️ Dungeon '+(known?'erneut ':'')+'erkunden (2 Einwohner)',`explore('${r.id}')`,expeditionMissing(r).length>0||activeDungeons().length>=dungeonSlots()||freeResidents()<2):''}</div>`}).join('')}</div>`;
+}
+if(tab==='Skills')html=skillPanel();if(tab==='Statistik')html=statsPanel();if(tab==='Ranglisten')html=leaderboardPanel();
+if(tab==='Achievements')html=prestigePanel()+`<section class="card"><h2>🏆 Achievements</h2><p class="small">Jedes Achievement belohnt dich mit 25 Ruhmpunkten und XP entsprechend seiner Seltenheit und kann kleine dauerhafte Boni freischalten. Ruhmpunkte sind dauerhaft und werden nicht ausgegeben.</p><button type="button" onclick="toggleEarnedAchievements()">${hideEarnedAchievements?'Erreichte Achievements einblenden':'Erreichte Achievements ausblenden'}</button>${achievements.filter(([id])=>{if(hideEarnedAchievements&&s.achievements.includes(id))return false;const pi=prestigeIds.indexOf(id);if(pi>=0&&pi>prestigeStage())return false;const idx=resourceProgression.findIndex(([resource])=>'unlock_'+resource===id);if(idx<0){const match=/^resource_(.+)_(1|100|1000)$/.exec(id);if(match&&!s.achievements.includes(id)){const [,rid,qty]=match;return qty==='1'||(qty==='100'&&(s.achievements.includes('resource_'+rid+'_1')))||(qty==='1000'&&s.achievements.includes('resource_'+rid+'_100'));}return true;}if(s.achievements.includes(id))return true;const resource=resourceProgression[idx][0];const chain=resourceProgression.filter(x=>!!woodRarities[x[0]]===!!woodRarities[resource]).map(x=>x[0]);const i=chain.indexOf(resource);return i===0||progressUnlocked(chain[i-1]);}).map(([id,name,desc])=>`<div class="item achievement-rarity rarity-${achievementRarities[id]||'common'}" style="margin:10px 0"><span class="badge ${s.achievements.includes(id)?'earned':''}">${s.achievements.includes(id)?'🏆 Freigeschaltet':'🔒 Offen'}</span> <b>${name}</b> <span class="small rarity-label">${rarityNames[achievementRarities[id]||'common']}</span><p>${desc}</p><p class="small" style="color:#a9e8c5">🎁 ${achievementRewardText(id)} · ✨ +${fmt(xpForAchievement(id))} XP</p></div>`).join('')}</section>`+realmExpansionAchievement()+milestonePanel();
+document.getElementById('content').innerHTML=html;if(tab==='Crafting')for(const r of recipes)updateCraftAmount(r.id);renderTasksSidebar();renderDailyDropSidebar();const near=nearAchievements();document.getElementById('near-achievements').innerHTML=near;document.getElementById('mobile-near-achievements').innerHTML=near;renderConstructionSidebar();renderSmeltingSidebar();renderResearchSidebar();renderExpeditionSidebar();renderRealmSidebar();renderMaterialPins();refreshMarket();positionAchievementPopups()}
+function renderConstructionSidebar(){
+ const box=document.getElementById('construction-sidebar-content');if(!box)return;
+ const active=s.constructions||[];
+ box.innerHTML=`<p class="small">🏗️ ${active.length} / ${constructionSlots()} Baustellen · 👷 ${active.length} Einwohner</p>`+(active.length?active.map(c=>{
+ const b=buildings.find(x=>x.id===c.id),total=Math.max(1,c.ends-c.started),pct=Math.max(0,Math.min(100,100*(Date.now()-c.started)/total));
+ return `<div class="research-entry"><div class="research-name">${escapeHtml(b?.icon||'🏗️')} ${escapeHtml(b?.name||c.id)}</div><div class="research-time"><span>Restzeit</span><b>${timeLeft((c.ends-Date.now())/1000)}</b></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`;
+ }).join(''):'<p class="small">Keine laufenden Bauarbeiten.</p>');
+}
+function renderResearchSidebar(){
+ const box=document.getElementById('research-sidebar-content');if(!box)return;
+ const active=(s.researches||[]).slice().sort((a,b)=>a.ends-b.ends);
+ box.innerHTML=`<p class="small">🔬 ${active.length} / ${slots()} Plätze belegt</p>`+(active.length?active.map(r=>{
+ const u=allTechs.find(x=>x.id===r.id);const total=Math.max(1,r.ends-r.started);
+ const pct=Math.max(0,Math.min(100,100*(Date.now()-r.started)/total));
+ return `<div class="research-entry"><div class="research-name">🔬 ${escapeHtml(u?.name||r.id)}</div><div class="research-time"><span>Restzeit</span><b>${timeLeft((r.ends-Date.now())/1000)}</b></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`;
+ }).join(''):'<p class="small">Keine aktive Forschung. Starte eine im Forschungsbaum.</p>');
+}
+function renderExpeditionSidebar(){
+ const box=document.getElementById('expedition-sidebar-content');if(!box)return;
+ const active=activeDungeons();
+ box.innerHTML=`<p class="small">⚔️ Dungeon-Gruppen: ${active.length} / ${dungeonSlots()} · je 2 Einwohner</p>`+(active.length?active.map(e=>{const r=regions.find(x=>x.id===e.id);const pct=Math.min(100,Math.max(0,100*(Date.now()-e.started)/(e.ends-e.started)));return `<div class="research-entry"><b>${escapeHtml(r?.name||e.id)}</b><div class="small">Restzeit: ${timeLeft((e.ends-Date.now())/1000)}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>`}).join(''):'<p class="small">Keine Gruppe unterwegs.</p>');
+}
+function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+// Laufende Timer aktualisieren, ohne jede Sekunde die anklickbaren Menüs neu aufzubauen.
+function refreshActionAvailability(){
+ // Nur dynamische Material-Buttons aktualisieren; keine Eingabefelder verlieren ihren Fokus.
+ if(tab==='Crafting')for(const r of recipes){const card=document.getElementById('recipe-'+r.id);if(!card)continue;const btns=card.querySelectorAll('.craft-amount-actions button');[1,5,10].forEach((n,i)=>{if(btns[i])btns[i].disabled=(['cleanstone','glass'].includes(r.id)?0:resourceGateMissing(r.id).length)>0||!recipeUnlocked(r.id)||!canPay(scaledCraftCost(r.cost,n))||(s.smelting||[]).length>=furnaceSlots()})}
+ if(tab==='Gebäudeliste'){
+  document.querySelectorAll('[data-house-upgrade]').forEach(btn=>{const i=Number(btn.dataset.houseUpgrade);btn.disabled=houseTier(i)>=5||builderMissing('house',houseTier(i)).length>0||!canPay(houseUpgradePrice(i))});
+  document.querySelectorAll('[data-production-upgrade]').forEach(btn=>{const [id,idx]=btn.dataset.productionUpgrade.split(':');const b=buildings.find(x=>x.id===id);if(b)btn.disabled=buildingUpgradeMissing(b,Number(idx)).length>0});
+ }
+ if(tab==='Gebäude')for(const b of buildings){const card=document.getElementById('building-'+b.id);if(!card)continue;const btn=card.querySelector('button');if(btn)btn.disabled=buildingMissing(b).length>0||!canPay(buildingCost(b))||usedPlots()>=plotLimit()||freeResidents()<workersNeededForBuild(b)}
+ if(tab==='Forschung')for(const u of allTechs){const card=document.getElementById('research-'+u.id);if(!card)continue;const btn=card.querySelector('button');if(btn)btn.disabled=s.upgrades.includes(u.id)||s.researches.some(x=>x.id===u.id)||s.queue.includes(u.id)||s.researches.length>=slots()||freeResidents()<1||researchMissing(u).length>0||!canPay(u.cost)||!canFinanceResearch(u)}
+}
+function refreshLiveUI(){
+ document.getElementById('level').textContent='🏆 Achievement-Level '+level();updateJobHeader();
+ document.getElementById('coins').textContent='🏆 '+fmt(s.coins)+' Ruhmpunkte';updateTalerDisplay();
+ const prod=production();
+ renderInventoryDock(prod);
+ renderTasksSidebar();renderDailyDropSidebar();renderConstructionSidebar();renderSmeltingSidebar();renderSmeltingSidebar();renderResearchSidebar();renderExpeditionSidebar();renderRealmSidebar();renderMaterialPins();refreshMarket();
+ refreshActionAvailability();
+ const mc=document.getElementById('merchant-countdown');if(mc){mc.textContent=timeLeft(((merchantSlot()+1)*10800000-Date.now())/1000);if(s.merchantVisibleSlot!==merchantSlot()){s.merchantVisibleSlot=merchantSlot();if(tab==='Wanderhändler')render()}}
+ 
+ // Laufende Forschungen im offenen Technologiebaum jede Sekunde aktualisieren.
+ document.querySelectorAll('.research-live').forEach(el=>{
+  const research=s.researches.find(r=>r.id===el.dataset.researchId);
+  if(!research)return;
+  const remaining=el.querySelector('.research-live-time');
+  const bar=el.querySelector('.research-live-bar');
+  if(remaining)remaining.textContent=timeLeft((research.ends-Date.now())/1000);
+  if(bar){const duration=Math.max(1,research.ends-research.started);bar.style.width=Math.max(0,Math.min(100,100*(Date.now()-research.started)/duration))+'%'}
+ });
+
+}
+function updateSidebarOffset(){const dock=document.getElementById('top-dock');if(dock)document.documentElement.style.setProperty('--looteria-sidebar-top',(Math.ceil(dock.getBoundingClientRect().height)+12)+'px')}
+window.addEventListener('resize',updateSidebarOffset);
+
+// V9.6: Cloud-Speicher. Einrichtung der SQL-Datei in Supabase ist erforderlich.
+const CLOUD_CODE_KEY='looteria-cloud-recovery-v1';
+const CLOUD_AUTO_KEY='looteria-cloud-auto-v1';
+let cloudCode=localStorage.getItem(CLOUD_CODE_KEY)||'',cloudLastSync=0,cloudBusy=false,cloudError='',cloudRemote=null,cloudRevision=0;
+function cloudEnabled(){return localStorage.getItem(CLOUD_AUTO_KEY)==='1'}
+function cloudGenerateCode(){const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase()}
+function cloudSaveCode(code){cloudCode=code;localStorage.setItem(CLOUD_CODE_KEY,code)}
+function cloudSetAuto(enabled){localStorage.setItem(CLOUD_AUTO_KEY,enabled?'1':'0');settingsRender();if(enabled)cloudSync(false)}
+function openSettings(){document.getElementById('settings-overlay').hidden=false;settingsRender()}
+function closeSettings(){document.getElementById('settings-overlay').hidden=true}
+function settingsRender(){const box=document.getElementById('settings-content');if(!box)return;box.innerHTML=`<section><h3>☁️ Cloud-Spielstand</h3><p class="small">Ohne Registrierung. Cloud-Speicherung erfordert Internet, anonyme Supabase-Anmeldung und das separate Datenbank-Setup. Der Spielstand bleibt immer auch lokal gespeichert.</p><p>Status: <b>${cloudBusy?'⏳ Synchronisiere …':cloudError?'🔴 '+escapeHtml(cloudError):cloudLastSync?'🟢 Letzte Cloud-Sicherung: '+new Date(cloudLastSync).toLocaleString('de-DE'):'⚪ Noch keine Cloud-Sicherung'}</b></p><label><input type="checkbox" id="cloud-auto" ${cloudEnabled()?'checked':''} onchange="cloudSetAuto(this.checked)"> Automatische Cloud-Sicherung (alle 60 Sekunden)</label><p><button onclick="cloudSync(true)" ${cloudBusy?'disabled':''}>☁️ Jetzt online sichern</button> <button onclick="cloudCheckRemote()" ${cloudBusy?'disabled':''}>🔍 Cloud-Spielstand prüfen</button></p>${cloudRemote?`<p>☁️ Gefundener Cloud-Stand: Level ${escapeHtml(String(cloudRemote.player_level||1))}, ${escapeHtml(String(cloudRemote.taler||0))} Taler, ${escapeHtml(String(Math.floor((cloudRemote.play_seconds||0)/3600)))} Stunden · ${escapeHtml(new Date(cloudRemote.updated_at).toLocaleString('de-DE'))}</p><button onclick="cloudRestore()">📥 Cloud-Spielstand wiederherstellen</button>`:''}<h4>🔑 Wiederherstellungscode</h4><p class="small">Der Code ist wie ein Passwort. Nicht öffentlich teilen! Wer ihn besitzt, kann den Cloud-Spielstand übernehmen.</p><p class="cloud-secret">${cloudCode?escapeHtml(cloudCode):'Noch kein Wiederherstellungscode erstellt.'}</p><button onclick="cloudShowCode()">${cloudCode?'🔑 Code anzeigen / kopieren':'🔑 Code erstellen'}</button> <button onclick="cloudShowQR()" ${cloudCode?'':'disabled'}>📱 QR-Code anzeigen</button><div id="cloud-qr"></div><h4>📲 Auf anderem Gerät fortsetzen</h4><input id="cloud-restore-code" type="text" autocomplete="off" placeholder="Wiederherstellungscode eingeben" style="width:100%"><button onclick="cloudClaimCode()" ${cloudBusy?'disabled':''}>🔓 Spielstand verbinden und prüfen</button><p class="small">Nach dem Verbinden wird der fremde Cloud-Spielstand zunächst nur als Vorschau angezeigt. Eine Übernahme kann die Verbindung auf dem bisherigen Gerät beenden.</p></section><section><h3>🎮 Darstellung</h3><label><input type="checkbox" id="reduce-motion" ${localStorage.getItem('looteria-reduce-motion')==='1'?'checked':''} onchange="document.body.classList.toggle('reduce-motion',this.checked);localStorage.setItem('looteria-reduce-motion',this.checked?'1':'0')"> Animationen reduzieren</label></section><section><h3>💾 Lokaler Spielstand</h3><button onclick="save(true)">💾 Jetzt speichern</button><button onclick="exportSave()">📤 Exportieren</button><button onclick="document.getElementById('importfile').click()">📥 Importieren</button><input hidden type="file" id="importfile" accept=".json,application/json" onchange="importSave(event)"><button class="danger" onclick="resetGame()">🆕 Neues Spiel</button><p class="small">Ein neues Spiel löscht nicht automatisch die Cloud-Sicherung. Vor einem Neustart bitte den alten Spielstand exportieren.</p></section><section><h3>ℹ️ Informationen</h3><p>Story of Looteria · Version ${LOOTERIA_VERSION}</p><p class="small">Cloud-Synchronisation ist optional. Eine Wiederherstellung erfordert den geheimen Code und eine funktionierende Cloud-Datenbank.</p></section>`}
+async function cloudAuth(){if(!mpSession?.access_token)await multiplayerConnect();if(!mpSession?.access_token)throw Error(mpError||'Online-Anmeldung nicht verfügbar')}
+async function cloudRpc(name,payload){return mpRequest('/rest/v1/rpc/'+name,{method:'POST',body:JSON.stringify(payload)})}
+async function cloudShowCode(){if(!cloudCode){if(!confirm('Neuen Wiederherstellungscode erstellen? Der Code wird erst mit der ersten erfolgreichen Cloud-Sicherung aktiv.'))return;cloudSaveCode(cloudGenerateCode())}settingsRender();try{await navigator.clipboard.writeText(cloudCode);notify('🔑 Wiederherstellungscode kopiert')}catch{notify('🔑 Code markieren und sicher aufbewahren')}}
+async function cloudShowQR(){if(!cloudCode)return;const box=document.getElementById('cloud-qr');box.textContent='QR-Code wird geladen …';try{if(!window.QRCode){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)})}box.textContent='';new QRCode(box,{text:location.origin+location.pathname+'#looteria-recover='+encodeURIComponent(cloudCode),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});notify('📱 QR-Code bereit – geheim halten!')}catch{box.textContent='QR-Code konnte nicht geladen werden (Internet benötigt). Der Wiederherstellungscode funktioniert weiterhin.'}}
+async function cloudSync(manual=false){if(cloudBusy||!navigator.onLine)return;if(!manual&&!cloudEnabled())return;cloudBusy=true;cloudError='';if(!cloudCode)cloudSaveCode(cloudGenerateCode());if(!cloudLastSync&&manual)notify('☁️ Cloud-Speicherung wird eingerichtet …');try{await cloudAuth();save();const result=await cloudRpc('looteria_cloud_put',{p_code:cloudCode,p_save:s,p_revision:cloudRevision});if(result?.conflict){cloudError='Cloud-Spielstand ist neuer. Bitte zuerst prüfen und wiederherstellen.';cloudRemote=null}else{cloudRevision=Number(result?.revision||cloudRevision+1);cloudLastSync=Date.now();cloudError='';if(manual)notify('☁️ Cloud-Spielstand gesichert')}}catch(e){cloudError=e.message||String(e);if(manual)notify('⚠️ Cloud-Sicherung fehlgeschlagen')}finally{cloudBusy=false;if(!document.getElementById('settings-overlay').hidden)settingsRender()}}
+async function cloudCheckRemote(){if(cloudBusy)return;cloudBusy=true;cloudError='';try{await cloudAuth();const data=await cloudRpc('looteria_cloud_get',{});cloudRemote=data?.save?data:null;if(data?.revision)cloudRevision=Number(data.revision);if(!cloudRemote)notify('Noch kein Cloud-Spielstand vorhanden');else notify('☁️ Cloud-Spielstand gefunden')}catch(e){cloudError=e.message||String(e)}finally{cloudBusy=false;settingsRender()}}
+function cloudRestore(){if(!cloudRemote?.save)return;const d=cloudRemote.save;if(d.version!==1||!d.res||!d.buildings||!Array.isArray(d.upgrades)||!Array.isArray(d.regions)){notify('Ungültiges Cloud-Speicherformat');return}const message='Lokaler Spielstand: Level '+level()+', '+fmt(s.tradeCoins||0)+' Taler, '+Math.floor((s.activeSeconds||0)/3600)+' Stunden.\nCloud-Spielstand: Level '+(cloudRemote.player_level||1)+', '+fmt(cloudRemote.taler||0)+' Taler, '+Math.floor((cloudRemote.play_seconds||0)/3600)+' Stunden.\n\nLokalen Spielstand ersetzen? Bitte vorher exportieren!';if(!confirm(message))return;s={...initial(),...d,res:{...initial().res,...d.res},last:Date.now()};cloudRevision=Number(cloudRemote.revision||0);save();closeSettings();render();notify('☁️ Cloud-Spielstand wiederhergestellt')}
+async function cloudClaimCode(){if(cloudBusy)return;const code=(document.getElementById('cloud-restore-code')?.value||'').replace(/[^0-9a-f]/gi,'').toUpperCase();if(!/^[0-9A-F]{64}$/.test(code)){notify('⚠️ Ungültiger Wiederherstellungscode');return}if(!confirm('Cloud-Spielstand auf diesem Gerät verbinden? Der Zugriff des bisherigen Geräts kann dadurch enden.'))return;cloudBusy=true;cloudError='';try{await cloudAuth();const result=await cloudRpc('looteria_cloud_claim',{p_code:code});if(!result?.ok)throw Error('Code nicht gefunden oder nicht mehr gültig');cloudSaveCode(code);cloudRevision=Number(result.revision||0);cloudBusy=false;await cloudCheckRemote();notify('🔑 Cloud-Spielstand verbunden – bitte Vorschau prüfen')}catch(e){cloudError=e.message||String(e);cloudBusy=false;settingsRender()}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('settings-overlay').hidden)closeSettings()});
+document.getElementById('settings-overlay').addEventListener('click',e=>{if(e.target.id==='settings-overlay')closeSettings()});
+document.body.classList.toggle('reduce-motion',localStorage.getItem('looteria-reduce-motion')==='1');
+const cloudFragment=new URLSearchParams(location.hash.slice(1)).get('looteria-recover');if(cloudFragment){history.replaceState(null,'',location.pathname+location.search);setTimeout(()=>{openSettings();const input=document.getElementById('cloud-restore-code');if(input)input.value=cloudFragment;notify('📱 Wiederherstellungscode erkannt. Verbinden bestätigen.')},1200)}
+setInterval(()=>cloudSync(false),60000);
+
+load();render();updateSidebarOffset();if(pendingOfflineSummary)showOfflineSummary(pendingOfflineSummary);let previous=performance.now();setInterval(()=>{
+ const now=performance.now();const dt=(now-previous)/1000;previous=now;
+ const before=[level(),s.upgrades.length,s.regions.length,s.achievements.length,s.researches.length,JSON.stringify(s.milestones),s.expedition?.id||''].join('|');
+ tick(dt);
+ const after=[level(),s.upgrades.length,s.regions.length,s.achievements.length,s.researches.length,JSON.stringify(s.milestones),s.expedition?.id||''].join('|');
+ if(before!==after)render();else refreshLiveUI();
+},1000);setInterval(()=>save(),10000);window.addEventListener('beforeunload',()=>save());document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+
