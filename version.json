@@ -1,1 +1,1 @@
-{"version": "11.9.6", "notes": "Ofen: Gesamtmaterialbedarf und Lagerbestand je gewählter Stückzahl live anzeigen; Supabase-Ranglistenstruktur geprüft"}
+{"version": "11.9.7", "notes": "Globale Statistik-Ranglisten: persönliche Werte in Supabase stats synchronisieren, echte Platzierungen berechnen und automatisch aktualisieren."}
