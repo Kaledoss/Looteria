@@ -1,1 +1,5 @@
-{"version": "11.9.8", "name": "Story of Looteria", "notes": "Forschungsnetzwerk, Forschungszentrum, Warteschlange, wiederholbare Forschung und Forschungs-Achievements"}
+{
+  "version": "11.9.8.1",
+  "name": "Story of Looteria",
+  "notes": "Freischaltungen in Sammeln und Weltkarte integriert; Achievement-Popups zeigen echte Belohnungen"
+}
