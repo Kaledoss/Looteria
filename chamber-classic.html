@@ -69,26 +69,50 @@ function makeCardTexture(){
 }
 const card=new THREE.Group();const cardFront=new THREE.Mesh(new THREE.PlaneGeometry(1.12,1.68),new THREE.MeshBasicMaterial({map:makeCardTexture(),side:THREE.DoubleSide}));
 card.add(cardFront);
-// Same illustration as the actual drawn collectible (name and artwork are bound to one card definition).
+// The reward is passed as a short card id/path, never as a data URI.
 const mobParams=new URLSearchParams(location.search);
-const mobName=mobParams.get('mob'),mobArt=mobParams.get('art'),mobRarity=mobParams.get('rarity')||'common';
-if(mobName&&mobArt&&/^assets\/minecraft\/mob_\d+\.webp$/.test(mobArt)){
- const art=new Image();art.onerror=()=>{console.error('Kartenbild konnte nicht geladen werden:',mobArt);const cv=document.createElement('canvas');cv.width=512;cv.height=768;const g=cv.getContext('2d');g.fillStyle='#102038';g.fillRect(0,0,512,768);g.fillStyle='#fff2d4';g.font='bold 37px sans-serif';g.textAlign='center';g.fillText(mobName,256,120);g.font='25px sans-serif';g.fillText('Bild konnte nicht geladen werden',256,390);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;cardFront.material.map=tx;cardFront.material.needsUpdate=true;};art.onload=()=>{
-  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=768;const ctx=canvas.getContext('2d');
-  const palette={common:'#87929e',uncommon:'#3cc875',rare:'#438ff5',epic:'#ae62ee',legendary:'#e7ad45'};
-  const color=palette[mobRarity]||palette.common;
-  ctx.fillStyle='#0b1724';ctx.fillRect(0,0,512,768);
-  ctx.fillStyle=color;ctx.fillRect(12,12,488,744);ctx.fillStyle='#111b2b';ctx.fillRect(24,24,464,720);
-  const scale=Math.max(420/art.width,490/art.height),iw=art.width*scale,ih=art.height*scale;
-  ctx.save();ctx.beginPath();ctx.rect(44,120,424,495);ctx.clip();ctx.drawImage(art,256-iw/2,367-ih/2,iw,ih);ctx.restore();
-  ctx.fillStyle='#09101b';ctx.fillRect(32,28,448,80);ctx.fillRect(32,632,448,104);
-  ctx.fillStyle='#fff4d9';ctx.font='bold 34px system-ui';ctx.textAlign='center';
-  const label=mobName.length>20?mobName.slice(0,20)+'…':mobName;ctx.fillText(label,256,82);
-  ctx.font='bold 27px system-ui';ctx.fillStyle=color;
-  ctx.fillText(({common:'GEWÖHNLICH',uncommon:'UNGEWÖHNLICH',rare:'SELTEN',epic:'EPISCH',legendary:'LEGENDÄR'})[mobRarity]||'SAMMELKARTE',256,695);
-  const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
-  cardFront.material.map=tex;cardFront.material.needsUpdate=true;
- };art.src=mobArt;
+const embedded=mobParams.has('embed');
+let rewardReady=!embedded, requestedReward=null, requestSerial=0;
+const rarityColors={common:'#87929e',uncommon:'#3cc875',rare:'#438ff5',epic:'#ae62ee',legendary:'#e7ad45'};
+function renderRewardCard(name,artPath,rarity){
+ if(!name || !/^assets\/minecraft\/mob_\d+\.webp$/.test(artPath||''))return;
+ const serial=++requestSerial;rewardReady=false;
+ const art=new Image();art.decoding='async';
+ art.onload=()=>{
+  if(serial!==requestSerial)return;
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=768;
+  const ctx=canvas.getContext('2d');const color=rarityColors[rarity]||rarityColors.common;
+  ctx.fillStyle=color;ctx.fillRect(0,0,512,768);
+  ctx.fillStyle='#111b2b';ctx.fillRect(16,16,480,736);
+  ctx.fillStyle='#09101b';ctx.fillRect(34,122,444,492);
+  const scale=Math.max(420/art.width,468/art.height),iw=art.width*scale,ih=art.height*scale;
+  ctx.save();ctx.beginPath();ctx.rect(42,132,428,474);ctx.clip();ctx.drawImage(art,256-iw/2,369-ih/2,iw,ih);ctx.restore();
+  ctx.fillStyle='#09101b';ctx.fillRect(30,28,452,88);ctx.fillRect(30,624,452,112);
+  ctx.fillStyle='#fff4d9';ctx.textAlign='center';ctx.font='bold 36px system-ui';
+  ctx.fillText(name.length>20?name.slice(0,20)+'…':name,256,85);
+  ctx.font='bold 28px system-ui';ctx.fillStyle=color;
+  ctx.fillText(({common:'GEWÖHNLICH',uncommon:'UNGEWÖHNLICH',rare:'SELTEN',epic:'EPISCH',legendary:'LEGENDÄR'})[rarity]||'SAMMELKARTE',256,693);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  const old=cardFront.material.map;cardFront.material.map=texture;cardFront.material.needsUpdate=true;
+  if(old)old.dispose();rewardReady=true;
+ };
+ art.onerror=()=>{if(serial!==requestSerial)return;console.error('Fehlendes Kartenbild',artPath);rewardReady=false;};
+ art.src=new URL(artPath,location.href).href;
+}
+function receiveReward(payload){
+ if(!payload||payload.looteria!=='reward'||typeof payload.name!=='string')return;
+ requestedReward=payload;
+ renderRewardCard(payload.name,payload.image,payload.rarity);
+}
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin)return;
+ receiveReward(event.data);
+});
+if(embedded){
+ // Never show the old Creeper sample while a real reward is pending.
+ cardFront.visible=false;
+ const n=mobParams.get('mob'),a=mobParams.get('art');
+ if(n&&a)receiveReward({looteria:'reward',name:n,image:a,rarity:mobParams.get('rarity')||'common'});
 }
 card.position.set(0,1.7,0);card.visible=false;scene.add(card);
 const cardAura=new THREE.Mesh(new THREE.PlaneGeometry(1.26,1.82),new THREE.MeshBasicMaterial({color:0xffd37b,transparent:true,opacity:.24,side:THREE.DoubleSide,depthWrite:false}));cardAura.position.z=-.03;card.add(cardAura);
@@ -97,7 +121,7 @@ for(let i=0;i<85;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.04
 let mode='idle',start=0,skipped=false,prev=0;
 const status=document.querySelector('#status'),reward=document.querySelector('#reward'),openBtn=document.querySelector('#open'),skipBtn=document.querySelector('#skip');
 function reset(){mode='idle';hinge.rotation.x=0;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=0;particles.forEach(q=>q.p.visible=false);card.visible=false;card.position.set(0,1.7,0);card.scale.setScalar(.2);camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);status.textContent='Bereit, die Classic-Kiste zu öffnen.';reward.textContent='';openBtn.disabled=false;skipBtn.disabled=true}
-function finish(){mode='done';hinge.rotation.x=-1.75;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=12;card.visible=true;card.position.y=3.25;card.scale.setScalar(1);status.textContent='Die Classic-Kiste wurde geöffnet!';reward.textContent='🎴 '+(mobName||'Creeper')+' · '+mobRarity;openBtn.disabled=true;skipBtn.disabled=true}
+function finish(){mode='done';hinge.rotation.x=-1.75;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=12;card.visible=true;cardFront.visible=rewardReady;card.position.y=3.25;card.scale.setScalar(1);status.textContent='Die Classic-Kiste wurde geöffnet!';reward.textContent='🎴 '+(mobName||'Creeper')+' · '+mobRarity;openBtn.disabled=true;skipBtn.disabled=true}
 openBtn.onclick=()=>{mode='opening';start=performance.now();status.textContent='Die Kiste beginnt zu reagieren …';reward.textContent='';openBtn.disabled=true;skipBtn.disabled=false};
 skipBtn.onclick=finish;document.querySelector('#reset').onclick=reset;
 function animate(t){requestAnimationFrame(animate);let dt=Math.min((t-prev)/1000,.05);prev=t;
@@ -110,7 +134,7 @@ if(s>2.5)hinge.rotation.x=-1.75*Math.min(1,Math.max(0,(s-2.5)/1.1));
 let k=Math.min(1,s/5);camera.position.lerp(new THREE.Vector3(4.3,3.4,6.4),.02*k);
 camera.lookAt(0,1.7,0);
 if(s>3){status.textContent='Magisches Licht steigt aus der Truhe …';particles.forEach((q,i)=>{let a=s-3-q.seed*.015;if(a>0){q.p.visible=true;let v=(a%2.5)/2.5;q.p.position.set(Math.sin(q.seed*3)*(.3+v*1.5),1.8+v*3.1,Math.cos(q.seed*2)*(.3+v*1.2));q.p.material.opacity=(1-v)*.95;q.p.rotation.y+=dt*2}})}
-if(s>3.35){let k=Math.min(1,(s-3.35)/1.8);let smooth=k*k*(3-2*k);card.visible=true;card.position.y=1.7+1.55*smooth+Math.sin(t*.003)*.035;card.scale.setScalar(.2+.8*smooth);card.rotation.y=Math.sin(t*.0014)*.13;}
+if(s>3.35){let k=Math.min(1,(s-3.35)/1.8);let smooth=k*k*(3-2*k);card.visible=true;cardFront.visible=rewardReady;card.position.y=1.7+1.55*smooth+Math.sin(t*.003)*.035;card.scale.setScalar(.2+.8*smooth);card.rotation.y=Math.sin(t*.0014)*.13;}
 if(s>=6.4)finish();
 }
 renderer.render(scene,camera)}

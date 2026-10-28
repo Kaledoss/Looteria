@@ -1302,6 +1302,16 @@ function show3DCrate(type,card,details={}){
  const result=type==='booster'?`${BOOSTER_KINDS.find(x=>x[0]===details.kind)?.[1]||'Booster'} · ${Math.round(details.strength*100)} % · ${details.hours} Std.`:card?`${card.name}`:rarity==='classic_crate'?'📦 Eine Classic-Kiste erhalten':'Belohnung erhalten';
  overlay.innerHTML=`<iframe title="3D-Kistenkammer" src="${source}?embed=1&choice=${encodeURIComponent(choice)}${cardQuery}"></iframe><div class="chamber-ui"><strong id="chamber-message">✨ Die Belohnung wird enthüllt …</strong><div id="chamber-result" hidden>${escapeHtml(result)}</div><button type="button" id="chamber-skip">⏭ Überspringen</button><button type="button" id="chamber-close">✕ Schließen</button></div>`;
  document.body.appendChild(overlay);
+ const frame=overlay.querySelector('iframe');
+ if(type==='classic'&&card&&cardUrl){
+  const payload={looteria:'reward',name:card.name,image:cardUrl,rarity};
+  frame.addEventListener('load',()=>{
+   // The module may initialize shortly after the iframe load event.
+   for(const delay of [0,400,1100,2200])setTimeout(()=>{
+    if(frame.isConnected)frame.contentWindow?.postMessage(payload,location.origin);
+   },delay);
+  });
+ }
  const msg=overlay.querySelector('#chamber-message'),res=overlay.querySelector('#chamber-result');
  let timer=setTimeout(()=>{res.hidden=false;msg.textContent='🎉 Deine Belohnung:'},type==='classic'?5800:type==='loot'?6700:6500);
  overlay.querySelector('#chamber-skip').onclick=()=>{clearTimeout(timer);res.hidden=false;msg.textContent='🎉 Deine Belohnung:';try{overlay.querySelector('iframe').contentWindow.postMessage({looteria:'skip'},'*')}catch(e){}};

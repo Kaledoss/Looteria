@@ -1,6 +1,6 @@
 {
   "version": "12.3.6",
   "name": "Story of Looteria",
-  "notes": "Kartenbilder über kurze lokale Dateipfade; 3D-Kistenkammer repariert; Collectibles als Sammelkarten",
-  "build": "12.3.6-bildfix2-short-urls"
+  "notes": "Kartenbild wird über kurze Pfade und iframe-Nachrichten geladen; kein Creeper-Platzhalter bei gezogenen Karten.",
+  "build": "12.3.6-bildfix3"
 }
