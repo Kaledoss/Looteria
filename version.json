@@ -1,4 +1,4 @@
 {
-  "version": "11.9.2",
-  "notes": "Achievement-XP-Leiste über beide Werte; Ofenstart und Buttonzustand korrigiert; abgeschlossene Forschungen ausblendbar."
+  "version": "11.9.3",
+  "notes": "Ofen-Upgrades und Chargen, keine Ofen-Arbeitskräfte, Achievement- und Dungeon-Hinweise, Statistik-Platzhalter bis Datenbankanbindung."
 }
