@@ -87,6 +87,32 @@ function makeCardTexture(){
 }
 const card=new THREE.Group();const cardFront=new THREE.Mesh(new THREE.PlaneGeometry(1.12,1.68),new THREE.MeshBasicMaterial({map:makeCardTexture(),side:THREE.DoubleSide}));
 card.add(cardFront);card.position.set(0,1.7,0);card.visible=false;scene.add(card);
+
+// Alpha 12.3.7: show the actual drawn player card instead of a sample.
+let currentRewardName='',rewardImageSerial=0;
+function setLootReward(data){
+ if(!data||data.looteria!=='reward'||!data.image)return;
+ const allowed=/^assets\/(?:players\/[a-z]+|minecraft\/mob_\d+)\.webp$/;
+ if(!allowed.test(data.image))return;
+ currentRewardName=String(data.name||'Sammelkarte');
+ const serial=++rewardImageSerial;
+ const art=new Image();
+ art.onload=()=>{
+  if(serial!==rewardImageSerial)return;
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=768;
+  const c=canvas.getContext('2d');c.fillStyle='#091424';c.fillRect(0,0,512,768);
+  // Player images already contain full ornate card, labels and border.
+  c.drawImage(art,0,0,512,768);
+  const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+  const prev=cardFront.material.map;cardFront.material.map=tex;cardFront.material.needsUpdate=true;
+  if(prev&&prev!==tex)prev.dispose();
+ };
+ art.onerror=()=>console.warn('Lootchest: Kartenbild nicht geladen',data.image);
+ art.src=new URL(data.image,location.href).href;
+}
+window.addEventListener('message',e=>{if(e.origin===location.origin)setLootReward(e.data)});
+const rewardParams=new URLSearchParams(location.search);
+if(rewardParams.has('mob')&&rewardParams.has('art'))setLootReward({looteria:'reward',name:rewardParams.get('mob'),image:rewardParams.get('art')});
 const cardAura=new THREE.Mesh(new THREE.PlaneGeometry(1.26,1.82),new THREE.MeshBasicMaterial({color:0xffd37b,transparent:true,opacity:.24,side:THREE.DoubleSide,depthWrite:false}));cardAura.position.z=-.03;card.add(cardAura);
 const particles=[];let particleMat=new THREE.MeshBasicMaterial({color:0xff3e8e,transparent:true,opacity:0,depthWrite:false});
 for(let i=0;i<145;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.045),particleMat.clone());p.visible=false;scene.add(p);particles.push({p,seed:i*17.31,life:0})}
@@ -112,7 +138,7 @@ function setRarity(){const [name,color]=rarities[rarity.value];glow.color.setHex
 rarity.onchange=()=>{setRarity();if(mode==='done')finish()};
 const status=document.querySelector('#status'),reward=document.querySelector('#reward'),openBtn=document.querySelector('#open'),skipBtn=document.querySelector('#skip');
 function reset(){mode='idle';hinge.rotation.x=0;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=0;burst.intensity=0;particles.forEach(q=>q.p.visible=false);sparks.forEach(q=>q.m.visible=false);shockwaves.forEach(q=>q.visible=false);flash.style.opacity='0';card.rotation.set(0,0,0);card.visible=false;card.position.set(0,1.7,0);card.scale.setScalar(.2);camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);status.textContent='Bereit, die Lootchest zu öffnen. (Vorschau ohne Ruhmpunkte)';reward.textContent='';openBtn.disabled=false;skipBtn.disabled=true;setRarity()}
-function finish(){mode='done';hinge.rotation.x=-1.75;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=12;burst.intensity=rarity.value==='mega'?65:rarity.value==='jackpot'?35:12;card.visible=true;card.position.y=3.25;card.scale.setScalar(1.25);card.rotation.set(0,0,0);flash.style.opacity='0';status.textContent='Die Lootchest wurde geöffnet!';reward.textContent=rarity.value==='classic'?'📦 Belohnung: 1 Classic-Kiste':'🎴 Beispielkarte · '+rarities[rarity.value][0];openBtn.disabled=true;skipBtn.disabled=true}
+function finish(){mode='done';hinge.rotation.x=-1.75;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=12;burst.intensity=rarity.value==='mega'?65:rarity.value==='jackpot'?35:12;card.visible=true;card.position.y=3.25;card.scale.setScalar(1.25);card.rotation.set(0,0,0);flash.style.opacity='0';status.textContent='Die Lootchest wurde geöffnet!';reward.textContent=rarity.value==='classic'?'📦 Belohnung: 1 Classic-Kiste':'🎴 '+(currentRewardName||'Beispielkarte')+' · '+rarities[rarity.value][0];openBtn.disabled=true;skipBtn.disabled=true}
 openBtn.onclick=()=>{mode='opening';start=performance.now();status.textContent='Die Kiste beginnt zu reagieren …';reward.textContent='';openBtn.disabled=true;skipBtn.disabled=false};
 skipBtn.onclick=finish;document.querySelector('#reset').onclick=reset;
 function animate(t){requestAnimationFrame(animate);let dt=Math.min((t-prev)/1000,.05);prev=t;

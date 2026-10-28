@@ -1,6 +1,6 @@
 {
-  "version": "12.3.6",
+  "version": "12.3.7",
   "name": "Story of Looteria",
-  "notes": "Kartenbild wird über kurze Pfade und iframe-Nachrichten geladen; kein Creeper-Platzhalter bei gezogenen Karten.",
-  "build": "12.3.6-bildfix3"
+  "notes": "Neue OPSUCHT-Spielerkarten, Fantasy-Mobkarten, 10 Bauplätze, Ofen-Countdown, Dungeon-Tooltips",
+  "build": "12.3.7-players-cards-dungeons"
 }
