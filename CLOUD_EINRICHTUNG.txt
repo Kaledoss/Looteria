@@ -1,0 +1,16 @@
+Story of Looteria V11.9.8.6 – Cloud-Speicherung ohne E-Mail
+
+1. In Supabase: Authentication > Providers > Anonymous Sign-Ins aktivieren.
+2. SQL Editor öffnen, SUPABASE_CLOUD_SETUP.sql ausführen.
+3. Spiel auf HTTPS (z. B. GitHub Pages) öffnen, Einstellungen > Cloud-Spielstand.
+4. Wiederherstellungscode erstellen und an einem sicheren Ort aufbewahren.
+5. Cloud-Sicherung aktivieren und einmal „Jetzt online sichern“ drücken.
+6. Auf anderem Gerät: Einstellungen > Cloud-Spielstand > Code eingeben > verbinden > Vorschau > wiederherstellen.
+
+WICHTIG:
+- Vor der ersten Cloud-Sicherung einen lokalen Spielstand exportieren.
+- Der 64-stellige Code ist ein Zugangsschlüssel; niemals veröffentlichen.
+- Cloud-Spielstände bleiben clientseitig manipulierbar. Cloud ist keine Anti-Cheat-Lösung.
+- Eine Übernahme per Code entzieht dem alten anonymen Konto den Cloud-Zugriff.
+- Neue Spiele überschreiben bei aktiver Auto-Sicherung den Cloud-Spielstand: vorher Backup erstellen / Auto-Sicherung deaktivieren.
+- Die Datenbankeinrichtung ist erforderlich; ohne SQL funktioniert die Cloud nicht.

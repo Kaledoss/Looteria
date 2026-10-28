@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.4",
+  "version": "11.9.8.6",
   "name": "Story of Looteria",
-  "notes": "Forschungs-Countdown live, deutsche Jobbezeichnungen, farbige Warteschlange"
+  "notes": "Cloud-Speicher mit Wiederherstellungscode; Supabase SQL Einrichtung erforderlich"
 }
