@@ -1,5 +1,6 @@
 {
-  "version": "12.2",
+  "version": "12.3",
   "name": "Story of Looteria",
-  "notes": "Alpha 12.2: Bau-Freischaltungen, Builder-XP, automatische Bauaktualisierung und Schwarzes Brett."
+  "notes": "Alpha 12.3: Ruhmpunkte-Kisten mit sichtbaren Dropchancen und Sammelkarten-Platzhaltern, Collectibles, Dungeonangebote am Schwarzen Brett, neue Seitenleisten-Steuerung und Expeditionslevel im Kopfbereich.",
+  "build": "12.3-cards-dungeons-sidebar-20261028"
 }
