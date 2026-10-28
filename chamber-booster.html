@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Story of Looteria – Booster-Kaffeemaschine Prototyp 05</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090d16;color:#f4e8d3;font-family:system-ui,Segoe UI,sans-serif;overflow:hidden}
+#scene{position:fixed;inset:0}#scene canvas{display:block}
+header{position:absolute;top:18px;left:20px;right:20px;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{margin:0;font-size:clamp(18px,2.3vw,29px);text-shadow:0 3px 12px #000}small{color:#c5ad83}
+.panel{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 30px));background:linear-gradient(140deg,#202335f0,#101826f5);border:2px solid #947345;border-radius:18px;padding:17px 20px;text-align:center;box-shadow:0 12px 50px #000b}
+button{border:1px solid #efb85d;background:linear-gradient(#a93527,#6b191b);color:#fff3da;border-radius:10px;padding:12px 22px;font-weight:750;cursor:pointer;margin:5px;font-size:15px}
+select{background:#1c3041;color:#f9e8c6;border:1px solid #7a8ca3;padding:7px 10px;border-radius:8px;margin:6px}button.secondary{background:#243448;border-color:#59728e}button:disabled{opacity:.5;cursor:not-allowed}
+#status{min-height:23px;color:#f8d48e;margin-bottom:8px}#reward{font-size:22px;font-weight:800;color:#ffdb7a;min-height:28px}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:#080d16;color:#f4c879;font-size:20px}
+.badge{padding:7px 12px;border:1px solid #846b4b;border-radius:10px;background:#131a27c9}
+@media(max-width:600px){header{top:10px;left:10px;right:10px}.badge{display:none}.panel{bottom:10px;padding:12px}button{padding:10px 14px}}
+ #flash{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,#f9ffff 0%,#6bdfff 20%,transparent 65%);opacity:0;mix-blend-mode:screen;z-index:2}body.embedded header,body.embedded .panel{display:none!important}body.embedded{overflow:hidden}</style></head>
+<body><div id="scene"></div><div id="flash"></div><div id="loading">3D-Kistenkammer wird geladen …</div>
+<header><div><h1>👑 Story of Looteria · Kistenkammer</h1><small>Prototyp 05 · Booster-Kaffeemaschine · noch nicht ins Spiel integriert</small></div><div class="badge">Moderne 3D-Espressomaschine · Kaffee · Dampf · Booster</div></header>
+<section class="panel"><div id="status">Bereit, den Booster-Kaffee zuzubereiten.</div><div id="reward"></div><label for="boosterType">Test-Booster: </label><select id="boosterType"><option value="production">Produktivität</option><option value="build">Baugeschwindigkeit</option><option value="research">Forschungsgeschwindigkeit</option></select><br>
+<button id="open" disabled>☕ Booster zubereiten</button><button id="skip" class="secondary" disabled>⏭ Überspringen</button><button id="reset" class="secondary">↻ Zurücksetzen</button>
+</section>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b0e18);scene.fog=new THREE.FogExp2(0x0b0e18,.042);
+const camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,.1,100);camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;document.querySelector('#scene').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x7696c7,0x2e1c10,1.1));
+function light(c,i,x,y,z,r){let p=new THREE.PointLight(c,i,r,2);p.position.set(x,y,z);scene.add(p);return p}
+const fireL=light(0xff8d39,42,-4,2.8,-2,9),fireR=light(0xff8d39,42,4,2.8,-2,9);
+const glow=light(0xffd477,0,0,2.0,0,6);
+const stone=new THREE.MeshStandardMaterial({color:0x343b4b,roughness:.93});
+const darkstone=new THREE.MeshStandardMaterial({color:0x222b3b,roughness:.9});
+const gold=new THREE.MeshStandardMaterial({color:0xb88c42,metalness:.75,roughness:.28});
+const iron=new THREE.MeshStandardMaterial({color:0x24232a,metalness:.55,roughness:.42});
+function box(parent,w,h,d,x,y,z,mat,cast=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=cast;m.receiveShadow=true;parent.add(m);return m}
+box(scene,22,.35,20,0,-.22,0,stone,false);
+box(scene,22,9,.6,0,4,-7,darkstone,false);
+for(let x=-10;x<=10;x+=2){for(let z=-6;z<=8;z+=2){box(scene,1.94,.05,1.94,x,-.02,z,((x+z)%4===0)?darkstone:stone,false)}}
+for(let x=-10;x<=10;x+=2.5){box(scene,.16,8,.75,x,3.7,-6.6,stone,false)}
+for(let x of [-4,4]){box(scene,.8,4.8,.8,x,2.2,-3.5,stone);box(scene,1.25,.35,1.25,x,4.5,-3.5,gold);box(scene,.8,.55,.8,x,3.1,-3.5,new THREE.MeshStandardMaterial({color:0xff7c22,emissive:0xff4a00,emissiveIntensity:2}));}
+box(scene,3.8,.45,3.4,0,.27,0,stone);box(scene,3.4,.35,3,0,.65,0,darkstone);box(scene,2.85,.23,2.45,0,.95,0,gold);
+const black=new THREE.MeshStandardMaterial({color:0x111820,metalness:.35,roughness:.3});
+const silver=new THREE.MeshStandardMaterial({color:0xbfcbd5,metalness:.86,roughness:.19});
+const steel=new THREE.MeshStandardMaterial({color:0x536373,metalness:.8,roughness:.25});
+const screenMat=new THREE.MeshStandardMaterial({color:0x123b4e,emissive:0x1b9ac8,emissiveIntensity:.6,roughness:.12});
+const ledMat=new THREE.MeshBasicMaterial({color:0x37e9ef});
+const coffeeMat=new THREE.MeshStandardMaterial({color:0x532713,roughness:.25});
+const ceramic=new THREE.MeshStandardMaterial({color:0xf4e9d7,roughness:.22});
+const machine=new THREE.Group();machine.position.y=1.12;scene.add(machine);
+// Hochwertige Espresso-Maschine: Gehäuse, Bedienfeld, Siebträger, Auslass, Tropfschale.
+box(machine,2.45,2.05,1.35,0,1.12,-.25,black);
+box(machine,2.52,.19,1.46,0,2.2,-.24,silver);
+box(machine,2.48,.19,1.4,0,.11,-.23,silver);
+box(machine,2.38,.76,.08,0,1.76,.45,silver);
+box(machine,1.05,.43,.065,0,1.83,.505,screenMat);
+box(machine,.72,.025,.072,0,1.72,.55,ledMat);
+for(let x of [-.86,.86]){const dial=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,.085,32),silver);dial.rotation.x=Math.PI/2;dial.position.set(x,1.8,.54);machine.add(dial);const dot=new THREE.Mesh(new THREE.SphereGeometry(.047,12,12),ledMat);dot.position.set(x,1.8,.6);machine.add(dot)}
+box(machine,1.6,.12,.95,0,.4,.49,steel);
+for(let i=-5;i<=5;i++)box(machine,.045,.013,.72,i*.12,.468,.55,black,false);
+box(machine,1.7,.08,.35,0,1.32,.49,silver);
+box(machine,.37,.25,.4,0,1.16,.53,steel);
+const nozzle=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.25,20),silver);nozzle.position.set(0,.98,.64);machine.add(nozzle);
+box(machine,.18,.1,.72,.66,1.17,.75,black);
+box(machine,.07,.43,.07,.66,.95,1.04,silver);
+// Tasse mit Hohlraum, Henkel und Flüssigkeitsoberfläche.
+const cup=new THREE.Group();cup.position.set(0,.51,.65);machine.add(cup);
+const cupBody=new THREE.Mesh(new THREE.CylinderGeometry(.36,.3,.43,40,1,true),new THREE.MeshStandardMaterial({color:0xe8e6e1,side:THREE.DoubleSide,roughness:.28}));cupBody.position.y=.24;cup.add(cupBody);
+const bottom=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.04,40),ceramic);bottom.position.y=.04;cup.add(bottom);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(.36,.035,12,40),ceramic);rim.rotation.x=Math.PI/2;rim.position.y=.46;cup.add(rim);
+const handle=new THREE.Mesh(new THREE.TorusGeometry(.18,.06,10,30),ceramic);handle.position.set(.44,.27,0);cup.add(handle);
+const liquid=new THREE.Mesh(new THREE.CylinderGeometry(.315,.315,.015,40),coffeeMat);liquid.position.y=.1;cup.add(liquid);
+const stream=new THREE.Mesh(new THREE.CylinderGeometry(.024,.019,.42,12),new THREE.MeshStandardMaterial({color:0x7e3d1c,transparent:true,opacity:.85}));stream.position.set(0,.65,0);cup.add(stream);stream.visible=false;
+const steam=[];for(let i=0;i<22;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(.045+i%3*.017,8,8),new THREE.MeshBasicMaterial({color:0xcdefff,transparent:true,opacity:0,depthWrite:false}));p.visible=false;scene.add(p);steam.push(p)}
+const sparks=[];for(let i=0;i<150;i++){const p=new THREE.Mesh(new THREE.OctahedronGeometry(.035+i%6*.008),new THREE.MeshBasicMaterial({color:i%3?0x52e7ff:0xffd078,transparent:true,opacity:0,depthWrite:false}));p.visible=false;scene.add(p);sparks.push(p)}
+const booster=new THREE.Group();scene.add(booster);
+const boostCore=new THREE.Mesh(new THREE.IcosahedronGeometry(.45,1),new THREE.MeshStandardMaterial({color:0x59f0ff,emissive:0x158bff,emissiveIntensity:2,metalness:.35,roughness:.2}));booster.add(boostCore);
+const boostRing=new THREE.Mesh(new THREE.TorusGeometry(.67,.035,12,80),new THREE.MeshBasicMaterial({color:0xffd37a}));booster.add(boostRing);
+const boostRing2=new THREE.Mesh(new THREE.TorusGeometry(.78,.025,12,80),new THREE.MeshBasicMaterial({color:0x5ae9ff}));boostRing2.rotation.x=Math.PI/2.5;booster.add(boostRing2);
+const boostLight=light(0x43ddff,0,0,3.2,.8,6);
+booster.visible=false;
+let mode='idle',start=0,prev=0,selected='production';
+const status=document.querySelector('#status'),reward=document.querySelector('#reward'),openBtn=document.querySelector('#open'),skipBtn=document.querySelector('#skip'),select=document.querySelector('#boosterType'),flash=document.querySelector('#flash');
+const samples={production:{name:'Produktivität',amount:'+20 %',duration:'4 Std.',color:0x46e5a0},build:{name:'Baugeschwindigkeit',amount:'−15 % Bauzeit',duration:'2 Std.',color:0xffb74d},research:{name:'Forschungsgeschwindigkeit',amount:'−25 % Forschungszeit',duration:'8 Std.',color:0x64bcff}};
+function reset(){mode='idle';machine.rotation.z=0;machine.position.y=1.12;glow.intensity=0;boostLight.intensity=0;booster.visible=false;steam.forEach(p=>p.visible=false);sparks.forEach(p=>p.visible=false);stream.visible=false;liquid.position.y=.1;flash.style.opacity='0';camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);status.textContent='Bereit, den Booster-Kaffee zuzubereiten.';reward.textContent='';openBtn.disabled=false;skipBtn.disabled=true;select.disabled=false}
+function finish(){mode='done';stream.visible=false;steam.forEach(p=>p.visible=false);sparks.forEach(p=>p.visible=false);flash.style.opacity='0';booster.visible=true;booster.position.set(0,3.6,.65);booster.scale.setScalar(1);boostLight.intensity=15;glow.intensity=10;let b=samples[selected];status.textContent='☕ Dein Booster ist fertig!';reward.textContent='⚡ '+b.name+' · '+b.amount+' · '+b.duration;openBtn.disabled=true;skipBtn.disabled=true;select.disabled=false}
+openBtn.onclick=()=>{selected=select.value;boostCore.material.color.setHex(samples[selected].color);boostCore.material.emissive.setHex(samples[selected].color);mode='brewing';start=performance.now();status.textContent='Die Kaffeemaschine heizt auf …';reward.textContent='';openBtn.disabled=true;skipBtn.disabled=false;select.disabled=true};
+skipBtn.onclick=finish;document.querySelector('#reset').onclick=reset;
+function animate(t){requestAnimationFrame(animate);const dt=Math.min((t-prev)/1000,.05);prev=t;fireL.intensity=38+Math.sin(t*.008)*7;fireR.intensity=38+Math.cos(t*.007)*7;
+if(mode==='brewing'){
+const s=(t-start)/1000;
+machine.rotation.z=s>1.1&&s<4.2?Math.sin(s*41)*.008:0;
+glow.intensity=s<1?0:s<4?3+(s-1)*2:14;
+stream.visible=s>1.25&&s<3.7;liquid.position.y=.1+Math.min(1,Math.max(0,(s-1.25)/2.45))*.32;
+if(s>1.2&&s<5.6){status.textContent=s<3.7?'☕ Frischer Kaffee wird zubereitet …':'⚡ Magische Energie sammelt sich …';steam.forEach((p,i)=>{const a=(s-1.2)*.72+i*.27,v=a%1;p.visible=true;p.position.set(Math.sin(i*17)*(.12+v*.28),2.1+v*1.7, .8+Math.cos(i*13)*.14);p.material.opacity=(1-v)*.32;p.scale.setScalar(.5+v*1.5)})}
+if(s>3.5){const k=Math.min(1,(s-3.5)/2);camera.position.lerp(new THREE.Vector3(4.25,3.5,6.35),.017*k);camera.lookAt(0,1.8,0)}
+const bang=s-4.55;
+if(bang>0){flash.style.opacity=String(Math.max(0,.8-bang*2.3));sparks.forEach((p,i)=>{let a=bang-(i%9)*.013;if(a<=0)return;const life=a/2.4;p.visible=life<1;const angle=i*2.39996323,up=.3+(i%17)/20;p.position.set(Math.cos(angle)*a*2.8,2.35+up*a*3-1.4*a*a, .5+Math.sin(angle)*a*2.8);p.material.opacity=Math.max(0,1-life);p.rotation.y+=dt*4})}
+if(s>4.45){const k=Math.min(1,(s-4.45)/1.9),ease=1-Math.pow(1-k,4);booster.visible=true;booster.position.set(0,1.7+ease*1.9+Math.sin(k*Math.PI)*.25,.65);booster.scale.setScalar(.1+ease*.9);booster.rotation.y=(1-ease)*Math.PI*3+t*.0004;booster.rotation.z=(1-ease)*.4;boostRing.rotation.z+=dt*1.6;boostRing2.rotation.y+=dt*1.4;boostLight.intensity=12*ease}
+if(s>=7)finish();
+}
+if(mode==='done'){booster.rotation.y+=dt*.35;booster.position.y=3.6+Math.sin(t*.0025)*.08;boostRing.rotation.z+=dt*.65;boostRing2.rotation.y+=dt*.7}
+renderer.render(scene,camera)}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+document.querySelector('#loading').remove();reset();requestAnimationFrame(animate);
+if(new URLSearchParams(location.search).has('embed')){document.body.classList.add('embedded');const choice=new URLSearchParams(location.search).get('choice');const selector=document.querySelector('#rarity')||document.querySelector('#boosterType');if(selector&&choice){selector.value=choice;selector.dispatchEvent(new Event('change'))}setTimeout(()=>document.querySelector('#open')?.click(),650);window.addEventListener('message',e=>{if(e.data?.looteria==='skip')document.querySelector('#skip')?.click()})}
+</script></body></html>

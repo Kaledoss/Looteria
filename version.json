@@ -1,6 +1,6 @@
 {
-  "version": "12.3.3",
+  "version": "12.3.4",
   "name": "Story of Looteria",
-  "notes": "Booster-Kiste, Bestätigungsfenster, Classic statt Niete, Dungeonzeiten, Ressourcenanzeige, Skillreihenfolge und Dungeonhinweise. 3D-Kistenkammer und lizenzierte Monsterbilder noch offen.",
-  "build": "12.3.3-booster-ui-20261028"
+  "notes": "3D-Kistenkammer, maximal zwei aktive Booster und Live-Fortschritt der Autoproduktion",
+  "build": "12.3.4-3d-crates-20261028"
 }

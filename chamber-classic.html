@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Story of Looteria – 3D-Kistenkammer Prototyp</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#090d16;color:#f4e8d3;font-family:system-ui,Segoe UI,sans-serif;overflow:hidden}
+#scene{position:fixed;inset:0}#scene canvas{display:block}
+header{position:absolute;top:18px;left:20px;right:20px;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{margin:0;font-size:clamp(18px,2.3vw,29px);text-shadow:0 3px 12px #000}small{color:#c5ad83}
+.panel{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 30px));background:linear-gradient(140deg,#202335f0,#101826f5);border:2px solid #947345;border-radius:18px;padding:17px 20px;text-align:center;box-shadow:0 12px 50px #000b}
+button{border:1px solid #efb85d;background:linear-gradient(#a93527,#6b191b);color:#fff3da;border-radius:10px;padding:12px 22px;font-weight:750;cursor:pointer;margin:5px;font-size:15px}
+button.secondary{background:#243448;border-color:#59728e}button:disabled{opacity:.5;cursor:not-allowed}
+#status{min-height:23px;color:#f8d48e;margin-bottom:8px}#reward{font-size:22px;font-weight:800;color:#ffdb7a;min-height:28px}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:#080d16;color:#f4c879;font-size:20px}
+.badge{padding:7px 12px;border:1px solid #846b4b;border-radius:10px;background:#131a27c9}
+@media(max-width:600px){header{top:10px;left:10px;right:10px}.badge{display:none}.panel{bottom:10px;padding:12px}button{padding:10px 14px}}
+body.embedded header,body.embedded .panel{display:none!important}body.embedded{overflow:hidden}</style></head>
+<body><div id="scene"></div><div id="loading">3D-Kistenkammer wird geladen …</div>
+<header><div><h1>👑 Story of Looteria · Kistenkammer</h1><small>Prototyp 02 · Classic-Kiste · noch nicht ins Spiel integriert</small></div><div class="badge">Echte 3D-Geometrie · animierter Deckel</div></header>
+<section class="panel"><div id="status">Bereit, die Classic-Kiste zu öffnen.</div><div id="reward"></div>
+<button id="open" disabled>📦 Kiste öffnen</button><button id="skip" class="secondary" disabled>⏭ Überspringen</button><button id="reset" class="secondary">↻ Zurücksetzen</button>
+</section>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b0e18);scene.fog=new THREE.FogExp2(0x0b0e18,.042);
+const camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,.1,100);camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;document.querySelector('#scene').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x7696c7,0x2e1c10,1.1));
+function light(c,i,x,y,z,r){let p=new THREE.PointLight(c,i,r,2);p.position.set(x,y,z);scene.add(p);return p}
+const fireL=light(0xff8d39,42,-4,2.8,-2,9),fireR=light(0xff8d39,42,4,2.8,-2,9);
+const glow=light(0xffd477,0,0,2.0,0,6);
+const stone=new THREE.MeshStandardMaterial({color:0x343b4b,roughness:.93});
+const darkstone=new THREE.MeshStandardMaterial({color:0x222b3b,roughness:.9});
+const gold=new THREE.MeshStandardMaterial({color:0xb88c42,metalness:.75,roughness:.28});
+const iron=new THREE.MeshStandardMaterial({color:0x24232a,metalness:.55,roughness:.42});
+function box(parent,w,h,d,x,y,z,mat,cast=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=cast;m.receiveShadow=true;parent.add(m);return m}
+box(scene,22,.35,20,0,-.22,0,stone,false);
+box(scene,22,9,.6,0,4,-7,darkstone,false);
+for(let x=-10;x<=10;x+=2){for(let z=-6;z<=8;z+=2){box(scene,1.94,.05,1.94,x,-.02,z,((x+z)%4===0)?darkstone:stone,false)}}
+for(let x=-10;x<=10;x+=2.5){box(scene,.16,8,.75,x,3.7,-6.6,stone,false)}
+for(let x of [-4,4]){box(scene,.8,4.8,.8,x,2.2,-3.5,stone);box(scene,1.25,.35,1.25,x,4.5,-3.5,gold);box(scene,.8,.55,.8,x,3.1,-3.5,new THREE.MeshStandardMaterial({color:0xff7c22,emissive:0xff4a00,emissiveIntensity:2}));}
+box(scene,3.8,.45,3.4,0,.27,0,stone);box(scene,3.4,.35,3,0,.65,0,darkstone);box(scene,2.85,.23,2.45,0,.95,0,gold);
+function pixelTexture(){
+const c=document.createElement('canvas');c.width=64;c.height=64;let g=c.getContext('2d');g.fillStyle='#986028';g.fillRect(0,0,64,64);
+let rng=12345;function rand(){rng=(rng*1664525+1013904223)>>>0;return rng/4294967296}
+for(let y=0;y<64;y+=8)for(let x=0;x<64;x+=8){let v=Math.floor(rand()*5);g.fillStyle=['#875021','#ad7130','#a86b2d','#bd7d34','#945825'][v];g.fillRect(x,y,8,8)}
+for(let y=0;y<64;y+=16){g.fillStyle='#58351b';g.fillRect(0,y,64,2);g.fillStyle='#d09045';g.fillRect(0,y+2,64,1)}
+const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;t.colorSpace=THREE.SRGBColorSpace;return t}
+const wood=new THREE.MeshStandardMaterial({map:pixelTexture(),roughness:.84});
+const chest=new THREE.Group();chest.position.set(0,1.13,0);scene.add(chest);
+box(chest,2.55,1.32,1.55,0,.67,0,wood);
+for(let x of [-1.28,1.28])box(chest,.13,1.38,1.64,x,.67,0,iron);
+for(let z of [-.8,.8]){box(chest,2.68,.12,.13,0,.17,z,iron);box(chest,2.68,.12,.13,0,1.2,z,iron)}
+const hinge=new THREE.Group();hinge.position.set(0,1.31,-.78);chest.add(hinge);
+box(hinge,2.61,.46,1.6,0,.23,.8,wood);
+for(let x of [-1.31,1.31])box(hinge,.12,.5,1.66,x,.23,.8,iron);
+for(let z of [.03,1.57])box(hinge,2.7,.12,.12,0,.28,z,iron);
+box(hinge,.4,.6,.15,0,.1,1.62,iron);
+box(hinge,.23,.27,.18,0,.12,1.74,gold);
+// Sammelkarte: steigt sichtbar aus der geöffneten Kiste auf.
+function makeCardTexture(){
+ const c=document.createElement('canvas');c.width=512;c.height=768;const g=c.getContext('2d');
+ let grad=g.createLinearGradient(0,0,512,768);grad.addColorStop(0,'#234a46');grad.addColorStop(1,'#0a171e');g.fillStyle=grad;g.fillRect(0,0,512,768);
+ g.fillStyle='#b68d46';g.fillRect(18,18,476,732);g.fillStyle='#102a31';g.fillRect(34,34,444,700);
+ g.fillStyle='#d9c182';g.font='bold 46px sans-serif';g.textAlign='center';g.fillText('CREEPER',256,98);
+ g.fillStyle='#173e32';g.fillRect(66,135,380,455);g.fillStyle='#4d9b4a';g.fillRect(155,225,202,245);
+ g.fillStyle='#254b29';g.fillRect(190,286,48,55);g.fillRect(278,286,48,55);g.fillRect(225,350,65,96);g.fillRect(195,386,34,60);g.fillRect(290,386,34,60);
+ g.fillStyle='#c5ad6e';g.fillRect(66,618,380,3);g.font='30px sans-serif';g.fillText('✦ GEWÖHNLICH ✦',256,686);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+const card=new THREE.Group();const cardFront=new THREE.Mesh(new THREE.PlaneGeometry(1.12,1.68),new THREE.MeshBasicMaterial({map:makeCardTexture(),side:THREE.DoubleSide}));
+card.add(cardFront);card.position.set(0,1.7,0);card.visible=false;scene.add(card);
+const cardAura=new THREE.Mesh(new THREE.PlaneGeometry(1.26,1.82),new THREE.MeshBasicMaterial({color:0xffd37b,transparent:true,opacity:.24,side:THREE.DoubleSide,depthWrite:false}));cardAura.position.z=-.03;card.add(cardAura);
+const particles=[];let particleMat=new THREE.MeshBasicMaterial({color:0xffcc6b,transparent:true,opacity:0,depthWrite:false});
+for(let i=0;i<85;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.045),particleMat.clone());p.visible=false;scene.add(p);particles.push({p,seed:i*17.31,life:0})}
+let mode='idle',start=0,skipped=false,prev=0;
+const status=document.querySelector('#status'),reward=document.querySelector('#reward'),openBtn=document.querySelector('#open'),skipBtn=document.querySelector('#skip');
+function reset(){mode='idle';hinge.rotation.x=0;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=0;particles.forEach(q=>q.p.visible=false);card.visible=false;card.position.set(0,1.7,0);card.scale.setScalar(.2);camera.position.set(5.6,4.4,8.5);camera.lookAt(0,1.55,0);status.textContent='Bereit, die Classic-Kiste zu öffnen.';reward.textContent='';openBtn.disabled=false;skipBtn.disabled=true}
+function finish(){mode='done';hinge.rotation.x=-1.75;chest.rotation.z=0;chest.position.y=1.13;glow.intensity=12;card.visible=true;card.position.y=3.25;card.scale.setScalar(1);status.textContent='Die Classic-Kiste wurde geöffnet!';reward.textContent='🎴 Beispielkarte: Creeper · Gewöhnlich';openBtn.disabled=true;skipBtn.disabled=true}
+openBtn.onclick=()=>{mode='opening';start=performance.now();status.textContent='Die Kiste beginnt zu reagieren …';reward.textContent='';openBtn.disabled=true;skipBtn.disabled=false};
+skipBtn.onclick=finish;document.querySelector('#reset').onclick=reset;
+function animate(t){requestAnimationFrame(animate);let dt=Math.min((t-prev)/1000,.05);prev=t;
+fireL.intensity=38+Math.sin(t*.008)*7;fireR.intensity=38+Math.cos(t*.007)*7;
+if(mode==='opening'){let s=(t-start)/1000;
+chest.rotation.z=s>1&&s<2.7?Math.sin(s*47)*.025*Math.min(1,(s-1)*2):0;
+chest.position.y=1.13+(s>1.3&&s<3.5?Math.sin(s*13)*.025:0);
+glow.intensity=s<1.4?0:s<3.1?(s-1.4)*8:13;
+if(s>2.5)hinge.rotation.x=-1.75*Math.min(1,Math.max(0,(s-2.5)/1.1));
+let k=Math.min(1,s/5);camera.position.lerp(new THREE.Vector3(4.3,3.4,6.4),.02*k);
+camera.lookAt(0,1.7,0);
+if(s>3){status.textContent='Magisches Licht steigt aus der Truhe …';particles.forEach((q,i)=>{let a=s-3-q.seed*.015;if(a>0){q.p.visible=true;let v=(a%2.5)/2.5;q.p.position.set(Math.sin(q.seed*3)*(.3+v*1.5),1.8+v*3.1,Math.cos(q.seed*2)*(.3+v*1.2));q.p.material.opacity=(1-v)*.95;q.p.rotation.y+=dt*2}})}
+if(s>3.35){let k=Math.min(1,(s-3.35)/1.8);let smooth=k*k*(3-2*k);card.visible=true;card.position.y=1.7+1.55*smooth+Math.sin(t*.003)*.035;card.scale.setScalar(.2+.8*smooth);card.rotation.y=Math.sin(t*.0014)*.13;}
+if(s>=6.4)finish();
+}
+renderer.render(scene,camera)}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+document.querySelector('#loading').remove();reset();requestAnimationFrame(animate);
+if(new URLSearchParams(location.search).has('embed')){document.body.classList.add('embedded');const choice=new URLSearchParams(location.search).get('choice');const selector=document.querySelector('#rarity')||document.querySelector('#boosterType');if(selector&&choice){selector.value=choice;selector.dispatchEvent(new Event('change'))}setTimeout(()=>document.querySelector('#open')?.click(),650);window.addEventListener('message',e=>{if(e.data?.looteria==='skip')document.querySelector('#skip')?.click()})}
+</script></body></html>
