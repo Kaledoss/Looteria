@@ -1,4 +1,4 @@
 {
-  "version": "11.9.3",
-  "notes": "Ofen-Upgrades und Chargen, keine Ofen-Arbeitskräfte, Achievement- und Dungeon-Hinweise, Statistik-Platzhalter bis Datenbankanbindung."
+  "version": "11.9.4",
+  "notes": "Job-Taler durch manuelles Sammeln, Kosten fuer Upgrades/Forschung/Dungeons, Brennzeit je Charge und Forschungsbeschleunigung"
 }
