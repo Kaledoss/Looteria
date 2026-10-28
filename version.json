@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.1",
+  "version": "11.9.8.2",
   "name": "Story of Looteria",
-  "notes": "Freischaltungen in Sammeln und Weltkarte integriert; Achievement-Popups zeigen echte Belohnungen"
+  "notes": "Forschungs-Countdown live, deutsche Jobbezeichnungen, farbige Warteschlange"
 }
