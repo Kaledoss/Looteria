@@ -1,4 +1,1 @@
-{
-  "version": "11.9.4",
-  "notes": "Job-Taler durch manuelles Sammeln, Kosten fuer Upgrades/Forschung/Dungeons, Brennzeit je Charge und Forschungsbeschleunigung"
-}
+{"version": "11.9.6", "notes": "Ofen: Gesamtmaterialbedarf und Lagerbestand je gewählter Stückzahl live anzeigen; Supabase-Ranglistenstruktur geprüft"}
