@@ -1,5 +1,5 @@
 {
-  "version": "11.9.8.9",
+  "version": "11.9.8.10",
   "name": "Story of Looteria",
-  "notes": "Bereinigtes Release mit Update-Popup unten; prüft neue Versionen automatisch alle 30 Sekunden."
+  "notes": "Forschungswarteschlange mit Info-Hinweisen; stabile, nicht flackernde Lager-Tooltips."
 }
