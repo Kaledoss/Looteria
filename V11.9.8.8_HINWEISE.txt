@@ -1,6 +1,0 @@
-Story of Looteria Alpha 11.9.8.8
-
-- Im Sammelmenü erscheinen je Kategorie (Holz, Erde/Sand, Stein/Erze) alle freigeschalteten Ressourcen und genau die nächste gesperrte Ressource.
-- Versionsnummer im Browsertab, unter dem Spielnamen, in der Fußzeile, in den Einstellungen, im Versionsvergleich und in version.json korrigiert.
-- Bestehende Cloud-/SQL-Einrichtung bleibt unverändert. Keine SQL-Dateien erneut ausführen.
-- Vor dem Austausch der Dateien Spielstand sicherheitshalber exportieren.
