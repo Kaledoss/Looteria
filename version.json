@@ -1,5 +1,5 @@
 {
-  "version": "12.0",
+  "version": "12.1",
   "name": "Story of Looteria",
-  "notes": "Alpha 12.0: Builder-Hinweis, abwechslungsreiche Daily/Weekly-Aufgaben, dynamische Dungeonpreise, Sortierung/Dauer und Offline-Erkundungs-XP."
+  "notes": "Alpha 12.1: Aufgabenfilter, Lagerkategorien, Builder-XP-Anzeigen und Performance-Messwerte."
 }
