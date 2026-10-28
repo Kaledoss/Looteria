@@ -1,1 +1,0 @@
-Fixes: Warteschlangenhinweise als Klartext, doppelte Freischaltvoraussetzung im Sammeln entfernt, Forschungsbaum-Button, Forschungszentrum-Geschwindigkeitsbonus wirkt sofort auf laufende Forschungen.
