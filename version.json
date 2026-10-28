@@ -1,6 +1,6 @@
 {
-  "version": "12.3.4",
+  "version": "12.3.5",
   "name": "Story of Looteria",
-  "notes": "3D-Kistenkammer, maximal zwei aktive Booster und Live-Fortschritt der Autoproduktion",
-  "build": "12.3.4-3d-crates-20261028"
+  "notes": "Mobkarten mit Bildern, eigenes Lager-Menü als Liste, erweiterte Kopfzeile mit zwei Boostern und zusätzlicher Jobübersicht; rechte Panels bleiben erhalten.",
+  "build": "12.3.5-full-inventory-header"
 }
