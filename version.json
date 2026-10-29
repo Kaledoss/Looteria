@@ -1,6 +1,6 @@
 {
-  "version": "12.3.8.1",
+  "version": "12.3.8.2",
   "name": "Story of Looteria",
-  "notes": "Daily Streak, Ressourcenforschungen, Prestige-Ruhmbonus, Dungeon-Ruhm, Ranglisten-Reconnect, Achievement-Bereinigung; Hotfix 1: Initialisierung repariert (Ressourcenforschung und Forschungsstatus)",
-  "build": "12.3.8-hotfix-1-initialization"
+  "notes": "Hotfix 2: Kopfzeile responsiv neu ausgerichtet; Spiellogik unverändert.",
+  "build": "12.3.8-hotfix-2-header-layout"
 }
