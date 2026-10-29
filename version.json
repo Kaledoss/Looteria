@@ -1,6 +1,6 @@
 {
-  "version": "12.3.8.2",
+  "version": "12.3.9",
   "name": "Story of Looteria",
-  "notes": "Hotfix 2: Kopfzeile responsiv neu ausgerichtet; Spiellogik unverändert.",
-  "build": "12.3.8-hotfix-2-header-layout"
+  "notes": "Ressourcenforschung korrigiert; Gebäudebalancing; Dungeonzeiten; Forschungsabbruch-Dialog und Merkliste; Kopfzeile; Update-Changelog",
+  "build": "12.3.9"
 }
