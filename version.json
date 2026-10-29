@@ -1,6 +1,6 @@
 {
-  "version": "12.3.9",
+  "version": "12.3.10",
   "name": "Story of Looteria",
-  "notes": "Ressourcenforschung korrigiert; Gebäudebalancing; Dungeonzeiten; Forschungsabbruch-Dialog und Merkliste; Kopfzeile; Update-Changelog",
-  "build": "12.3.9"
+  "notes": "Achievement-Meilensteine korrigiert, Lager als Startseite, Kreaturenkarten, 3D-Kartenansicht",
+  "build": "12.3.10"
 }
