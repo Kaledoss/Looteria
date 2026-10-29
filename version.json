@@ -1,6 +1,6 @@
 {
-  "version": "12.3.7",
+  "version": "12.3.8",
   "name": "Story of Looteria",
-  "notes": "Neue OPSUCHT-Spielerkarten, Fantasy-Mobkarten, 10 Bauplätze, Ofen-Countdown, Dungeon-Tooltips",
-  "build": "12.3.7-players-cards-dungeons"
+  "notes": "Daily Streak, Ressourcenforschungen, Prestige-Ruhmbonus, Dungeon-Ruhm, Ranglisten-Reconnect, Achievement-Bereinigung",
+  "build": "12.3.8-daily-streak-research-fame"
 }
