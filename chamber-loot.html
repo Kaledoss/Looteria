@@ -92,7 +92,7 @@ card.add(cardFront);card.position.set(0,1.7,0);card.visible=false;scene.add(card
 let currentRewardName='',rewardImageSerial=0;
 function setLootReward(data){
  if(!data||data.looteria!=='reward'||!data.image)return;
- const allowed=/^assets\/(?:players\/[a-z]+|minecraft\/mob_\d+)\.webp$/;
+ const allowed=/^assets\/(?:players\/[a-z]+|minecraft\/mob_\d+|cards\/[A-Za-z0-9_-]+)\.webp$/;
  if(!allowed.test(data.image))return;
  currentRewardName=String(data.name||'Sammelkarte');
  const serial=++rewardImageSerial;
