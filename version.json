@@ -1,6 +1,6 @@
 {
-  "version": "12.3.12",
+  "version": "12.3.13",
   "name": "Story of Looteria",
-  "notes": "Boost-Anzeigen, Forschungsstatus, Sammelkarten, Rohstoff-Fortschritt, Update-Popup und Ranglisten-Wiederverbindung",
-  "build": "12.3.12"
+  "notes": "Forschungs-Geheimfelder, vormerkbare Forschungen, Lager-Berufssortierung, Krone, Cloud-Zuordnung",
+  "build": "12.3.13"
 }
