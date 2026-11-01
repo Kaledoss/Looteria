@@ -21,7 +21,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font-ui
 main{max-width:1240px;margin:0 auto;padding:22px 16px 40px}
 h1{font-family:var(--font-head);font-size:clamp(24px,3.6vw,34px);line-height:1.15;margin:0 0 6px}
 p{margin:6px 0;max-width:70ch;color:var(--ink2)}
-html,body{height:100%;overflow:hidden;background:#0b1020}main{max-width:none;margin:0;padding:0}#frame{overflow:hidden}#outer{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;border:0;border-radius:0;margin:0;background:#0b1020}
+html,body{height:100%;overflow:hidden;background:#0b1020}main{max-width:none;margin:0;padding:0}#frame,#frame *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}#frame input,#frame textarea{-webkit-user-select:text;user-select:text}#frame{overflow:hidden}#outer{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;border:0;border-radius:0;margin:0;background:#0b1020}
 #frame{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0}
 #cv{display:none}#view{position:absolute;left:0;top:0;width:1600px;height:900px}
 .hud{position:absolute;font-family:var(--font-ui);color:#fff}
@@ -2162,7 +2162,7 @@ function openOdo(){if(!odoEl){odoEl=document.createElement('div');odoEl.style.cs
     document.getElementById('frame').appendChild(odoEl);odoEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')odoEl.style.display='none'})}
   renderOdo();odoEl.style.display='block'}
 
-const GAME_VERSION='0.0.5';
+const GAME_VERSION='0.0.6';
 /* ---- Sound (Platzhalter, per WebAudio synthetisiert) ---- */
 const SFX=(()=>{let ac=null,mg=null;const U=()=>{const s=window.__st;if(!s)return{snd:true,vol:.6,mini:true};if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;if(s.ui.snd===undefined)s.ui.snd=true;if(s.ui.vol===undefined)s.ui.vol=.6;return s.ui};
  function ctx(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
@@ -2296,6 +2296,17 @@ function toggleJ(){if(!jEl){jEl=document.createElement('div');jEl.style.cssText=
   if(jEl.style.display==='block'){jEl.style.display='none';return}
   renderJ();jEl.style.display='block';SFX.play('click')}
 addEventListener('keydown',e=>{if(e.code!=='KeyJ'||e.repeat)return;const ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'))return;if(!window.__st)return;e.preventDefault();toggleJ()});
+/* ---- Fenster verschiebbar ---- */
+{const fr=document.getElementById('frame');let d=null;
+ document.addEventListener('mousedown',e=>{if(e.button!==0||!e.target.closest)return;const w=e.target.closest('#frame > div');if(!w)return;const cs=getComputedStyle(w),z=+cs.zIndex;
+  if(!(z>=40&&z<60)||cs.display==='none'||w.offsetWidth>=1200)return;
+  const t=e.target,tc=getComputedStyle(t).cursor;if(tc==='pointer'||tc==='text'||t.closest('button,input,select,textarea,label,[draggable=true]'))return;
+  const fb=fr.getBoundingClientRect(),sc=fb.width/1600,wb=w.getBoundingClientRect(),l=(wb.left-fb.left)/sc,tp=(wb.top-fb.top)/sc;
+  w.style.transform='none';w.style.left=l+'px';w.style.top=tp+'px';
+  fr.querySelectorAll(':scope > div').forEach(o=>{if(o!==w&&+getComputedStyle(o).zIndex>=40&&+getComputedStyle(o).zIndex<45)o.style.zIndex=40});if(z<45)w.style.zIndex=44;
+  d={w,sc,ox:e.clientX,oy:e.clientY,l,t:tp,ww:wb.width/sc,wh:wb.height/sc};e.preventDefault()},true);
+ document.addEventListener('mousemove',e=>{if(!d)return;const l=Math.max(0,Math.min(1600-d.ww,d.l+(e.clientX-d.ox)/d.sc)),t=Math.max(0,Math.min(900-d.wh,d.t+(e.clientY-d.oy)/d.sc));d.w.style.left=l+'px';d.w.style.top=t+'px'});
+ document.addEventListener('mouseup',()=>{d=null})}
 /* ---- Quests: Elias ---- */
 window.__qpref=()=>{try{const q=qSt(),Q=QS[q.i];return Q&&q.st===1?Q.mon:null}catch(e){return null}};
 const QS=[
@@ -2368,7 +2379,7 @@ function potInit(){const base=document.querySelector('#hudl .slot');if(!base)ret
     el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(id&&potType(id)&&potType(id)!=='cure'){potAssign(i,id)}else toast('Dieser Trank passt nicht in den Slot.')};
     par.appendChild(el);potEl[i]=el});
   potDraw();
-  ['#autobtn','#mapbtn'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.display='none'}));miniInit();{const ai=document.getElementById('autoind');if(ai){ai.style.pointerEvents='auto';ai.style.cursor='pointer';ai.title='Klicken zum Umschalten (X)';ai.onmousedown=e=>{e.stopPropagation();setAuto(AUTO?(AQ?true:false):'q')}}}posInit();applyName();applyDark();nameAsk();
+  ['#autobtn','#mapbtn'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.display='none'}));miniInit();{const pc=document.getElementById('pcv');if(pc&&pc.parentElement){const w=pc.parentElement;w.style.pointerEvents='auto';w.style.cursor='pointer';w.title='Charakter (C)';w.onmousedown=e=>{e.stopPropagation();dispatchEvent(new KeyboardEvent('keydown',{code:'KeyC',key:'c',bubbles:true}))}}}{const ai=document.getElementById('autoind');if(ai){ai.style.pointerEvents='auto';ai.style.cursor='pointer';ai.title='Klicken zum Umschalten (X)';ai.onmousedown=e=>{e.stopPropagation();setAuto(AUTO?(AQ?true:false):'q')}}}posInit();applyName();applyDark();nameAsk();
   {const o=window.openNpc;window.openNpc=n=>{if(n.n==='Odo'){openOdo();return}if(n.n==='Elias'){openEli();return}o(n)}};qhUpdate();
   {const z=document.getElementById('zlbl');if(z&&z.parentElement){const bx=z.parentElement;bx.innerHTML='';const g=document.createElement('button');g.title='Einstellungen (Esc)';g.style.cssText='width:40px;height:40px;border-radius:50%;border:2px solid #f0c25a;background:linear-gradient(180deg,#34498f,#1e2c60);cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center';
     g.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24"><path fill="#f6e3a8" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.8 1.7 1l.4 2.6c0 .2.3.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.6c.6-.2 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
@@ -2401,7 +2412,9 @@ function renderEsc(){const P=potSt(),s=window.__st,pots=(window.__POTS||[]).filt
    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px"><span style="min-width:90px">Lautstärke</span><input id="escvol" type="range" min="0" max="100" step="5" value="${Math.round(SFX.U().vol*100)}" style="flex:1"><b id="escvolv" style="min-width:44px;text-align:right">${Math.round(SFX.U().vol*100)} %</b></div>
    <div style="font-size:15px;font-weight:800;color:#ffe27a;margin-bottom:6px">Auto-Tränke</div>
    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:14px;cursor:pointer"><input id="escon" type="checkbox" ${P.on?'checked':''}> Tränke automatisch benutzen</label>${row(0)}${row(1)}
+   <div style="font-size:15px;font-weight:800;color:#ffe27a;margin:12px 0 6px">Konto</div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:13px"><div><div>${(window.__cloud&&window.__cloud.email)||'–'}</div><div style="opacity:.75">${(window.__cloud&&window.__cloud.status)||''}</div></div><button id="esclogout" style="padding:6px 14px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Abmelden</button></div>
    <div style="font-size:12px;opacity:.75">Tipp: Tränke aus dem Inventar (E) lassen sich auch direkt auf die Slots neben den Skills ziehen. HP-Tränke zählen nach HP-%, Manatränke nach MP-%.</div>`;
+  escEl.querySelector('#esclogout').onmousedown=e=>{e.stopPropagation();window.__logout&&window.__logout()};
   escEl.querySelector('#escx').onmousedown=e=>{e.stopPropagation();escEl.style.display='none'};
   escEl.querySelector('#escsnd').onchange=e=>{SFX.U().snd=e.target.checked;window.__persist();SFX.play('click')};
   escEl.querySelector('#escvol').oninput=e=>{SFX.vol(e.target.value/100);escEl.querySelector('#escvolv').textContent=e.target.value+' %';window.__persist()};
@@ -2534,6 +2547,85 @@ render().then(()=>{
   startHero();
 });
 })();
+</script>
+<script>
+(function(){
+const URL_='https://gtmtlavfrxetmhzlenom.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bXRsYXZmcnhldG1oemxlbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NDQ5MTEsImV4cCI6MjEwOTEyMDkxMX0.wpdCwhfHWvB5QIzFn5-DdskftByO8wcv6Y7YHn6Ox3A';
+const SAVE='looteria_shop_v1',AK='looteria_auth',UK='looteria_uid';
+const C=window.__cloud={status:'Nicht angemeldet',email:'',last:0};
+let sess=null,ov=null,lastSent='',busy=false;
+const DOM='@looteria.game',nm=e=>(e||'').replace(/@looteria\.game$/,''),toMail=u=>u.trim().toLowerCase()+DOM;
+const $=s=>document.querySelector(s);
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+const H=(tok)=>({'apikey':KEY,'Authorization':'Bearer '+(tok||KEY),'Content-Type':'application/json'});
+async function api(path,opt){const r=await fetch(URL_+path,opt);let j=null;try{j=await r.json()}catch(e){}return{ok:r.ok,status:r.status,j}}
+function mapErr(r){const j=r.j||{},c=(j.error_code||j.code||'')+'',m=(j.msg||j.message||j.error_description||j.error||'')+'';
+  if(c==='invalid_credentials'||/invalid login/i.test(m))return'Benutzername oder Passwort stimmt nicht.';
+  if(c==='email_not_confirmed'||/not confirmed/i.test(m))return'Das Konto ist noch nicht freigeschaltet (Einstellung „Confirm email“ in Supabase ist noch an).';
+  if(c==='user_already_exists'||/already/i.test(m))return'Dieser Benutzername ist schon vergeben.';
+  if(c==='weak_password'||/password/i.test(m))return'Das Passwort ist zu schwach (mindestens 6 Zeichen).';
+  if(/rate|too many|seconds/i.test(m)||r.status===429)return'Zu viele Versuche. Bitte warte kurz.';
+  if(/email/i.test(m)&&/valid/i.test(m))return'Der Name wurde vom Server abgelehnt. Bitte nimm einen anderen.';
+  return'Fehler: '+(m||('Status '+r.status))}
+function store(j){sess={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),uid:(j.user||{}).id||(sess&&sess.uid),email:(j.user||{}).email||(sess&&sess.email)};ls.set(AK,JSON.stringify(sess));C.email=nm(sess.email)}
+async function fresh(){if(!sess)return false;if(sess.expires_at-60>Date.now()/1000)return true;
+  const r=await api('/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:H(),body:JSON.stringify({refresh_token:sess.refresh_token})});
+  if(r.ok&&r.j&&r.j.access_token){store(r.j);return true}
+  if(r.status>=400&&r.status<500){sess=null;ls.del(AK)}
+  throw new Error('refresh '+r.status)}
+function overlay(html){if(!ov){ov=document.createElement('div');ov.id='authov';ov.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:90;background:radial-gradient(ellipse at 50% 40%,#233a78 0%,#0b1020 75%);display:flex;align-items:center;justify-content:center;color:#f6e3a8;font:700 15px var(--font-ui,sans-serif)';ov.addEventListener('mousedown',e=>e.stopPropagation());['keydown','keyup','keypress'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));document.getElementById('frame').appendChild(ov)}ov.innerHTML=html}
+function done(){if(ov){ov.remove();ov=null}}
+function loading(t){overlay('<div style="text-align:center"><div style="font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:10px">Story of Looteria</div><div>'+t+'</div></div>')}
+function form(mode,msg,ok){mode=mode||'in';const inp='width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border-radius:10px;border:2px solid #f0c25a;background:#1a2552;color:#f6e3a8;font:700 16px var(--font-ui,sans-serif);outline:none';
+  const tab=(m,t)=>`<button data-m="${m}" style="flex:1;padding:8px;border-radius:10px 10px 0 0;border:2px solid #f0c25a;border-bottom:0;background:${mode===m?'#2b3866':'#141c40'};color:#f6e3a8;font:800 15px var(--font-ui,sans-serif);cursor:pointer">${t}</button>`;
+  overlay(`<div style="width:430px;padding:24px 28px;border:3px solid #f0c25a;border-radius:16px;background:linear-gradient(180deg,rgba(30,44,90,.98),rgba(18,26,60,.98));box-shadow:0 10px 40px rgba(0,0,0,.65)"><div style="text-align:center;font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:4px">Story of Looteria</div><div style="text-align:center;font-size:13px;opacity:.8;margin-bottom:14px">Melde dich mit Benutzername und Passwort an, damit dein Spielstand in der Cloud gesichert wird.</div>
+  <div style="display:flex;gap:4px">${tab('in','Anmelden')}${tab('up','Registrieren')}</div><div style="border:2px solid #f0c25a;border-radius:0 0 10px 10px;padding:14px;background:#2b3866">
+  <input id="aem" type="text" maxlength="20" placeholder="Benutzername" autocomplete="username" spellcheck="false" style="${inp}"><input id="apw" type="password" placeholder="Passwort (mind. 6 Zeichen)" autocomplete="${mode==='in'?'current-password':'new-password'}" style="${inp}">
+  <div id="amsg" style="min-height:36px;font-size:13px;color:${ok?'#9be8a0':'#ff8a80'};margin-bottom:8px">${msg||''}</div>
+  <button id="ago" style="width:100%;padding:11px;border-radius:12px;border:2px solid #f0c25a;background:#e0524f;color:#fff;font:800 17px var(--font-ui,sans-serif);cursor:pointer">${mode==='in'?'Anmelden':'Konto erstellen'}</button></div></div>`);
+  ov.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>form(b.dataset.m));
+  const em=ov.querySelector('#aem'),pw=ov.querySelector('#apw'),go=ov.querySelector('#ago');em.value=form.em||'';em.oninput=()=>form.em=em.value;
+  const msgEl=ov.querySelector('#amsg');
+  const run=async()=>{if(busy)return;const e0=em.value.trim(),p=pw.value;if(!e0||!p){msgEl.style.color='#ff8a80';msgEl.textContent='Bitte Benutzername und Passwort eingeben.';return}
+    if(!/^[A-Za-z0-9_\-]{3,20}$/.test(e0)){msgEl.style.color='#ff8a80';msgEl.textContent='Benutzername: 3–20 Zeichen, nur Buchstaben, Zahlen, _ und -.';return}
+    const e=toMail(e0);
+    if(mode==='up'&&p.length<6){msgEl.style.color='#ff8a80';msgEl.textContent='Das Passwort braucht mindestens 6 Zeichen.';return}
+    busy=true;go.disabled=true;go.textContent='Bitte warten …';
+    try{const r=mode==='in'?await api('/auth/v1/token?grant_type=password',{method:'POST',headers:H(),body:JSON.stringify({email:e,password:p})}):await api('/auth/v1/signup',{method:'POST',headers:H(),body:JSON.stringify({email:e,password:p})});
+      busy=false;
+      if(r.ok&&r.j&&r.j.access_token){store(r.j);loading('Spielstand wird geladen …');await sync(true);return}
+      if(r.ok&&mode==='up'){form('in','Konto erstellt, aber noch nicht freigeschaltet: In Supabase muss „Confirm email“ ausgeschaltet sein.')
+      ;return}
+      form(mode,mapErr(r))}catch(x){busy=false;form(mode,'Keine Verbindung zum Server. Bitte prüfe dein Internet.')}};
+  go.onclick=run;pw.addEventListener('keydown',ev=>{if(ev.key==='Enter')run()});em.addEventListener('keydown',ev=>{if(ev.key==='Enter')pw.focus()});setTimeout(()=>(em.value?pw:em).focus(),50)}
+function snap(){const s=window.__st;if(!s)return null;const c=Object.assign({},s);delete c.savedAt;return JSON.stringify(c)}
+async function upload(keep){if(!sess||!window.__st)return;try{await fresh();const s=window.__st;const body=JSON.stringify({user_id:sess.uid,data:s,updated_at:new Date().toISOString()});
+  const r=await fetch(URL_+'/rest/v1/saves?on_conflict=user_id',{method:'POST',keepalive:!!keep&&body.length<60000,headers:Object.assign(H(sess.access_token),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body});
+  if(r.ok){lastSent=snap();C.last=Date.now();C.status='Cloud gesichert'}else C.status='Cloud-Fehler ('+r.status+')'}catch(e){C.status='Offline – wird später gesichert'}}
+async function tick(keep){const s=window.__st;if(!s||!sess)return;const sn=snap();if(sn&&sn!==lastSent){s.savedAt=Date.now();try{window.__persist()}catch(e){}await upload(keep)}}
+function applyAndReload(data){window.__persist=function(){};ls.set(SAVE,typeof data==='string'?data:JSON.stringify(data));ls.set(UK,sess.uid);location.reload()}
+async function sync(first){try{await fresh();
+    const r=await api('/rest/v1/saves?user_id=eq.'+sess.uid+'&select=data,updated_at',{headers:H(sess.access_token)});
+    if(!r.ok){if(r.status===404||/saves/.test(JSON.stringify(r.j||'')))throw new Error('Tabelle "saves" fehlt – bitte das SQL-Skript in Supabase ausführen.');throw new Error('Status '+r.status)}
+    const row=(r.j||[])[0],marker=ls.get(UK),s=window.__st||{};
+    let local=null;try{local=JSON.parse(ls.get(SAVE)||'null')}catch(e){}
+    if(!row){ if(marker&&marker!==sess.uid){ls.del(SAVE);ls.set(UK,sess.uid);window.__persist=function(){};location.reload();return}
+      ls.set(UK,sess.uid);lastSent='';await tick();done();C.status='Cloud gesichert';return}
+    const cd=row.data||{},cT=cd.savedAt||0,lT=(marker===sess.uid&&local&&local.savedAt)||0;
+    if(marker!==sess.uid||cT>lT){applyAndReload(cd);return}
+    ls.set(UK,sess.uid);lastSent=JSON.stringify(Object.assign({},cd,{savedAt:undefined}));C.status='Cloud gesichert';
+    if(lT>cT){lastSent='';await tick()}
+    done()}catch(e){
+    if(/Tabelle/.test(e.message)){overlay('<div style="width:460px;text-align:center;padding:24px;border:3px solid #ff8a80;border-radius:16px;background:#1a2552"><div style="font-size:22px;color:#ff8a80;margin-bottom:8px">Einrichtung fehlt</div><div>'+e.message+'</div></div>');return}
+    if(sess){C.status='Offline – wird später gesichert';done()}else form('in','Keine Verbindung zum Server.')}}
+window.__logout=async function(){try{await tick(true)}catch(e){}sess=null;ls.del(AK);window.__persist=function(){};location.reload()};
+loading('Verbinde …');
+try{sess=JSON.parse(ls.get(AK)||'null')}catch(e){sess=null}
+if(sess&&sess.refresh_token){C.email=nm(sess.email);loading('Spielstand wird geladen …');setTimeout(()=>sync(true),0)}else{sess=null;form('in')}
+setInterval(()=>tick(false),20000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')tick(true)});addEventListener('pagehide',()=>tick(true));
+})();
+
 </script>
 </body>
 </html>
