@@ -2161,7 +2161,7 @@ function openOdo(){if(!odoEl){odoEl=document.createElement('div');odoEl.style.cs
     document.getElementById('frame').appendChild(odoEl);odoEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')odoEl.style.display='none'})}
   renderOdo();odoEl.style.display='block'}
 
-const GAME_VERSION='0.0.1';
+const GAME_VERSION='0.0.2';
 /* ---- Sound (Platzhalter, per WebAudio synthetisiert) ---- */
 const SFX=(()=>{let ac=null,mg=null;const U=()=>{const s=window.__st;if(!s)return{snd:true,vol:.6,mini:true};if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;if(s.ui.snd===undefined)s.ui.snd=true;if(s.ui.vol===undefined)s.ui.vol=.6;return s.ui};
  function ctx(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
