@@ -1456,13 +1456,11 @@ async function render(){
   // Hintergrundobjekte
   const objs=[];
   const T=(y,fn)=>objs.push([y,fn]);const TB=(b,y,fn)=>objs.push([y,fn,null,b]);
-  objs.push([331,()=>{label('Fenn',450,330-112/Z-8/Z,'#7dff5a',19,'Tränkehändler')},null,[338, 78, 832, 455]]);
-  objs.push([331,()=>{label('Odo',600,330-112/Z-8/Z,'#7dff5a',19,'Monsterdrops')},null,[533, 78, 1027, 455]]);
-  objs.push([331,()=>{label('Karl',750,330-112/Z-8/Z,'#7dff5a',19,'Holz & Stein')},null,[728, 78, 1222, 455]]);
-  objs.push([331,()=>{label('Elias',900,330-112/Z-8/Z,'#7dff5a',19,'Questgeber')},null,[923, 78, 1417, 455]]);
-  objs.push([150,()=>{groundShadowPoly([[562, 162], [638, 116], [818, 178], [742, 224]],-6,10,.3,12);ctx.drawImage(OBJIMG[0],539.0,-64.3,298.5,293.7)},[[562, 162], [638, 116], [818, 178], [742, 224]],[693, -92, 1097, 306]]);
+  objs.push([749,()=>{label('Fenn',440,748-112/Z-8/Z,'#7dff5a',19,'Tränkehändler')},null,[325,741,819,1118],'Fenn']);
+  objs.push([289,()=>{label('Odo',410,288-112/Z-8/Z,'#7dff5a',19,'Monsterdrops')},null,[286,143,780,520],'Odo']);
+  objs.push([331,()=>{label('Karl',750,330-112/Z-8/Z,'#7dff5a',19,'Holz & Stein')},null,[728, 78, 1222, 455],'Karl']);
+  objs.push([651,()=>{label('Elias',1560,650-112/Z-8/Z,'#7dff5a',19,'Questgeber')},null,[1781,614,2275,991],'Elias']);
   objs.push([100,()=>{groundShadowPoly([[-45, 534], [60, 474], [193, 546], [88, 606]],-6,10,.3,12);ctx.drawImage(OBJIMG[2],-48.9,366.5,248.6,240.0)},[[-45, 534], [60, 474], [193, 546], [88, 606]],[-72, 468, 268, 796]]);
-  objs.push([100,()=>{groundShadowPoly([[149, 678], [275, 610], [375, 666], [249, 734]],-6,10,.3,12);ctx.drawImage(OBJIMG[3],142.5,507.0,236.3,228.2)},[[149, 678], [275, 610], [375, 666], [249, 734]],[177, 651, 501, 964]]);
   objs.push([822,()=>{shadowEll(850,822,70,20,.3);ctx.drawImage(OBJIMG[4],679.1,499.4,340.0,327.0)},null,[875, 641, 1333, 1082]]);
   objs.push([560,()=>{shadowEll(1380,562,54,15,.3);ctx.drawImage(OBJIMG[5],1250.0,305.0,260.0,259.5)},null,[1617, 389, 1971, 742]]);
   objs.push([420,()=>{shadowEll(122,422,50,13,.3);ctx.drawImage(OBJIMG[6],54.2,309.5,135.0,114.8)},null,[62, 394, 254, 560]]);
@@ -1473,10 +1471,8 @@ async function render(){
   objs.push([450,()=>{shadowEll(1040,472,44,12,.3);ctx.drawImage(OBJIMG[11],985.1,369.4,108.0,102.6)},null,[1273, 472, 1429, 622]]);
   objs.push([418,()=>{shadowEll(338,420,18,6,.3);ctx.drawImage(OBJIMG[12],276.4,235.1,101.0,185.0)},null,[351, 298, 499, 554]]);
   objs.push([650,()=>{shadowEll(1096,652,18,6,.3);ctx.drawImage(OBJIMG[13],1040.6,467.1,101.0,185.0)},null,[1345, 599, 1492, 856]]);
-  objs.push([100,()=>{groundShadowPoly([[894, 896], [1045, 845], [1126, 884], [975, 935]],-6,10,.3,12);ctx.drawImage(OBJIMG[14],878.1,671.0,268.7,268.4)},[[894, 896], [1045, 845], [1126, 884], [975, 935]],[1134, 864, 1499, 1229]]);
-  objs.push([100,()=>{groundShadowPoly([[432, 938], [612, 876], [688, 922], [508, 984]],-6,10,.3,12);ctx.drawImage(OBJIMG[15],412.6,695.7,298.5,293.7)},[[432, 938], [612, 876], [688, 922], [508, 984]],[528, 896, 932, 1294]]);
-  objs.push([100,()=>{groundShadowPoly([[133, 874], [236, 816], [367, 886], [264, 944]],-6,10,.3,12);ctx.drawImage(OBJIMG[16],129.1,709.3,244.5,236.1)},[[133, 874], [236, 816], [367, 886], [264, 944]],[160, 914, 494, 1237]]);
-  objs.push([100,()=>{groundShadowPoly([[1391, 906], [1513, 840], [1609, 894], [1487, 960]],-6,10,.3,12);ctx.drawImage(OBJIMG[17],1384.6,740.7,228.2,220.4)},[[1391, 906], [1513, 840], [1609, 894], [1487, 960]],[1792, 955, 2105, 1257]]);
+  objs.push([100,()=>{ctx.save();ctx.translate(186,-8);ctx.save();ctx.translate(-748,-218);groundShadowPoly([[332, 670], [483, 619], [564, 658], [413, 709]],-6,10,.3,12);ctx.drawImage(OBJIMG[14],878.1,671.0,268.7,268.4);ctx.restore();ctx.restore()},[[332, 670], [483, 619], [564, 658], [413, 709]],[402, 569, 767, 934]]);
+  objs.push([100,()=>{ctx.save();ctx.translate(-310,-50);groundShadowPoly([[122, 888], [302, 826], [378, 872], [198, 934]],-6,10,.3,12);ctx.drawImage(OBJIMG[15],412.6,695.7,298.5,293.7);ctx.restore()},[[122, 888], [302, 826], [378, 872], [198, 934]],[125, 831, 529, 1229]]);
   objs.push([560,()=>{shadowEll(1458,562,18,6,.3);ctx.drawImage(OBJIMG[18],1396.4,377.1,101.0,185.0)},null,[1807, 482, 1955, 739]]);
   objs.push([760,()=>{shadowEll(1858,762,18,6,.3);ctx.drawImage(OBJIMG[19],1802.6,577.1,101.0,185.0)},null,[2335, 742, 2483, 999]]);
   objs.push([960,()=>{shadowEll(2258,962,18,6,.3);ctx.drawImage(OBJIMG[20],2196.4,777.1,101.0,185.0)},null,[2847, 1002, 2995, 1259]]);
@@ -1496,25 +1492,21 @@ async function render(){
   objs.push([430,()=>{shadowEll(1782,432,49,12,.3);ctx.drawImage(OBJIMG[35],1710.2,306.9,140.0,127.2)},null,[2215, 391, 2413, 572]]);
   objs.push([900,()=>{shadowEll(82,902,49,12,.3);ctx.drawImage(OBJIMG[36],11.8,785.4,140.0,119.1)},null,[7, 1013, 205, 1184]]);
   objs.push([1090,()=>{shadowEll(1562,1092,45,12,.3);ctx.drawImage(OBJIMG[37],1495.1,975.7,130.0,118.1)},null,[1936, 1260, 2121, 1430]]);
-  objs.push([1100,()=>{shadowEll(2002,1102,45,12,.3);ctx.drawImage(OBJIMG[38],1933.4,993.5,130.0,110.6)},null,[2505, 1284, 2690, 1443]]);
   objs.push([1075,()=>{shadowEll(1300,1077,48,13,.3);ctx.drawImage(OBJIMG[39],1244.1,972.5,110.0,104.5)},null,[1609, 1256, 1768, 1408]]);
   objs.push([880,()=>{shadowEll(470,882,48,13,.3);ctx.drawImage(OBJIMG[40],415.4,755.2,125.0,129.8)},null,[532, 974, 710, 1158]]);
   objs.push([985,()=>{shadowEll(1790,987,48,13,.3);ctx.drawImage(OBJIMG[41],1722.5,865.1,120.0,124.6)},null,[2231, 1117, 2403, 1295]]);
   objs.push([1200,()=>{shadowEll(900,1202,48,13,.3);ctx.drawImage(OBJIMG[42],848.3,1102.2,105.0,99.7)},null,[1095, 1425, 1247, 1571]]);
-  objs.push([330,()=>{shadowEll(450,332,26,8,.3);ctx.drawImage(OBJIMG[43],428.5,222.0,42.9,112.0)},null,[549, 281, 621, 442]]);
-  objs.push([330,()=>{shadowEll(600,332,26,8,.3);ctx.drawImage(OBJIMG[44],578.5,222.0,42.9,112.0)},null,[744, 281, 816, 442]]);
-  objs.push([330,()=>{shadowEll(750,332,26,8,.3);ctx.drawImage(OBJIMG[45],728.5,222.0,42.9,112.0)},null,[939, 281, 1011, 442]]);
-  objs.push([330,()=>{shadowEll(900,332,26,8,.3);ctx.drawImage(OBJIMG[46],878.5,222.0,42.9,112.0)},null,[1134, 281, 1206, 442]]);
-  objs.push([300,()=>{groundShadowPoly([[259, 67], [498, 186], [270, 300], [31, 181]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[0],-13,-253,563,563)},[[259, 67], [498, 186], [270, 300], [31, 181]],[-25, -337, 723, 411]]);
+  objs.push([748,()=>{ctx.drawImage(OBJIMG[43],418.5,638.0,42.9,112.0)},null,[536,821,608,982],'Fenn',[440,750]]);
+  objs.push([288,()=>{ctx.save();ctx.translate(410,0);ctx.scale(-1,1);ctx.drawImage(OBJIMG[44],-21.5,178.0,42.9,112.0);ctx.restore()},null,[497,223,569,384],'Odo',[410,290]]);
+  objs.push([330,()=>{ctx.drawImage(OBJIMG[45],728.5,222.0,42.9,112.0)},null,[939, 281, 1011, 442],'Karl',[750,332]]);
+  objs.push([650,()=>{ctx.drawImage(OBJIMG[46],1538.5,540.0,42.9,112.0)},null,[1992,694,2064,855],'Elias',[1560,652]]);
+  objs.push([300,()=>{groundShadowPoly([[259, 67], [498, 186], [270, 300], [31, 181]],-6,10,.34,12);ctx.save();ctx.translate(537,0);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[0],-13,-253,563,563);ctx.restore()},[[259, 67], [498, 186], [270, 300], [31, 181]],[-25, -337, 723, 411]]);
   objs.push([640,()=>{groundShadowPoly([[1658, 432], [1889, 548], [1705, 640], [1474, 524]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[1],1404,131,563,563)},[[1658, 432], [1889, 548], [1705, 640], [1474, 524]],[1817, 162, 2565, 910]]);
-  objs.push([840,()=>{groundShadowPoly([[2110, 628], [2318, 732], [2100, 840], [1892, 736]],-6,10,.34,12);ctx.save();ctx.translate(2358,338);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[0],0,0,512,512);ctx.restore()},[[2110, 628], [2318, 732], [2100, 840], [1892, 736]],[2392, 431, 3073, 1113]]);
-  objs.push([545,()=>{groundShadowPoly([[1945, 358], [2135, 452], [1950, 545], [1760, 450]],-6,10,.34,12);ctx.save();ctx.translate(2200,72);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[2],0,0,512,512);ctx.restore()},[[1945, 358], [2135, 452], [1950, 545], [1760, 450]],[2186, 86, 2868, 767]]);
+  objs.push([840,()=>{groundShadowPoly([[2110, 628], [2318, 732], [2100, 840], [1892, 736]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[0],1846,338,512,512)},[[2110, 628], [2318, 732], [2100, 840], [1892, 736]],[2392, 431, 3073, 1113]]);
   objs.push([1190,()=>{groundShadowPoly([[1655, 1002], [1840, 1095], [1650, 1190], [1465, 1098]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[2],1400,718,512,512)},[[1655, 1002], [1840, 1095], [1650, 1190], [1465, 1098]],[1812, 925, 2494, 1607]]);
-  objs.push([1385,()=>{groundShadowPoly([[2040, 1173], [2258, 1282], [2050, 1385], [1832, 1276]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[0],1792,882,512,512)},[[2040, 1173], [2258, 1282], [2050, 1385], [1832, 1276]],[2322, 1139, 3003, 1820]]);
-  objs.push([1330,()=>{groundShadowPoly([[342, 1160], [531, 1254], [380, 1330], [191, 1236]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[1],133,914,461,461)},[[342, 1160], [531, 1254], [380, 1330], [191, 1236]],[165, 1180, 780, 1796]]);
-  objs.push([1330,()=>{groundShadowPoly([[826, 1161], [996, 1247], [830, 1330], [659, 1244]],-6,10,.34,12);ctx.save();ctx.translate(1055,905);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[2],0,0,461,461);ctx.restore()},[[826, 1161], [996, 1247], [830, 1330], [659, 1244]],[764, 1168, 1380, 1784]]);
-  objs.push([1330,()=>{groundShadowPoly([[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]],-6,10,.34,12);ctx.save();ctx.translate(1482,878);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[0],0,0,461,461);ctx.restore()},[[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]],[1319, 1133, 1935, 1749]]);
-  objs.push([600,()=>{groundShadowPoly([[2292, 411], [2460, 495], [2250, 600], [2082, 516]],-6,10,.34,12);ctx.save();ctx.translate(2524,138);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[1],0,0,512,512);ctx.restore()},[[2292, 411], [2460, 495], [2250, 600], [2082, 516]],[2608, 171, 3289, 853]]);
+  objs.push([1330,()=>{groundShadowPoly([[342, 1160], [531, 1254], [380, 1330], [191, 1236]],-6,10,.34,12);ctx.save();ctx.translate(727,0);ctx.scale(-1,1);ctx.drawImage(HOUSEIMG[1],133,914,461,461);ctx.restore()},[[342, 1160], [531, 1254], [380, 1330], [191, 1236]],[165, 1180, 780, 1796]]);
+  objs.push([1330,()=>{groundShadowPoly([[826, 1161], [996, 1247], [830, 1330], [659, 1244]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[2],594,905,461,461)},[[826, 1161], [996, 1247], [830, 1330], [659, 1244]],[764, 1168, 1380, 1784]]);
+  objs.push([1330,()=>{groundShadowPoly([[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]],-6,10,.34,12);ctx.drawImage(HOUSEIMG[0],1021,878,461,461)},[[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]],[1319, 1133, 1935, 1749]]);
   objs.push([150,()=>{groundShadowPoly([[985,150],[1415,150],[1415,30],[985,30]],-6,10,.34,12);ctx.drawImage(OBJIMG[OBJIMG.length-1],957,-415,489.9,580)},[[985,150],[1415,150],[1415,40],[985,40]],[1240,-560,1880,230]]);
   objs.push([195,()=>{shadowEll(1260,197,26,8,.3);ctx.save();ctx.translate(1260,0);ctx.scale(-1,1);ctx.drawImage(OBJIMG[43],-21.45,87.0,42.9,112.0);ctx.restore()},null,[1593,100,1683,270]]);
   objs.push([196,()=>{label('Hugo',1260,195-112/Z-8/Z,'#7dff5a',19,'Verwaltung von Looteria')},null,[1480,50,1800,190]]);
@@ -1539,7 +1531,7 @@ async function render(){
         const p=((y0+yy)*bw+(x0+xx))*4,q=(yy*w+xx)*4;
         if(Math.abs(cd[p]-pd[p])>2||Math.abs(cd[p+1]-pd[p+1])>2||Math.abs(cd[p+2]-pd[p+2])>2){d[q]=cd[p];d[q+1]=cd[p+1];d[q+2]=cd[p+2];d[q+3]=255}}
       const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').putImageData(id,0,0);
-      LAYERS.push({y:o[0],c:c,x:bx+x0,y0:by+y0,poly:o[2]||null})}});
+      LAYERS.push({y:o[0],c:c,x:bx+x0,y0:by+y0,poly:o[2]||null,npc:o[4],sh:o[5]})}});
   /* Bodenschatten getrennt zeichnen: liegen immer unter dem Helden */
   const recs=SHREC;SHREC=null;
   ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(BG,0,0);ctx.setTransform(Z,0,0,Z,0,CYC);recs.forEach(f=>f());ctx.setTransform(1,0,0,1,0,0);
@@ -1578,11 +1570,11 @@ function hud(){
     <div class="hud bar" style="left:70px;top:32px;width:200px;height:12px"><i style="width:100%;background:linear-gradient(180deg,#9cf08a,#3f9e4a)"></i></div>
     <div class="hud bar" style="left:70px;top:48px;width:200px;height:10px"><i style="width:40%;background:linear-gradient(180deg,#ffe27a,#d9a42a)"></i></div>
   </div>
-  <div id="autoind" class="hud panel" style="left:14px;top:134px;width:196px;height:32px;line-height:28px;text-align:center;font-weight:800;font-size:15px;color:#f6e3a8;background:rgba(30,44,90,.78)">Auto-Kampf: AUS [X]</div><div id="qh" class="hud panel" style="left:1286px;top:58px;width:300px;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,rgba(30,44,90,.86),rgba(18,26,60,.86))"><div id="qht" style="height:34px;line-height:32px;padding-left:12px;font-weight:800;font-size:15px;color:#f6e3a8">▼ Questhilfe</div><div id="qhb" style="display:none;padding:0 12px 10px;font-size:14px;line-height:1.4;font-weight:700;color:#fff">Sprich auf dem Marktplatz mit Elias, dem Questgeber, um deine erste Aufgabe zu erhalten.</div></div>
+  <div id="autoind" class="hud panel" style="left:14px;top:134px;width:196px;height:32px;line-height:28px;text-align:center;font-weight:800;font-size:15px;color:#f6e3a8;background:rgba(30,44,90,.78)">Auto-Kampf: AUS [X]</div><div id="qh" class="hud panel" style="left:1286px;top:58px;width:300px;overflow:hidden;cursor:pointer;background:linear-gradient(180deg,rgba(30,44,90,.86),rgba(18,26,60,.86))"><div id="qht" style="height:34px;line-height:32px;padding-left:12px;font-weight:800;font-size:15px;color:#f6e3a8">▼ Questhilfe</div><div id="qhb" style="display:none;padding:0 12px 10px;font-size:14px;line-height:1.4;font-weight:700;color:#fff">Sprechen Sie auf dem Marktplatz mit Elias, dem Questgeber, um Ihre erste Aufgabe zu erhalten.</div></div>
   <div class="hud" style="right:16px;top:10px;width:520px;height:64px">
     ${['#4aa0e8','#7ac07a','#6aa0d8','#d9a42a','#f08a3c','#c94a50'].map((c,i)=>`<div class="ico" style="right:${i*66}px;top:0;background:linear-gradient(180deg,#fff,${c})"></div>`).join('')}
   </div>
-  <div class="hud out" style="right:300px;top:86px;font-size:22px;font-weight:800;color:#fff"><span id="zone">Stadt Looteria</span></div>
+  <div class="hud out" style="right:300px;top:86px;font-size:22px;font-weight:800;color:#fff"><span id="zone">Dorf vor Looteria</span></div>
   
   <div class="hud out" style="display:none;right:26px;top:300px;width:340px;font-size:19px;font-weight:800;line-height:1.3;text-align:left">
     <span style="color:#ff6a5a">Bosskampf abgeschlossen!</span><br><span style="color:#fff">Quest angenommen: Gehe zum Bürgermeister der Stadt.</span></div>
@@ -1622,10 +1614,10 @@ function inPoly(p,x,y,grow){
   const q=p.map(v=>[cx+(v[0]-cx)*grow,cy+(v[1]-cy)*grow]);let c=false;
   for(let i=0,j=3;i<4;j=i++){if(((q[i][1]>y)!==(q[j][1]>y))&&(x<(q[j][0]-q[i][0])*(y-q[i][1])/(q[j][1]-q[i][1])+q[i][0]))c=!c}
   return c}
-const STALLS=[[[985, 150], [1415, 150], [1415, 40], [985, 40]], [[562, 162], [638, 116], [818, 178], [742, 224]], [[-45, 534], [60, 474], [193, 546], [88, 606]], [[149, 678], [275, 610], [375, 666], [249, 734]], [[894, 896], [1045, 845], [1126, 884], [975, 935]], [[432, 938], [612, 876], [688, 922], [508, 984]], [[133, 874], [236, 816], [367, 886], [264, 944]], [[1391, 906], [1513, 840], [1609, 894], [1487, 960]], [[259, 67], [498, 186], [270, 300], [31, 181]], [[1658, 432], [1889, 548], [1705, 640], [1474, 524]], [[2110, 628], [2318, 732], [2100, 840], [1892, 736]], [[1945, 358], [2135, 452], [1950, 545], [1760, 450]], [[1655, 1002], [1840, 1095], [1650, 1190], [1465, 1098]], [[2040, 1173], [2258, 1282], [2050, 1385], [1832, 1276]], [[342, 1160], [531, 1254], [380, 1330], [191, 1236]], [[826, 1161], [996, 1247], [830, 1330], [659, 1244]], [[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]], [[2292, 411], [2460, 495], [2250, 600], [2082, 516]]];
+const STALLS=[[[985, 150], [1415, 150], [1415, 40], [985, 40]], [[-45, 534], [60, 474], [193, 546], [88, 606]], [[332, 670], [483, 619], [564, 658], [413, 709]], [[122, 888], [302, 826], [378, 872], [198, 934]], [[259, 67], [498, 186], [270, 300], [31, 181]], [[1658, 432], [1889, 548], [1705, 640], [1474, 524]], [[2110, 628], [2318, 732], [2100, 840], [1892, 736]], [[1655, 1002], [1840, 1095], [1650, 1190], [1465, 1098]], [[342, 1160], [531, 1254], [380, 1330], [191, 1236]], [[826, 1161], [996, 1247], [830, 1330], [659, 1244]], [[1259, 1139], [1446, 1232], [1250, 1330], [1063, 1237]]];
 /* runde Hindernisse: x,y,Radius (Baumstaemme, Laternen, Kisten, Fass, Schild, NPCs) */
 const BLOCK=[[560,250,40],[850,805,44],[1380,552,34],[0,0,0],[1088,648,13],[735,658,13],[628,592,24],[660,600,22],[588,598,20],[1032,452,20],[1068,464,18],[1000,466,22],
- [330,418,13],[1020,150,0],[210,318,26],[1420,300,0],[1450, 560, 13],[1850, 760, 13],[2250, 960, 13],[1700, 985, 13],[2100, 1185, 13],[960, 860, 13],[1400, 1250, 13],[2260, 300, 36],[1900, 330, 36],[0, 0, 0],[180, 1210, 36],[1000, 1340, 36],[1600, 1340, 36],[2330, 780, 36],[700, 1240, 28],[1150, 1235, 28],[2180, 700, 28],[1780, 430, 28],[80, 900, 28],[1560, 1090, 28],[2000, 1100, 28],[1300, 1075, 26],[470, 880, 26],[1790, 985, 26],[900, 1200, 26],[450, 330, 24],[600, 330, 24],[750, 330, 24],[900, 330, 24],[1260,195,16]];
+ [330,418,13],[1020,150,0],[210,318,26],[1420,300,0],[1450, 560, 13],[1850, 760, 13],[2250, 960, 13],[1700, 985, 13],[2100, 1185, 13],[960, 860, 13],[1400, 1250, 13],[2260, 300, 36],[1900, 330, 36],[0, 0, 0],[180, 1210, 36],[1000, 1340, 36],[1600, 1340, 36],[2330, 780, 36],[700, 1240, 28],[1150, 1235, 28],[2180, 700, 28],[1780, 430, 28],[80, 900, 28],[1560, 1090, 28],[1300, 1075, 26],[470, 880, 26],[1790, 985, 26],[900, 1200, 26],[440, 748, 24],[410, 288, 24],[750, 330, 24],[1560, 650, 24],[1260,195,16]];
 function walkable(x,y){
   if(SC==='m')return walkM(x,y);
   if(SC==='p')return walkP(x,y);
@@ -1667,10 +1659,10 @@ function heroLoop(ts){
   const order=LAYERS.map((L,i)=>[layerKey(L),i,L]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
   const mons=(SC==='p'?MON.filter(m=>m.hp>0||m.dead>0):[]).concat(netOthers()).sort((a,b)=>a.y-b.y);let mi=0;
   const flushMon=lim=>{while(mi<mons.length&&mons[mi].y<=lim){if(!drawn&&mons[mi].y>hero.y)drawHero();(mons[mi].rp?drawOther(mons[mi++],t):drawMon(mons[mi++],t))}};
-  for(const [kk,ii,L] of order){flushMon(kk);if(!drawn&&kk>hero.y)drawHero();
+  for(const [kk,ii,L] of order){if(L.npc&&window.__npcHid&&window.__npcHid(L.npc))continue;if(L.sh){ctx.save();ctx.setTransform(Z,0,0,Z,0,CYO);shadowEll(L.sh[0],L.sh[1],26,8,.3);ctx.restore()}flushMon(kk);if(!drawn&&kk>hero.y)drawHero();
     if(drawn&&L.x<hx0+w&&L.x+L.c.width>hx0&&L.y0<hy0+h&&L.y0+L.c.height>hy0){occ=true;after.push(L)}
     ctx.drawImage(L.c,L.x,L.y0)}
-  flushMon(1e9);if(!drawn)drawHero();drawFloaters(t);
+  flushMon(1e9);if(!drawn)drawHero();drawFloaters(t);if(SC==='c'){try{const S_=story(),q_=qSt(),Q_=QS[q_.i],mk=[];if(S_.stage===0)mk.push([1260,48,'?']);if(S_.stage===1)mk.push([1560,501,'?']);else if(S_.stage>=2&&q_.odo===1){mk.push([410,139,'!'])}else if(S_.stage>=2&&q_.pot===1){if((q_.bought||0)>=5)mk.push([1560,501,'!'])}else if(S_.stage>=2&&Q_){if(q_.st===0)mk.push([1560,501,'?']);else if(q_.st===2)mk.push([1560,501,'!'])}if(mk.length){const tt=performance.now()/1000;ctx.save();ctx.setTransform(Z,0,0,Z,0,CYO);ctx.font='900 '+(46/Z)+'px sans-serif';ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=6/Z;ctx.strokeStyle='#2a0a0a';for(const [mx_,my_,ch] of mk){const by_=my_+Math.sin(tt*4)*3;ctx.strokeText(ch,mx_,by_);ctx.fillStyle=ch==='!'?'#37e04a':'#ff3b3b';ctx.fillText(ch,mx_,by_)}ctx.restore()}}catch(e){}}
   /* verdeckt? dann Silhouette durchscheinen lassen, damit der Held nie ganz verschwindet */
   lightPass();
   let vis=1;
@@ -1842,14 +1834,14 @@ function goScene(to){
     if(to==='m'&&!MEADOW.BG)buildMeadow();
     if(to==='p'&&!PLAINS.BG)buildPlains();
     const FROM=SC;SC=to;const SCO={c:CITYS,m:MEADOW,p:PLAINS}[to];BG=SCO.BG;LAYERS=SCO.LAYERS;CYO=(to==='c')?CYC:0;
-    if(to==='m'){if(FROM==='p'){hero.x=655;hero.y=385;hero.face='down'}else{hero.x=135;hero.y=1100;hero.face='right'}}else if(to==='p'){hero.x=715;hero.y=1305;hero.face='up'}else{hero.x=2292;hero.y=1105;hero.face='left'}
+    if(to==='m'){if(FROM==='p'){hero.x=655;hero.y=385;hero.face='down'}else{hero.x=135;hero.y=1100;hero.face='right'}}else if(to==='p'){hero.x=715;hero.y=1305;hero.face='up'}else{hero.x=2185;hero.y=1085;hero.face='left'}
     hero.tx=null;camUpd(true);setZone();hintK=null;
     requestAnimationFrame(()=>{fadeEl.style.opacity=0;setTimeout(()=>{TRANS=false;fadeEl.textContent='';toast(ZN());chatAdd('Gebiet betreten: '+ZN(),'System','#9be8a0')},380)})
   },400)}
 let hintK=null;
 function chkExit(){
   if(TRANS)return;
-  if(SC==='c'){if(hero.x>2332&&hero.y>1010&&hero.y<1200)goScene('m');return}
+  if(SC==='c'){if(hero.x>2262&&hero.y>1040&&hero.y<1340)goScene('m');return}
   if(SC==='p'){if(hero.y>1336&&hero.x>560&&hero.x<860)goScene('m');return}
   if(hero.y<334&&hero.x>570&&hero.x<740){goScene('p');return}
   if(hero.x<95&&hero.y>1010&&hero.y<1190){goScene('c');return}
@@ -1894,7 +1886,7 @@ function drawMap(t){
   road([[SB[0]+SB[2]-6,SB[1]+SB[3]*.79],[WB[0]+4,WB[1]+WB[3]*.79]],7,'#e2cf9c');
   blob(SB[0],SB[1],SB[2],SB[3],'#dcc79c','#6b4a2a');
   for(let i=0;i<9;i++){const x=SB[0]+26+(i%3)*54+hs(i,31)*8,y=SB[1]+32+Math.floor(i/3)*46+hs(i,32)*6;g.fillStyle='#e8dcc0';g.fillRect(x,y,26,18);g.fillStyle='#c4503a';g.beginPath();g.moveTo(x-4,y);g.lineTo(x+13,y-14);g.lineTo(x+30,y);g.closePath();g.fill();g.strokeStyle='#5a2a1a';g.lineWidth=1.5;g.strokeRect(x,y,26,18)}
-  txt('Stadt Looteria',SB[0]+SB[2]/2,SB[1]+SB[3]+22,19,'#fff6d0');
+  txt('Dorf vor Looteria',SB[0]+SB[2]/2,SB[1]+SB[3]+22,19,'#fff6d0');
   /* Kompass */
   g.save();g.translate(880,440);g.strokeStyle='#5a3a1a';g.fillStyle='#5a3a1a';g.lineWidth=2;g.beginPath();g.arc(0,0,26,0,6.283);g.stroke();
   g.beginPath();g.moveTo(0,-34);g.lineTo(6,0);g.lineTo(0,34);g.lineTo(-6,0);g.closePath();g.fill();g.beginPath();g.moveTo(-34,0);g.lineTo(0,5);g.lineTo(34,0);g.lineTo(0,-5);g.closePath();g.globalAlpha=.55;g.fill();g.globalAlpha=1;
@@ -1903,7 +1895,7 @@ function drawMap(t){
   let px,py;if(SC==='c'){px=SB[0]+hero.x/2400*SB[2];py=SB[1]+hero.y/1400*SB[3]}else if(SC==='p'){px=340+hero.x/2400*270;py=36+hero.y/1400*74}else{const p=mp(hero.x,hero.y);px=p[0];py=p[1]}
   const pr=11+4*Math.sin(t/220);g.fillStyle='rgba(255,90,74,.28)';g.beginPath();g.arc(px,py,pr+8,0,6.283);g.fill();
   g.fillStyle='#ff5a4a';g.strokeStyle='#fff';g.lineWidth=3;g.beginPath();g.arc(px,py,8,0,6.283);g.fill();g.stroke();
-  txt(window.__pname()+' – du bist hier',px,py-22,15,'#fff');
+  txt(window.__pname()+' – Sie sind hier',px,py-22,15,'#fff');
 }
 function mapLoop(t){if(!mapOpen)return;drawMap(t);requestAnimationFrame(mapLoop)}
 function openMap(){mapOpen=true;mapEl.style.display='block';document.getElementById('mapw').textContent='Aktueller Ort: '+ZN();requestAnimationFrame(mapLoop)}
@@ -1917,7 +1909,7 @@ window.__goScene=goScene;window.__sc=()=>SC;
 
 /* ===================== Grosse Wiese + Monster-Prototyp ===================== */
 const PLAINS={BG:null,LAYERS:null,BLOCK:[]};
-const ZN=()=>({c:'Stadt Looteria',m:'Wiesen von Looteria',p:'Große Wiese'}[SC]);
+const ZN=()=>({c:'Dorf vor Looteria',m:'Wiesen von Looteria',p:'Große Wiese'}[SC]);
 function walkP(x,y){
   if(y<330||y>1345||x>2330||x<70)return false;
   for(const b of PLAINS.BLOCK)if(b[2]&&Math.hypot(x-b[0],(y-b[1])*(b[3]||1.7))<b[2])return false;
@@ -1981,8 +1973,8 @@ function monTick(t){
   if(AUTO&&hero.fx!=='death'){
     if(window.__st&&__st.lp<__lpmax()*.25){setAuto(false);chatAdd('Auto-Kampf gestoppt: HP unter 25 %.','System','#ff8a7a')}
     else if(!(hkeys.w||hkeys.a||hkeys.s||hkeys.d||hkeys.arrowup||hkeys.arrowdown||hkeys.arrowleft||hkeys.arrowright)){
-      let best=null,bd=1e9;{const qp=window.__qpref&&window.__qpref();for(let pass=qp?0:1;pass<(AQ&&qp?1:2)&&!best;pass++)for(const m of MON)if(m.hp>0&&(pass===1||m.ty.n===qp)){const d=Math.hypot(m.x-hero.x,(m.y-hero.y)*1.6);if(d<1100&&d<bd){bd=d;best=m}}if(!best)bd=1e9}
-      if(best&&bd<1100){
+      let best=null,bd=1e9;{const A_=window.__atg;if(A_&&A_.hp>0){const d0=Math.hypot(A_.x-hero.x,(A_.y-hero.y)*1.6);if(d0<1400){best=A_;bd=d0}}}{const qp=window.__qpref&&window.__qpref();for(let pass=qp?0:1;pass<(AQ&&qp?1:2)&&!best;pass++)for(const m of MON)if(m.hp>0&&(pass===1||m.ty.n===qp)&&(m.agg||!window.__st||m.lv<=__st.lvl+4)){const d=Math.hypot(m.x-hero.x,(m.y-hero.y)*1.6);if(d<1100&&d<bd){bd=d;best=m}}if(!best)bd=1e9}
+      window.__atg=best;if(best&&bd<1400){
         if(bd>90){hero.tx=best.x;hero.ty=best.y+8}
         else{hero.tx=null;if(!hero.atk&&!hero.fx){hero.face=faceOf(best.x-hero.x,(best.y-hero.y)*1.6);hero.atk=1;hero.t0=t}}}}}
   if(hero.atk&&hero.t0!==lastAtk){lastAtk=hero.t0;strikeAt=hero.t0+.55;setTimeout(()=>window.SFX&&SFX.play('swing'),380)}
@@ -1990,7 +1982,7 @@ function monTick(t){
     for(const m of MON){if(m.hp<=0)continue;if(Math.hypot(m.x-hero.x,(m.y-hero.y)*1.6)<125){
       const dmg=12+(eqW()?4:0)+Math.floor(hs(Math.floor(t*100),7)*8);m.hp-=dmg;m.hit=t;m.agg=1;m.prov=1;window.SFX&&SFX.play('hit');addFlt(m.x,m.y-50*m.ty.sz,String(dmg),'#fff3b0');
       if(m.hp<=0){m.dead=t;window.SFX&&SFX.play('pop');const tl=m.ty.tal,g=tl[0]+Math.floor(hs(Math.floor(t*50),3)*(tl[1]-tl[0]+1));
-        if(window.__st){__st.taler+=g;window.__persist()}addFlt(m.x,m.y-80*m.ty.sz,'+'+g+' Taler','#ffe27a');chatAdd(m.ty.n+' besiegt: +'+g+' Taler','System','#ffe27a');kills++;dropGive(m);gainXp(Math.round(m.mhp*.4+m.lv*3),m.x,m.y)}}}}
+        if(window.__st){__st.taler+=g;window.__persist()}addFlt(m.x,m.y-80*m.ty.sz,'+'+g+' Taler','#ffe27a');chatAdd(m.ty.n+' besiegt: +'+g+' Taler','System','#ffe27a');kills++;dropGive(m);gainXp(Math.max(1,Math.round((m.mhp*.4+m.lv*3)/10*(m.ty.n==='Großer Schleim'?1.5:1))),m.x,m.y)}}}}
   for(const m of MON){
     if(m.hp<=0){if(t-m.dead>9){rollLv(m);m.hp=m.mhp;m.x=m.wx=m.hx;m.y=m.wy=m.hy;m.agg=0;m.prov=0;m.dead=0}continue}
     const d=Math.hypot(m.x-hero.x,(m.y-hero.y)*1.5),heroAlive=hero.fx!=='death';
@@ -2001,7 +1993,7 @@ function monTick(t){
     if(dl>(m.agg?46:6)){const s=m.ty.sp*(m.agg?1.5:.6),nx=m.x+dx/dl*s,ny=m.y+dy/(dl)*s*.7;if(walkP(nx,ny)){m.x=nx;m.y=ny}else m.wt=0}
     if(m.agg&&heroAlive&&d<62&&t-m.atkT>1.6){m.atkT=t;
       if(window.__st){__st.lp=Math.max(0,__st.lp-m.dmg);window.__persist()}addFlt(hero.x,hero.y-110,'-'+m.dmg,'#ff7a6a');window.SFX&&SFX.play('hurt');
-      if(window.__st&&__st.lp<=0){hero.fx='death';hero.fxT=t;deathT=t;window.SFX&&SFX.play('death');setAuto(false);chatAdd('Du wurdest besiegt und kehrst in die Stadt zurück.','System','#ff8a7a')}}}
+      if(window.__st&&__st.lp<=0){hero.fx='death';hero.fxT=t;deathT=t;window.SFX&&SFX.play('death');setAuto(false);chatAdd('Sie wurden besiegt und kehren in die Stadt zurück.','System','#ff8a7a')}}}
   if(deathT&&t-deathT>2.6){deathT=0;hero.fx=null;if(window.__st){__st.lp=__lpmax();window.__persist()}goScene('c')}
 }
 function drawMon(m,t){
@@ -2022,7 +2014,7 @@ function drawMon(m,t){
   ctx.strokeStyle='#2a2140';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,-hh*.3,5*k,.15,Math.PI-.15);ctx.stroke();
   ctx.restore();
   if(m.hp>0&&(m.agg||m.hp<m.mhp)){const bw=54*k,by=y-hh*1.25-18-jump;ctx.fillStyle='#2a2140';ctx.fillRect(x-bw/2-1.5,by-1.5,bw+3,8);ctx.fillStyle='#4a1f26';ctx.fillRect(x-bw/2,by,bw,5);ctx.fillStyle='#e0524f';ctx.fillRect(x-bw/2,by,bw*m.hp/m.mhp,5)}
-  if(m.hp>0)label(d.n+'  Lv '+m.lv,x,y-hh*1.25-24-jump,'#ffb0a0',13);
+  if(m.hp>0)label(d.n+'  Lv '+m.lv,x,y-hh*1.25-24-jump,(window.__st&&m.lv-__st.lvl>=5)?'#ff2323':'#ffb0a0',(window.__st&&m.lv-__st.lvl>=5)?15:13);
   ctx.restore()}
 function drawFloaters(t){
   const now=performance.now()/1000;ctx.save();ctx.setTransform(Z,0,0,Z,0,0);
@@ -2034,7 +2026,7 @@ window.__mon=MON;
 /* ===================== UI: Auto-Kampf (X), Chat, Questhilfe ===================== */
 let AUTO=false,AQ=false;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function setAuto(v){AQ=(v==='q');v=!!v;AUTO=v;const i=document.getElementById('autoind'),b=document.getElementById('autobtn');
+function setAuto(v){window.__atg=null;AQ=(v==='q');v=!!v;AUTO=v;const i=document.getElementById('autoind'),b=document.getElementById('autobtn');
   if(i){i.textContent='Auto-Kampf: '+(v?(AQ?'QUEST':'ALLE'):'AUS')+' [X]';i.style.color=v?'#b8ffb0':'#f6e3a8';i.style.borderColor=v?'#5fcf6a':'';i.style.background=v?'rgba(30,90,50,.85)':'rgba(30,44,90,.78)'}
   if(b)b.style.background=v?'linear-gradient(180deg,#58c46a,#2a8a42)':'linear-gradient(180deg,#5a78c8,#2f4a94)';
   if(typeof chatAdd==='function'&&document.getElementById('chatlog'))chatAdd('Auto-Kampf '+(v?(AQ?'eingeschaltet: nur Questgegner.':'eingeschaltet: alle Gegner.'):'ausgeschaltet.'),'System','#bff8ff')}
@@ -2054,7 +2046,7 @@ function chatSend(txt){txt=txt.trim();if(!txt)return;
 function initUi(){
   const inp=document.getElementById('chatin');
   ['#autobtn','#mapbtn','#qh','#chatin','.tab'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.pointerEvents='auto';if(q==='.tab')x.style.cursor='pointer'}));
-  chatAdd('Klicke auf den Boden oder nutze WASD/Pfeiltasten, um zu laufen. Tippe /hilfe für alle Tasten.','System','#7dff5a');
+  chatAdd('Klicken Sie auf den Boden oder nutzen Sie WASD/Pfeiltasten, um zu laufen. Tippen Sie /hilfe für alle Tasten.','System','#7dff5a');
   chatAdd('Schwere Beute wird automatisch eingesammelt.','System','#7dff5a');
   if(inp){
     inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){chatSend(inp.value);inp.value='';inp.blur()}else if(e.key==='Escape')inp.blur()});
@@ -2077,8 +2069,8 @@ function initUi(){
 const xpNeed=l=>Math.round(40*Math.pow(l,1.5));
 function gainXp(n,x,y){const st=window.__st;if(!st)return;st.xp+=n;addFlt(x,y-105,'+'+n+' XP','#e6b3ff');chatAdd('+'+n+' Erfahrung','System','#e6b3ff');
   let up=false;while(st.xp>=xpNeed(st.lvl)){st.xp-=xpNeed(st.lvl);st.lvl++;up=true}
-  if(up){window.SFX&&SFX.play('levelup');window.__setLpMax(361+(st.lvl-2)*45);st.lp=window.__lpmax();st.ep=100;toast('Stufe '+st.lvl+' erreicht!');addFlt(hero.x,hero.y-150,'LEVEL UP!','#ffe27a');
-    chatAdd('Level-Up! Du bist jetzt Stufe '+st.lvl+'. HP und MP wurden aufgefüllt.','System','#ffe27a')}
+  if(up){window.SFX&&SFX.play('levelup');window.__setLpMax(100+(st.lvl-1)*20);st.lp=window.__lpmax();st.ep=100;toast('Stufe '+st.lvl+' erreicht!');addFlt(hero.x,hero.y-150,'LEVEL UP!','#ffe27a');
+    chatAdd('Level-Up! Sie sind jetzt Stufe '+st.lvl+'. HP und MP wurden aufgefüllt.','System','#ffe27a')}
   window.__persist()}
 
 
@@ -2139,7 +2131,7 @@ function renderEq(){
   <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;font-size:11px">${['Kosmetik Kopf','Kosmetik Körper','Kosmetik Waffe'].map(n=>`<div style="padding:5px 10px;border-radius:8px;border:1px dashed rgba(255,255,255,.3);opacity:.7">${n}</div>`).join('')}</div>
   <div style="margin-top:12px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.08);display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;font-size:14px">
     ${stat('Kraft',12+(lv-2)*2)}${stat('Intelligenz',5+(lv-2))}${stat('Geschick',8+(lv-2))}${stat('Weisheit / Glaube',5+(lv-2))}
-    ${stat('Angriff',(12+(w?4:0))+' – '+(19+(w?4:0)))}${stat('HP max',window.__lpmax?__lpmax():361)}</div>`;
+    ${stat('Angriff',(12+(w?4:0))+' – '+(19+(w?4:0)))}${stat('HP max',window.__lpmax?__lpmax():100)}</div>`;
   eqEl.querySelector('#eqx').onmousedown=e=>{e.stopPropagation();toggleEq()};
   eqEl.querySelectorAll('[data-eq="weapon"]').forEach(x=>x.onmousedown=e=>{e.stopPropagation();const st=window.__st;if(st){st.eq={weapon:eqW()?null:'wsword'};window.__persist()}renderEq()})}
 function toggleEq(){
@@ -2157,7 +2149,7 @@ function dropGive(m){bestKill(m);questKill(m);const map={'Schleim':'sg','Blausch
 let odoEl=null;
 function renderOdo(){const s=window.__st,D=window.__DROPS.filter(d=>(s.inv[d.id]||0)>0);
   odoEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><div style="font-size:22px;font-weight:800;color:#bff8ff">Odo · Monsterdrops</div><div style="font-size:13px;color:#9be8a0">„Her mit der Beute!"</div></div><div style="font-size:18px;font-weight:800">Taler: <span style="color:#ffe27a">${s.taler}</span></div></div>`+
-   (D.length?D.map(d=>{const n=s.inv[d.id];return `<div style="display:flex;align-items:center;gap:14px;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:rgba(255,255,255,.07)"><div style="transform:scale(.8);transform-origin:center;width:44px">${window.__slimeIcon(d.c)}</div><div style="flex:1"><div style="font-size:17px;font-weight:800">${d.n}</div><div style="font-size:12px;color:#9be8a0">Im Besitz: ${n} · ${d.p} Taler pro Stück</div></div><button data-o1="${d.id}" style="padding:7px 12px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">1 verkaufen</button><button data-oa="${d.id}" style="padding:7px 12px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Alle (${n*d.p} Taler)</button></div>`}).join(''):`<div style="padding:18px;text-align:center;opacity:.8">Du hast keine Drops dabei. Besiege Monster auf der Großen Wiese!</div>`)+
+   (D.length?D.map(d=>{const n=s.inv[d.id];return `<div style="display:flex;align-items:center;gap:14px;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:rgba(255,255,255,.07)"><div style="transform:scale(.8);transform-origin:center;width:44px">${window.__slimeIcon(d.c)}</div><div style="flex:1"><div style="font-size:17px;font-weight:800">${d.n}</div><div style="font-size:12px;color:#9be8a0">Im Besitz: ${n} · ${d.p} Taler pro Stück</div></div><button data-o1="${d.id}" style="padding:7px 12px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">1 verkaufen</button><button data-oa="${d.id}" style="padding:7px 12px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Alle (${n*d.p} Taler)</button></div>`}).join(''):`<div style="padding:18px;text-align:center;opacity:.8">Sie haben keine Drops dabei. Besiegen Sie Monster auf der Großen Wiese!</div>`)+
    `<div style="text-align:right;margin-top:8px"><button id="odx" style="padding:6px 18px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Schließen</button></div>`;
   const sell=(id,all)=>{const d=window.__DROPS.find(x=>x.id===id),n=s.inv[id]||0,q=all?n:Math.min(1,n);if(!q)return;s.inv[id]=n-q;s.taler+=q*d.p;window.__persist();chatAdd(q+'× '+d.n+' verkauft: +'+(q*d.p)+' Taler','System','#ffe27a');renderOdo()};
   odoEl.querySelectorAll('[data-o1]').forEach(b=>b.onmousedown=e=>{e.stopPropagation();sell(b.dataset.o1,false)});
@@ -2167,7 +2159,7 @@ function openOdo(){if(!odoEl){odoEl=document.createElement('div');odoEl.style.cs
     document.getElementById('frame').appendChild(odoEl);odoEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')odoEl.style.display='none'})}
   renderOdo();odoEl.style.display='block'}
 
-const GAME_VERSION='0.0.8';
+const GAME_VERSION='0.0.9';
 /* ---- Sound (Platzhalter, per WebAudio synthetisiert) ---- */
 const SFX=(()=>{let ac=null,mg=null;const U=()=>{const s=window.__st;if(!s)return{snd:true,vol:.6,mini:true};if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;if(s.ui.snd===undefined)s.ui.snd=true;if(s.ui.vol===undefined)s.ui.vol=.6;return s.ui};
  function ctx(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
@@ -2210,7 +2202,7 @@ const vNum=v=>String(v).split('.').map(n=>+n||0);
 const vNewer=(a,b)=>{const x=vNum(a),y=vNum(b);for(let i=0;i<3;i++){if((x[i]||0)!==(y[i]||0))return (x[i]||0)>(y[i]||0)}return false};
 let updEl=null,updSeen=null;
 function showUpd(v){if(updSeen===v)return;updSeen=v;if(!updEl){updEl=document.createElement('div');updEl.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:420px;padding:18px 22px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.97),rgba(18,26,60,.97));color:#f6e3a8;font:700 15px var(--font-ui);z-index:70;box-shadow:0 8px 32px rgba(0,0,0,.6);text-align:center';document.getElementById('frame').appendChild(updEl);updEl.addEventListener('mousedown',e=>e.stopPropagation())}
-  updEl.innerHTML=`<div style="font-size:21px;font-weight:800;color:#bff8ff;margin-bottom:8px">Neue Version verfügbar</div><div style="line-height:1.45;margin-bottom:14px">Version <b style="color:#ffe27a">${v}</b> ist da (du spielst ${GAME_VERSION}).<br>Aktualisiere jetzt, um die neuesten Änderungen zu erhalten. Dein Fortschritt bleibt erhalten.</div><div style="display:flex;gap:10px;justify-content:center"><button id="updgo" style="padding:8px 20px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Jetzt aktualisieren</button><button id="updlater" style="padding:8px 20px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Später</button></div>`;
+  updEl.innerHTML=`<div style="font-size:21px;font-weight:800;color:#bff8ff;margin-bottom:8px">Neue Version verfügbar</div><div style="line-height:1.45;margin-bottom:14px">Version <b style="color:#ffe27a">${v}</b> ist da (Sie spielen ${GAME_VERSION}).<br>Aktualisieren Sie jetzt, um die neuesten Änderungen zu erhalten. Ihr Fortschritt bleibt erhalten.</div><div style="display:flex;gap:10px;justify-content:center"><button id="updgo" style="padding:8px 20px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Jetzt aktualisieren</button><button id="updlater" style="padding:8px 20px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Später</button></div>`;
   updEl.style.display='block';
   updEl.querySelector('#updgo').onmousedown=e=>{e.stopPropagation();try{posSave()}catch(x){}window.__persist&&window.__persist();location.href=location.pathname+'?v='+encodeURIComponent(v)};
   updEl.querySelector('#updlater').onmousedown=e=>{e.stopPropagation();updEl.style.display='none'}}
@@ -2224,16 +2216,16 @@ function posInit(){const s=window.__st,p=s&&s.pos;setInterval(posSave,1500);addE
   goScene(p.sc);const w=()=>{if(TRANS||SC!==p.sc){setTimeout(w,120);return}put()};setTimeout(w,450)}
 /* ---- Charaktername ---- */
 window.__pname=()=>{const s=window.__st;return (s&&s.name)||'Kaledoss'};
-function applyName(){const n=window.__pname();document.querySelectorAll('#hudl div').forEach(d=>{if(d.children.length===0&&(d.textContent==='Kaledoss'||d.dataset.pn==='1')){d.textContent=n;d.dataset.pn='1'}})}
+function applyName(){const n=window.__pname();document.querySelectorAll('#hudl div').forEach(d=>{if(d.children.length===0&&(d.textContent==='Kaledoss'||d.dataset.pn==='1')){d.textContent=n;d.dataset.pn='1';const P=d.parentElement;let k=P.querySelector('#kname');if(!k){k=document.createElement('div');k.id='kname';k.style.cssText='position:absolute;right:22px;top:9px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-size:14px;font-weight:800;color:#ffe27a;line-height:20px;text-shadow:0 1px 3px rgba(0,0,0,.7)';P.appendChild(k)}k.textContent=(window.__story&&window.__story().name)||''}})}
 function nameAsk(){const s=window.__st;if(!s||s.name)return;hero.tx=null;
   const ov=document.createElement('div');ov.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(6,10,28,.72);z-index:80;display:flex;align-items:center;justify-content:center';
-  ov.innerHTML=`<div style="width:460px;padding:22px 26px;border:3px solid #f0c25a;border-radius:16px;background:linear-gradient(180deg,rgba(30,44,90,.98),rgba(18,26,60,.98));color:#f6e3a8;font:700 15px var(--font-ui);text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.65)"><div style="font-size:24px;font-weight:800;color:#bff8ff;margin-bottom:6px">Willkommen in Looteria!</div><div style="line-height:1.45;margin-bottom:14px">Wie soll dein Held heißen?</div><input id="nmin" maxlength="16" value="" placeholder="Name eingeben" autocomplete="off" style="width:100%;padding:10px 12px;border-radius:10px;border:2px solid #f0c25a;background:#141c40;color:#fff;font:800 18px var(--font-ui);text-align:center;outline:none"><div id="nmerr" style="min-height:20px;margin:6px 0 4px;font-size:13px;color:#ff9a8a"></div><button id="nmok" style="padding:9px 26px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 16px var(--font-ui);cursor:pointer">Los geht's</button><div style="font-size:12px;opacity:.7;margin-top:8px">2–16 Zeichen: Buchstaben, Zahlen, Leerzeichen, Bindestrich</div></div>`;
+  ov.innerHTML=`<div style="width:460px;padding:22px 26px;border:3px solid #f0c25a;border-radius:16px;background:linear-gradient(180deg,rgba(30,44,90,.98),rgba(18,26,60,.98));color:#f6e3a8;font:700 15px var(--font-ui);text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.65)"><div style="font-size:24px;font-weight:800;color:#bff8ff;margin-bottom:6px">Willkommen in Looteria!</div><div style="line-height:1.45;margin-bottom:14px">Wie soll Ihr Held heißen?</div><input id="nmin" maxlength="16" value="" placeholder="Name eingeben" autocomplete="off" style="width:100%;padding:10px 12px;border-radius:10px;border:2px solid #f0c25a;background:#141c40;color:#fff;font:800 18px var(--font-ui);text-align:center;outline:none"><div id="nmerr" style="min-height:20px;margin:6px 0 4px;font-size:13px;color:#ff9a8a"></div><button id="nmok" style="padding:9px 26px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 16px var(--font-ui);cursor:pointer">Los geht's</button><div style="font-size:12px;opacity:.7;margin-top:8px">2–16 Zeichen: Buchstaben, Zahlen, Leerzeichen, Bindestrich</div></div>`;
   document.getElementById('frame').appendChild(ov);ov.addEventListener('mousedown',e=>e.stopPropagation());
   const inp=ov.querySelector('#nmin'),err=ov.querySelector('#nmerr');['keydown','keyup','keypress'].forEach(t=>inp.addEventListener(t,e=>e.stopPropagation()));
   const go=()=>{const v=inp.value.trim().replace(/\s+/g,' ');if(v.length<2){err.textContent='Der Name braucht mindestens 2 Zeichen.';return}
     if(!/^[A-Za-zÄÖÜäöüß0-9 \-]+$/.test(v)){err.textContent='Nur Buchstaben, Zahlen, Leerzeichen und Bindestrich.';return}
     const fin=()=>{s.name=v;window.__persist();applyName();ov.remove();chatAdd('Willkommen, '+v+'!','System','#9be8a0');SFX.play('accept');if(window.__cloud)window.__cloud.nameOk=true};
-    const C=window.__cloud;if(C&&C.ready&&C.claimName){if(go.busy)return;go.busy=true;err.textContent='Prüfe, ob der Name frei ist …';C.claimName(v).then(r=>{go.busy=false;if(r==='ok')fin();else err.textContent=r==='taken'?'Dieser Name ist schon vergeben. Bitte wähle einen anderen.':'Der Name konnte nicht geprüft werden. Bitte versuche es erneut.'})}else fin()};
+    const C=window.__cloud;if(C&&C.ready&&C.claimName){if(go.busy)return;go.busy=true;err.textContent='Name wird geprüft …';C.claimName(v).then(r=>{go.busy=false;if(r==='ok')fin();else err.textContent=r==='taken'?'Dieser Name ist schon vergeben. Bitte wählen Sie einen anderen.':'Der Name konnte nicht geprüft werden. Bitte versuchen Sie es erneut.'})}else fin()};
   ov.querySelector('#nmok').onmousedown=e=>{e.stopPropagation();go()};inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
   setTimeout(()=>inp.focus(),50)}
 /* ---- Dunkles Design (Skill-Leiste & Chat) ---- */
@@ -2267,19 +2259,19 @@ let jEl=null,jTab=0,jSel=0;
 const JT=['Hauptquests','Nebenquests','Bestiarium von Looteria'];
 function jQuestList(){const q=qSt(),L=[];
   QS.forEach((Q,i)=>{let st,det;
-    if(i<q.i){st='abgeschlossen';det='Du hast diese Quest abgeschlossen.'}
-    else if(i===q.i){if(q.st===0){st='verfügbar';det='Sprich auf dem Marktplatz mit Elias, um diese Quest anzunehmen.'}else if(q.st===1){st='aktiv';det='Fortschritt: '+q.n+'/'+Q.need+' '+Q.col}else{st='bereit zur Abgabe';det='Kehre zu Elias auf den Marktplatz zurück, um deine Belohnung abzuholen.'}}
+    if(i<q.i){st='abgeschlossen';det='Sie haben diese Quest abgeschlossen.'}
+    else if(i===q.i){if(q.st===0){st='verfügbar';det='Sprechen Sie auf dem Marktplatz mit Elias, um diese Quest anzunehmen.'}else if(q.st===1){st='aktiv';det='Fortschritt: '+q.n+'/'+Q.need+' '+Q.col}else{st='bereit zur Abgabe';det='Kehren Sie zu Elias auf den Marktplatz zurück, um Ihre Belohnung abzuholen.'}}
     else{st='gesperrt'}
     L.push({i,Q,st,det,locked:st==='gesperrt'})});return L}
 function renderJ(){const s=window.__st;
   const tabs=JT.map((t,i)=>`<button data-jt="${i}" style="padding:8px 16px;border-radius:10px 10px 0 0;border:2px solid #f0c25a;border-bottom:none;background:${i===jTab?'#2b3866':'rgba(14,20,46,.7)'};color:${i===jTab?'#ffe27a':'#c9d4f5'};font:800 15px var(--font-ui);cursor:pointer">${t}</button>`).join('');
   let left='',right='';
-  if(jTab===0){left=`<div style="opacity:.8;padding:10px">Noch keine Hauptquest.</div>`;right=`<div style="padding:18px;line-height:1.5;opacity:.85">Die Hauptgeschichte von Looteria beginnt bald. Sobald die erste Hauptquest verfügbar ist, findest du sie hier.</div>`}
+  if(jTab===0){left=`<div style="opacity:.8;padding:10px">Noch keine Hauptquest.</div>`;right=`<div style="padding:18px;line-height:1.5;opacity:.85">Die Hauptgeschichte von Looteria beginnt bald. Sobald die erste Hauptquest verfügbar ist, finden Sie sie hier.</div>`}
   else if(jTab===1){const hd=!!uiSt().hideDone,L=jQuestList().filter(e=>!(hd&&e.st==='abgeschlossen'));if(jSel>=L.length)jSel=0;
     const cb=`<label style="display:flex;align-items:center;gap:6px;font-size:13px;margin:0 0 8px 2px;cursor:pointer"><input id="jhide" type="checkbox" ${hd?'checked':''}> Erledigte ausblenden</label>`;
     left=cb+L.map((e,k)=>`<div data-js="${k}" style="padding:9px 12px;border-radius:9px;margin-bottom:6px;cursor:pointer;background:${k===jSel?'rgba(255,226,122,.18)':'rgba(255,255,255,.07)'};border:1px solid ${k===jSel?'#ffe27a':'transparent'}"><div style="font-weight:800">${e.locked?'???':e.Q.n}</div><div style="font-size:12px;opacity:.75">${e.st}</div></div>`).join('');
-    const e=L[jSel];right=!e?`<div style="padding:18px;opacity:.85">Keine Quests zum Anzeigen. Alle bisherigen Quests sind erledigt und ausgeblendet.</div>`:e.locked?`<div style="padding:18px;opacity:.85">Diese Quest ist noch gesperrt. Schließe zuerst die vorherige Quest ab.</div>`:
-      `<div style="padding:6px 8px"><div style="font-size:22px;font-weight:800;color:#ffe27a;margin-bottom:6px">${e.Q.n}</div><div style="font-size:13px;opacity:.75;margin-bottom:8px">Nebenquest · Questgeber: Elias · Status: ${e.st}</div><div style="line-height:1.5;margin-bottom:10px">${e.Q.desc}</div><div style="color:#9be8a0;margin-bottom:8px">Ziel: Besiege ${e.Q.need} ${e.Q.col}</div><div style="margin-bottom:8px;color:#ffe27a">${e.det}</div><div style="padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);font-size:14px"><b style="color:#ffe27a">Belohnung:</b> ${rewTxt(e.Q.rew)}</div></div>`}
+    const e=L[jSel];right=!e?`<div style="padding:18px;opacity:.85">Keine Quests zum Anzeigen. Alle bisherigen Quests sind erledigt und ausgeblendet.</div>`:e.locked?`<div style="padding:18px;opacity:.85">Diese Quest ist noch gesperrt. Schließen Sie zuerst die vorherige Quest ab.</div>`:
+      `<div style="padding:6px 8px"><div style="font-size:22px;font-weight:800;color:#ffe27a;margin-bottom:6px">${e.Q.n}</div><div style="font-size:13px;opacity:.75;margin-bottom:8px">Nebenquest · Questgeber: Elias · Status: ${e.st}</div><div style="line-height:1.5;margin-bottom:10px">${e.Q.desc}</div><div style="color:#9be8a0;margin-bottom:8px">Ziel: Besiegen Sie ${e.Q.need} ${e.Q.col}</div><div style="margin-bottom:8px;color:#ffe27a">${e.det}</div><div style="padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);font-size:14px"><b style="color:#ffe27a">Belohnung:</b> ${rewTxt(e.Q.rew)}</div></div>`}
   else{if(jSel>=BEST.length)jSel=0;
     left=BEST.map((e,i)=>{const f=bFound(e);return `<div data-js="${i}" style="padding:9px 12px;border-radius:9px;margin-bottom:6px;cursor:pointer;display:flex;gap:10px;align-items:center;background:${i===jSel?'rgba(255,226,122,.18)':'rgba(255,255,255,.07)'};border:1px solid ${i===jSel?'#ffe27a':'transparent'}"><span style="font-size:13px;opacity:.7;min-width:36px">Nr. ${String(e.no).padStart(3,'0')}</span><b>${f?e.n:'???'}</b></div>`}).join('');
     const e=BEST[jSel],f=bFound(e),kc=beSt().k[e.n]||0;
@@ -2287,7 +2279,7 @@ function renderJ(){const s=window.__st;
     right=f?`<div style="padding:6px 8px"><div style="display:flex;gap:14px;align-items:center;margin-bottom:8px"><div style="width:76px;height:76px;border-radius:12px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;transform-origin:center">${window.__slimeIcon(e.col).replace('width="44" height="54"','width="'+(48+e.no*10)+'" height="'+(58+e.no*10)+'"')}</div><div><div style="font-size:12px;opacity:.7">Nr. ${String(e.no).padStart(3,'0')}</div><div style="font-size:24px;font-weight:800;color:#ffe27a">${e.n}</div></div></div>
       <div style="line-height:1.55;font-size:15px"><div><b style="color:#bff8ff">Fundort:</b> ${e.loc}</div><div><b style="color:#bff8ff">Level:</b> ${e.lv}</div><div><b style="color:#bff8ff">Lebenspunkte:</b> ${e.hp}</div><div><b style="color:#bff8ff">Besiegt:</b> ${kc}×</div><div><b style="color:#bff8ff">Taler:</b> ${e.tal[0]}–${e.tal[1]}</div><div style="display:flex;align-items:center;gap:8px"><b style="color:#bff8ff">Beute:</b>${drops}</div></div>
       <div style="margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.07);font-size:14px;line-height:1.5;font-style:italic">${e.story}</div></div>`:
-      `<div style="padding:18px"><div style="font-size:12px;opacity:.7">Nr. ${String(e.no).padStart(3,'0')}</div><div style="font-size:24px;font-weight:800;color:#ffe27a;margin-bottom:8px">???</div><div style="opacity:.85;line-height:1.5">Du hast dieses Monster noch nicht entdeckt. Besiege es, um seinen Eintrag freizuschalten.</div></div>`}
+      `<div style="padding:18px"><div style="font-size:12px;opacity:.7">Nr. ${String(e.no).padStart(3,'0')}</div><div style="font-size:24px;font-weight:800;color:#ffe27a;margin-bottom:8px">???</div><div style="opacity:.85;line-height:1.5">Sie haben dieses Monster noch nicht entdeckt. Besiegen Sie es, um seinen Eintrag freizuschalten.</div></div>`}
   const known=BEST.filter(bFound).length;
   jEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:22px;font-weight:800;color:#bff8ff">Journal${jTab===2?` <span style="font-size:14px;color:#c9d4f5;font-weight:700">· ${known}/${BEST.length} entdeckt</span>`:''}</div><button id="jx" style="padding:5px 16px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Schließen (J)</button></div>
   <div style="display:flex;gap:4px">${tabs}</div>
@@ -2313,49 +2305,115 @@ addEventListener('keydown',e=>{if(e.code!=='KeyJ'||e.repeat)return;const ae=docu
   d={w,sc,ox:e.clientX,oy:e.clientY,l,t:tp,ww:wb.width/sc,wh:wb.height/sc};e.preventDefault()},true);
  document.addEventListener('mousemove',e=>{if(!d)return;const l=Math.max(0,Math.min(1600-d.ww,d.l+(e.clientX-d.ox)/d.sc)),t=Math.max(0,Math.min(900-d.wh,d.t+(e.clientY-d.oy)/d.sc));d.w.style.left=l+'px';d.w.style.top=t+'px'});
  document.addEventListener('mouseup',()=>{d=null})}
+/* ---- Story: Hugo / Elias Intro ---- */
+const story=()=>{const s=window.__st;if(!s.story)s.story={stage:0,name:'',sp:0};return s.story};
+window.__story=story;
+window.__npcHid=nm=>{try{const S=story();if(nm==='Elias')return S.stage<1;if(nm==='Fenn'||nm==='Odo'||nm==='Karl'){const q=qSt();return !((nm==='Fenn'?q.i>=1:nm==='Odo'?q.i>=3:q.i>=4)||S.stage>=3)}}catch(e){}return false};
+let cvEl=null;
+function convo(title,lines,done){
+  if(!cvEl){cvEl=document.createElement('div');cvEl.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:580px;padding:16px 20px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.96),rgba(18,26,60,.96));color:#f6e3a8;font:700 15px var(--font-ui);display:none;z-index:45;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+    document.getElementById('frame').appendChild(cvEl);['mousedown','keydown','keyup','keypress'].forEach(t=>cvEl.addEventListener(t,e=>e.stopPropagation()))}
+  let i=0;
+  const show=()=>{const L=lines[i],last=i===lines.length-1,btn=(id,t)=>`<button id="${id}" style="padding:8px 20px;border-radius:10px;border:2px solid #f0c25a;background:linear-gradient(180deg,#4a8a4a,#2c5c30);color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">${t}</button>`;
+    const who=typeof L.who==='function'?L.who():L.who;
+    cvEl.innerHTML=`<div style="font-size:20px;font-weight:800;color:${L.me?'#bff8ff':'#7dff5a'};margin-bottom:2px">${who}</div><div style="font-size:12px;opacity:.7;margin-bottom:8px">${title}</div><div style="font-size:16px;line-height:1.5;min-height:48px">${L.text}</div>`+
+      (L.input?`<div style="margin-top:10px"><input id="cvin" maxlength="18" placeholder="Name des Reiches" autocomplete="off" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:2px solid #f0c25a;background:#16204a;color:#fff;font:800 18px var(--font-ui);text-align:center"><div id="cverr" style="color:#ff9a8a;font-size:13px;min-height:18px;margin-top:4px;text-align:center"></div></div>`:'')+
+      `<div style="text-align:right;margin-top:12px">${btn('cvok',L.input?'Bestätigen':(last&&L.end?L.end:'Weiter ▶'))}</div>`;
+    const ok=cvEl.querySelector('#cvok'),inp=cvEl.querySelector('#cvin');
+    const go=()=>{if(L.input){const v=inp.value.trim();if(v.length<2){cvEl.querySelector('#cverr').textContent='Bitte mindestens 2 Zeichen eingeben.';return}L.input(v)}
+      if(last){cvEl.style.display='none';done&&done()}else{i++;show()}};
+    ok.onmousedown=e=>{e.stopPropagation();go()};if(inp){inp.addEventListener('keydown',e=>{if(e.key==='Enter')go()});setTimeout(()=>inp.focus(),30)}};
+  hero.tx=null;cvEl.style.display='block';show()}
+function hugoIntro(){const S=story();
+  convo('Hugo · Verwaltung von Looteria',[
+   {who:'Hugo',text:'Willkommen auf OPSU… ähm, ich meine: Willkommen in Looteria! Ich freue mich, dass Sie dieses Reich übernommen haben!'},
+   {who:'Hugo',text:'Sagen Sie mir als Erstes, wie Sie das Reich nennen möchten.',input:v=>{S.name=v;window.__persist();applyName()}},
+   {who:'Hugo',text:'Ich würde Ihnen gerne eine Führung durch die Stadt geben, allerdings benötigen Sie Elias. Sprechen Sie mit ihm!',end:'Schließen'}],
+   ()=>{S.stage=1;window.__persist();qhUpdate();chatAdd('Hugo: Sprechen Sie mit Elias auf dem Marktplatz.','System','#ffe27a');toast('Neue Aufgabe: Sprechen Sie mit Elias')})}
+function eliIntro(){const S=story();
+  convo('Elias · Questgeber',[
+   {who:'Elias',text:'Oh, wer bist du?!'},
+   {who:()=>window.__pname(),me:1,text:'Ich bin der neue König hier!'},
+   {who:'Elias',text:'Oh, verzeihen Sie. Ich habe bereits davon gehört. Ich brauche Ihre Hilfe. Es sind Schleime in den Ebenen aufgetaucht. Bitte reduzieren Sie ihre Anzahl!'}],
+   ()=>{S.stage=2;window.__persist();qhUpdate();openEli()})}
+function hugoTalk(n,o){const S=story();if(S.stage===0){hugoIntro();return}
+  n.t=S.stage===1?'Sprechen Sie mit Elias auf dem Marktplatz. Er braucht Ihre Hilfe.':'Das Rathaus öffnet bald seine Türen – bis dahin kann ich Ihnen leider noch nichts abnehmen.';o(n)}
+function potIntro(){const q=qSt();
+  convo('Elias · Questgeber',[
+   {who:'Elias',text:'Wow, Sie haben es geschafft! Aber Sie sehen ziemlich mitgenommen aus.'},
+   {who:()=>window.__pname(),me:1,text:'Ja, na danke…'},
+   {who:'Elias',text:'Gehen Sie zum Getränkemarkt an der Ecke und holen Sie sich ein paar Heiltränke. Ich habe dann noch eine Bitte.'}],
+   ()=>{window.__persist();qhUpdate();chatAdd('Hauptquest angenommen: Heiltränke besorgen – kaufen Sie 5 Kleine Heiltränke bei Fenn.','System','#ffe27a');toast('Hauptquest: 5 Kleine Heiltränke kaufen')})}
+function renderPot(q){
+  const got=Math.min(5,q.bought||0),done=got>=5;
+  const btn=(id,t,g)=>`<button id="${id}" style="padding:8px 18px;border-radius:10px;border:2px solid #f0c25a;background:${g?'linear-gradient(180deg,#4a8a4a,#2c5c30)':'#2b3866'};color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">${t}</button>`;
+  eliEl.innerHTML=`<div style="margin-bottom:10px"><div style="font-size:22px;font-weight:800;color:#bff8ff">Elias · Questgeber</div></div><div style="font-size:18px;font-weight:800;color:#ffe27a">Hauptquest: Heiltränke besorgen</div><div style="margin:6px 0;font-size:15px;line-height:1.4">${done?'„Sehr gut, nun sehen Sie schon besser aus!"':'„Gehen Sie zum Getränkemarkt an der Ecke und holen Sie sich ein paar Heiltränke."'}</div><div style="font-size:15px;color:#9be8a0">Ziel: Kaufen Sie 5 Kleine Heiltränke bei Fenn (${got}/5)</div><div style="text-align:right;margin-top:12px;display:flex;gap:10px;justify-content:flex-end">${done?btn('potok','Abschließen',1):btn('potx','Schließen')}</div>`;
+  const $=id=>eliEl.querySelector('#'+id);
+  if($('potx'))$('potx').onmousedown=e=>{e.stopPropagation();eliEl.style.display='none'};
+  if($('potok'))$('potok').onmousedown=e=>{e.stopPropagation();eliEl.style.display='none';
+    convo('Elias · Questgeber',[
+     {who:'Elias',text:'Bitte helfen Sie mir ein weiteres Mal. Töten Sie 20 von den blauen Schleimen!'},
+     {who:()=>window.__pname(),me:1,text:'Easy, kein Ding!'}],
+     ()=>{q.pot=0;q.i=1;q.st=1;q.n=0;window.__persist();qhUpdate();SFX.play('accept');chatAdd('Hauptquest angenommen: '+QS[1].n+' – Besiegen Sie '+QS[1].need+' '+QS[1].col,'System','#ffe27a');toast('Hauptquest angenommen: '+QS[1].n)})}}
+function blueDone(){const q=qSt();
+  convo('Elias · Questgeber',[
+   {who:'Elias',text:'Da sind Sie ja wieder. Ich war mir nicht sicher, ob Sie wiederkommen.'},
+   {who:()=>window.__pname(),me:1,text:'Na danke…'},
+   {who:'Elias',text:'Dennoch! Es wartet eine letzte Sache. Danach sind Sie mich erst mal los.'},
+   {who:()=>window.__pname(),me:1,text:'Die wäre?'},
+   {who:'Elias',text:'Auf der Wiese sind riesige Schleime aufgetaucht! Bitte erledigen Sie 5 von den pinken Schleimen und kommen Sie dann zurück. Ich glaube an Sie!'}],
+   ()=>{q.st=1;q.n=0;window.__persist();qhUpdate();SFX.play('accept');chatAdd('Hauptquest angenommen: '+QS[2].n+' – Besiegen Sie '+QS[2].need+' '+QS[2].col,'System','#ffe27a');toast('Hauptquest angenommen: '+QS[2].n)})}
+function pinkDone(){const q=qSt();
+  convo('Elias · Questgeber',[
+   {who:'Elias',text:'Willkommen zurück, diesmal habe ich nicht an Ihnen gezweifelt!'},
+   {who:()=>window.__pname(),me:1,text:'Na, wenigstens diesmal…'},
+   {who:'Elias',text:'Gehen Sie nun zu Odo. Er wird bestimmt Interesse an Ihren Schleimresten haben.'},
+   {who:()=>window.__pname(),me:1,text:'Alles klar, danke dir für die Info!'}],
+   ()=>{window.__persist();qhUpdate();SFX.play('accept');chatAdd('Hauptquest angenommen: Besuch bei Odo – Gehen Sie zu Odo und lassen Sie sich seine Ware zeigen.','System','#ffe27a');toast('Hauptquest: Besuch bei Odo')})}
+function storyInit(){const S=story();if(S.stage===0&&!S.sp){S.sp=1;try{window.__go('c')}catch(e){}hero.x=1230;hero.y=345;hero.tx=null;window.__persist()}}
 /* ---- Quests: Elias ---- */
 window.__qpref=()=>{try{const q=qSt(),Q=QS[q.i];return Q&&q.st===1?Q.mon:null}catch(e){return null}};
 const QS=[
- {n:'Grüne Schleimplage',mon:'Schleim',need:10,col:'Grüne Schleime',desc:'Auf der Großen Wiese wimmelt es von grünen Schleimen. Sie fressen den Bauern das Gras weg. Besiege 10 Grüne Schleime, damit die Felder wieder sicher sind.',rew:{taler:40,xp:60,items:{hp1:2}}},
- {n:'Blaue Schleimplage',mon:'Blauschleim',need:15,col:'Blaue Schleime',desc:'Nun machen sich die Blauschleime breit. Sie sind zäher und schneller als ihre grünen Verwandten. Besiege 15 Blaue Schleime.',rew:{taler:90,xp:150,items:{hp1:3}}},
- {n:'Der Rosa Riese',mon:'Großer Schleim',need:5,col:'Rosa Schleime',desc:'Auf der Wiese tauchen riesige rosa Schleime auf. Sie sind gefährlich, aber irgendwer muss sie aufhalten. Besiege 5 Rosa Schleime (Große Schleime).',rew:{taler:150,xp:250,items:{hp1:5}}}];
-const QHTXT='Sprich auf dem Marktplatz mit Elias, dem Questgeber, um deine erste Aufgabe zu erhalten.';
+ {n:'Grüne Schleimplage',mon:'Schleim',need:10,col:'grüne Schleime',desc:'Auf der Großen Wiese wimmelt es von grünen Schleimen. Sie fressen den Bauern das Gras weg. Besiegen Sie 10 Grüne Schleime, damit die Felder wieder sicher sind.',rew:{taler:40,xp:60,items:{hp1:2}}},
+ {n:'Blaue Schleimplage',mon:'Blauschleim',need:20,col:'blaue Schleime',desc:'Bitte helfen Sie mir ein weiteres Mal. Die Blauschleime sind zäher und schneller als ihre grünen Verwandten. Besiegen Sie 20 Blaue Schleime.',rew:{taler:90,xp:150,items:{hp1:3}}},
+ {n:'Der Rosa Riese',mon:'Großer Schleim',need:5,col:'rosa Schleime',desc:'Auf der Wiese sind riesige Schleime aufgetaucht! Bitte erledigen Sie 5 von den pinken Schleimen (Große Schleime).',rew:{taler:150,xp:250,items:{hp1:5}}}];
+const QHTXT='Sprechen Sie auf dem Marktplatz mit Elias, dem Questgeber, um Ihre erste Aufgabe zu erhalten.';
 function qSt(){const s=window.__st;if(!s.quest||s.quest.v!==2)s.quest={v:2,i:0,st:0,n:0};return s.quest}
 const qCur=()=>QS[qSt().i];
 const rewTxt=R=>R.taler+' Taler · '+R.xp+' Erfahrung · '+R.items.hp1+'× Kleiner Heiltrank';
-function qhUpdate(){const b=document.getElementById('qhb');if(!b)return;const q=qSt(),Q=QS[q.i];
-  b.textContent=!Q?'Keine aktive Quest. Elias hat später weitere Aufgaben.':q.st===0?(q.i===0?QHTXT:'Elias hat eine neue Aufgabe für dich: '+Q.n+'.'):q.st===1?Q.n+': Besiege '+Q.need+' '+Q.col+' ('+q.n+'/'+Q.need+')':Q.n+' abgeschlossen! Kehre zu Elias auf den Marktplatz zurück.'}
+function qhUpdate(){const b=document.getElementById('qhb');if(!b)return;const q=qSt(),Q=QS[q.i];if(story().stage===0){b.textContent='Sprechen Sie mit Hugo vor dem Rathaus im Norden der Stadt.';return}
+  if(q.odo===1){b.textContent='Hauptquest – Gehen Sie zu Odo und lassen Sie sich seine Ware zeigen.';return}if(q.pot===1){b.textContent=(q.bought||0)>=5?'Hauptquest – Heiltränke besorgen abgeschlossen! Kehren Sie zu Elias zurück.':'Hauptquest – Heiltränke besorgen: Kaufen Sie 5 Kleine Heiltränke bei Fenn, dem Trankhändler ('+Math.min(5,q.bought||0)+'/5)';return}b.textContent=!Q?'Keine aktive Quest. Elias hat später weitere Aufgaben.':q.st===0?(q.i===0?QHTXT:'Elias hat eine neue Hauptquest für Sie: '+Q.n+'.'):q.st===1?'Hauptquest – '+Q.n+': Besiegen Sie '+Q.need+' '+Q.col+' ('+q.n+'/'+Q.need+')':'Hauptquest '+Q.n+' abgeschlossen! Kehren Sie zu Elias auf den Marktplatz zurück.'}
 function questKill(m){const q=qSt(),Q=QS[q.i];if(!Q||q.st!==1||m.ty.n!==Q.mon)return;q.n=Math.min(Q.need,q.n+1);
-  if(q.n>=Q.need){q.st=2;chatAdd('Quest abgeschlossen: '+Q.n+' – kehre zu Elias zurück!','System','#ffe27a');toast('Quest abgeschlossen: '+Q.n)}
-  else chatAdd('Quest „'+Q.n+'": '+q.n+'/'+Q.need,'System','#ffe27a');
+  if(q.n>=Q.need){q.st=2;chatAdd('Hauptquest abgeschlossen: '+Q.n+' – kehren Sie zu Elias zurück!','System','#ffe27a');toast('Hauptquest abgeschlossen: '+Q.n)}
+  else chatAdd('Hauptquest „'+Q.n+'": '+q.n+'/'+Q.need,'System','#ffe27a');
   window.__persist();qhUpdate();SFX.play(q.st===2?'quest':'pickup')}
 let eliEl=null;
-function renderEli(){const q=qSt(),Q=QS[q.i];
+function renderEli(){const q=qSt(),Q=QS[q.i];if(q.pot===1)return renderPot(q);
   const btn=(id,t,g)=>`<button id="${id}" style="padding:8px 18px;border-radius:10px;border:2px solid #f0c25a;background:${g?'linear-gradient(180deg,#4a8a4a,#2c5c30)':'#2b3866'};color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">${t}</button>`;
   let body='',btns='';
-  if(!Q){body=`<div style="font-size:15px;line-height:1.4">„Du hast die Wiese von allen Schleimen befreit – vielen Dank! Schau später wieder vorbei, ich habe sicher bald neue Aufgaben für dich."</div>`;btns=btn('elix','Schließen')}
+  if(!Q){body=`<div style="font-size:15px;line-height:1.4">„Sie haben die Wiese von allen Schleimen befreit – vielen Dank! Schauen Sie später wieder vorbei, ich habe sicher bald neue Aufgaben für Sie."</div>`;btns=btn('elix','Schließen')}
   else{const rew=`<div style="margin-top:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.08);font-size:14px"><b style="color:#ffe27a">Belohnung:</b> ${rewTxt(Q.rew)}</div>`;
-   if(q.st===0){body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">Neue Quest: ${Q.n}</div><div style="margin:6px 0;font-size:15px;line-height:1.4">${Q.desc}</div><div style="font-size:14px;color:#9be8a0">Ziel: Besiege ${Q.need} ${Q.col}</div>${rew}`;btns=btn('eliy','Annehmen',1)+' '+btn('elix','Später')}
-   else if(q.st===1){body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">${Q.n}</div><div style="margin:6px 0;font-size:15px">„Noch nicht fertig? Die Wiese liegt nördlich, folge einfach dem Weg aus der Stadt."</div><div style="font-size:15px;color:#9be8a0">Fortschritt: ${q.n}/${Q.need} ${Q.col}</div>${rew}`;btns=btn('eliab','Quest abbrechen')+' '+btn('elix','Schließen')}
-   else{body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">${Q.n} – erledigt!</div><div style="margin:6px 0;font-size:15px">„Ausgezeichnet! Die Bauern werden dir danken. Hier ist deine Belohnung."</div>${rew}`;btns=btn('eliy','Belohnung abholen',1)}}
+   if(q.st===0){body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">Neue Hauptquest: ${Q.n}</div><div style="margin:6px 0;font-size:15px;line-height:1.4">${Q.desc}</div><div style="font-size:14px;color:#9be8a0">Ziel: Besiegen Sie ${Q.need} ${Q.col}</div>${rew}`;btns=btn('eliy','Annehmen',1)+' '+btn('elix','Später')}
+   else if(q.st===1){body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">Hauptquest: ${Q.n}</div><div style="margin:6px 0;font-size:15px">„Noch nicht fertig? Die Wiese liegt nördlich, folgen Sie einfach dem Weg aus der Stadt."</div><div style="font-size:15px;color:#9be8a0">Fortschritt: ${q.n}/${Q.need} ${Q.col}</div>${rew}`;btns=btn('eliab','Quest abbrechen')+' '+btn('elix','Schließen')}
+   else{body=`<div style="font-size:18px;font-weight:800;color:#ffe27a">Hauptquest: ${Q.n} – erledigt!</div><div style="margin:6px 0;font-size:15px">„Ausgezeichnet! Die Bauern werden Ihnen danken. Hier ist Ihre Belohnung."</div>${rew}`;btns=btn('eliy','Belohnung abholen',1)}}
   eliEl.innerHTML=`<div style="margin-bottom:10px"><div style="font-size:22px;font-weight:800;color:#bff8ff">Elias · Questgeber</div></div>${body}<div style="text-align:right;margin-top:12px;display:flex;gap:10px;justify-content:flex-end">${btns}</div>`;
   const $=id=>eliEl.querySelector('#'+id),close=()=>{eliEl.style.display='none'};
   if($('elix'))$('elix').onmousedown=e=>{e.stopPropagation();close()};
   if($('eliab'))$('eliab').onmousedown=e=>{e.stopPropagation();q.st=0;q.n=0;window.__persist();qhUpdate();chatAdd('Quest „'+Q.n+'" abgebrochen.','System','#ffb36b');renderEli()};
   if($('eliy'))$('eliy').onmousedown=e=>{e.stopPropagation();const s=window.__st,R=Q.rew;
-    if(q.st===0){q.st=1;q.n=0;window.__persist();qhUpdate();chatAdd('Quest angenommen: '+Q.n+' – Besiege '+Q.need+' '+Q.col,'System','#ffe27a');toast('Quest angenommen: '+Q.n);SFX.play('accept');close()}
-    else if(q.st===2){s.taler+=R.taler;for(const k in R.items)s.inv[k]=(s.inv[k]||0)+R.items[k];window.__persist();gainXp(R.xp,hero.x,hero.y);chatAdd('Belohnung erhalten: '+rewTxt(R)+'.','System','#ffe27a');SFX.play('coin');q.i++;q.st=0;q.n=0;window.__persist();qhUpdate();renderEli()}}}
-function openEli(){if(!eliEl){eliEl=document.createElement('div');eliEl.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:560px;padding:16px 20px 16px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.96),rgba(18,26,60,.96));color:#f6e3a8;font:700 15px var(--font-ui);display:none;z-index:40;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+    if(q.st===0){q.st=1;q.n=0;window.__persist();qhUpdate();chatAdd('Hauptquest angenommen: '+Q.n+' – Besiegen Sie '+Q.need+' '+Q.col,'System','#ffe27a');toast('Hauptquest angenommen: '+Q.n);SFX.play('accept');close()}
+    else if(q.st===2){s.taler+=R.taler;for(const k in R.items)s.inv[k]=(s.inv[k]||0)+R.items[k];window.__persist();gainXp(R.xp,hero.x,hero.y);chatAdd('Belohnung erhalten: '+rewTxt(R)+'.','System','#ffe27a');SFX.play('coin');{const first=q.i===0,second=q.i===1,third=q.i===2;q.i++;q.st=0;q.n=0;if(first){q.pot=1;q.bought=0;close();window.__persist();qhUpdate();potIntro()}else if(second){close();window.__persist();qhUpdate();blueDone()}else if(third){close();q.odo=1;window.__persist();qhUpdate();pinkDone()}else{window.__persist();qhUpdate();renderEli()}}}}}
+function openEli(){if(story().stage===1){return eliIntro()}if(!eliEl){eliEl=document.createElement('div');eliEl.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:560px;padding:16px 20px 16px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.96),rgba(18,26,60,.96));color:#f6e3a8;font:700 15px var(--font-ui);display:none;z-index:40;box-shadow:0 8px 32px rgba(0,0,0,.5)';
     document.getElementById('frame').appendChild(eliEl);eliEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')eliEl.style.display='none'})}
   renderEli();eliEl.style.display='block'}
 /* ---- Minimap ---- */
 let miniEl=null;
 const uiSt=()=>{const s=window.__st;if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;return s.ui};
 function miniVis(){if(miniEl)miniEl.style.display=uiSt().mini?'block':'none'}
-function trailTarget(){const q=qSt(),Q=QS[q.i];if(!Q)return null;
+function trailTarget(){const q=qSt(),Q=QS[q.i];if(q.odo===1)return SC==='c'?[410,318]:(SC==='m'?[60,1100]:[710,1335]);if(!Q)return null;if(story().stage===0&&SC==='c')return [1260,230];if(q.pot===1&&(q.bought||0)<5&&SC==='c')return [440,778];
   if(q.st===1){if(SC==='c')return [2345,1105];if(SC==='m')return [655,330];
     let b=null,bd=1e9;for(const m of (window.__mon||[])){if(m.hp<=0||m.ty.n!==Q.mon)continue;const d=Math.hypot(m.x-hero.x,m.y-hero.y);if(d<bd){bd=d;b=[m.x,m.y]}}return b}
-  if(SC==='c')return [900,360];if(SC==='m')return [60,1100];return [710,1335]}
+  if(SC==='c')return [1560,690];if(SC==='m')return [60,1100];return [710,1335]}
 function miniInit(){const c=document.createElement('canvas');c.width=232;c.height=135;c.style.cssText='position:absolute;left:1354px;top:752px;border:3px solid #f0c25a;border-radius:12px;background:#1b2542;z-index:15;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45)';c.title='Minikarte – Klick: Weltkarte (M)';
   c.onmousedown=e=>{e.stopPropagation();window.__toggleMap&&window.__toggleMap()};document.getElementById('frame').appendChild(c);miniEl=c;miniVis();setInterval(miniDraw,120)}
 function miniDraw(){if(!miniEl||TRANS)return;const c=miniEl,g=c.getContext('2d'),bh_=BG.height,k_=Math.min(c.width/WW,c.height/bh_),ox_=(c.width-WW*k_)/2,oy_=(c.height-bh_*k_)/2,sx=k_,sy=k_,now=performance.now()/1000;
@@ -2385,8 +2443,8 @@ function potInit(){const base=document.querySelector('#hudl .slot');if(!base)ret
     el.ondragover=e=>e.preventDefault();el.ondrop=e=>{e.preventDefault();const id=e.dataTransfer.getData('text/plain');if(id&&potType(id)&&potType(id)!=='cure'){potAssign(i,id)}else toast('Dieser Trank passt nicht in den Slot.')};
     par.appendChild(el);potEl[i]=el});
   potDraw();
-  ['#autobtn','#mapbtn'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.display='none'}));miniInit();{const pc=document.getElementById('pcv');if(pc&&pc.parentElement){const w=pc.parentElement;w.style.pointerEvents='auto';w.style.cursor='pointer';w.title='Charakter (C)';w.onmousedown=e=>{e.stopPropagation();dispatchEvent(new KeyboardEvent('keydown',{code:'KeyC',key:'c',bubbles:true}))}}}{const ai=document.getElementById('autoind');if(ai){ai.style.pointerEvents='auto';ai.style.cursor='pointer';ai.title='Klicken zum Umschalten (X)';ai.onmousedown=e=>{e.stopPropagation();setAuto(AUTO?(AQ?true:false):'q')}}}posInit();applyName();applyDark();nameAsk();
-  {const o=window.openNpc;window.openNpc=n=>{if(n.n==='Odo'){openOdo();return}if(n.n==='Elias'){openEli();return}o(n)}};qhUpdate();
+  ['#autobtn','#mapbtn'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.display='none'}));miniInit();{const pc=document.getElementById('pcv');if(pc&&pc.parentElement){const w=pc.parentElement;w.style.pointerEvents='auto';w.style.cursor='pointer';w.title='Charakter (C)';w.onmousedown=e=>{e.stopPropagation();dispatchEvent(new KeyboardEvent('keydown',{code:'KeyC',key:'c',bubbles:true}))}}}{const ai=document.getElementById('autoind');if(ai){ai.style.pointerEvents='auto';ai.style.cursor='pointer';ai.title='Klicken zum Umschalten (X)';ai.onmousedown=e=>{e.stopPropagation();setAuto(AUTO?(AQ?true:false):'q')}}}posInit();applyName();applyDark();nameAsk();storyInit();
+  {const o=window.openNpc;window.openNpc=n=>{if(n.n==='Hugo'){hugoTalk(n,o);return}if(n.n==='Odo'){try{const q=qSt();if(q.odo===1){q.odo=2;window.__persist();qhUpdate();chatAdd('Hauptquest abgeschlossen: Besuch bei Odo','System','#ffe27a');toast('Hauptquest abgeschlossen: Besuch bei Odo');SFX.play('quest')}}catch(e){}openOdo();return}if(n.n==='Elias'){openEli();return}o(n)}};qhUpdate();
   {const z=document.getElementById('zlbl');if(z&&z.parentElement){const bx=z.parentElement;bx.innerHTML='';const g=document.createElement('button');g.title='Einstellungen (Esc)';g.style.cssText='width:40px;height:40px;border-radius:50%;border:2px solid #f0c25a;background:linear-gradient(180deg,#34498f,#1e2c60);cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center';
     g.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24"><path fill="#f6e3a8" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.8 1.7 1l.4 2.6c0 .2.3.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.6c.6-.2 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
     g.onmousedown=e=>{e.stopPropagation();if(escEl&&escEl.style.display==='block')escEl.style.display='none';else openEsc()};bx.appendChild(g);
@@ -2419,8 +2477,8 @@ function renderEsc(){const P=potSt(),s=window.__st,pots=(window.__POTS||[]).filt
    <div style="font-size:15px;font-weight:800;color:#ffe27a;margin-bottom:6px">Auto-Tränke</div>
    <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:14px;cursor:pointer"><input id="escon" type="checkbox" ${P.on?'checked':''}> Tränke automatisch benutzen</label>${row(0)}${row(1)}
    <div style="font-size:15px;font-weight:800;color:#ffe27a;margin:12px 0 6px">Konto</div><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:13px"><div><div>${(window.__cloud&&window.__cloud.email)||'–'}</div><div style="opacity:.75">${(window.__cloud&&window.__cloud.status)||''}</div></div><button id="esclogout" style="padding:6px 14px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer">Abmelden</button></div>
-   <div style="font-size:12px;opacity:.75">Tipp: Tränke aus dem Inventar (E) lassen sich auch direkt auf die Slots neben den Skills ziehen. HP-Tränke zählen nach HP-%, Manatränke nach MP-%.</div>`;
-  escEl.querySelector('#esclogout').onmousedown=e=>{e.stopPropagation();window.__logout&&window.__logout()};
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:13px"><div style="font-size:15px;font-weight:800;color:#ffe27a">Spielstand</div><button id="escreset" style="padding:6px 14px;border-radius:10px;border:2px solid #e07a6a;background:#4a2530;color:#ffd0c8;font:800 14px var(--font-ui);cursor:pointer">Zurücksetzen</button></div><div style="font-size:12px;opacity:.75">Tipp: Tränke aus dem Inventar (E) lassen sich auch direkt auf die Slots neben den Skills ziehen. HP-Tränke zählen nach HP-%, Manatränke nach MP-%.</div>`;
+  escEl.querySelector('#escreset').onmousedown=e=>{e.stopPropagation();const b=e.currentTarget;if(b.dataset.arm==='1'){b.textContent='Wird zurückgesetzt…';if(window.__resetSave)window.__resetSave();else{try{localStorage.removeItem('looteria_shop_v1')}catch(x){}location.reload()}}else{b.dataset.arm='1';b.textContent='Wirklich? Alles geht verloren!';b.style.background='#8a2030'}};escEl.querySelector('#esclogout').onmousedown=e=>{e.stopPropagation();window.__logout&&window.__logout()};
   escEl.querySelector('#escx').onmousedown=e=>{e.stopPropagation();escEl.style.display='none'};
   escEl.querySelector('#escsnd').onchange=e=>{SFX.U().snd=e.target.checked;window.__persist();SFX.play('click')};
   escEl.querySelector('#escvol').oninput=e=>{SFX.vol(e.target.value/100);escEl.querySelector('#escvolv').textContent=e.target.value+' %';window.__persist()};
@@ -2444,14 +2502,14 @@ const NET={ws:null,sc:null,ch:1,want:1,manual:false,peers:{},ref:0,hb:null,joine
 const NETMAX=20;
 function netCl(){return window.__cloud||{}}
 const NETW='realtime:loot-world';NET.subs={};NET.lastChat=0;
-function NETA(){return (SC==='m'||SC==='p')?'realtime:loot-area-'+SC:null}
+function NETA(){return (SC==='c'||SC==='m'||SC==='p')?'realtime:loot-area-'+SC:null}
 function netSub(t){NET.subs[t]=1;netSend(t,'phx_join',{config:{broadcast:{ack:false,self:false},presence:{key:netCl().uid()},private:false},access_token:netCl().tok()})}
 function netUnsub(t){delete NET.subs[t];netSend(t,'phx_leave',{})}
 function netSubs(){if(!NET.ws||NET.ws.readyState!==1){NET.subs={};return}const want={};want[NETW]=1;const A=NETA();if(A&&!TRANS)want[A]=1;
   for(const t in NET.subs)if(!want[t])netUnsub(t);for(const t in want)if(!NET.subs[t])netSub(t)}
 function netChat(ch,txt){const now=Date.now();if(now-NET.lastChat<800)return'Nicht so schnell.';
   let t=null;if(ch==='Welt')t=NETW;else if(ch==='Gebiet')t=NETA();else if(ch==='Nähe'&&NET.sc&&NET.joined)t=netTopic();
-  if(!t||!NET.ws||NET.ws.readyState!==1||!NET.subs[t]&&t!==netTopic())return ch==='Welt'?'Chat ist offline.':(ch==='Gebiet'?'Der Gebietschat funktioniert nur in der Oberwelt.':'In der Stadt hört im Kanal „Nähe“ niemand zu. Nutze „Welt“.');
+  if(!t||!NET.ws||NET.ws.readyState!==1||!NET.subs[t]&&t!==netTopic())return ch==='Welt'?'Chat ist offline.':'Chat ist offline.';
   NET.lastChat=now;netSend(t,'broadcast',{type:'broadcast',event:'c',payload:{u:netCl().uid(),n:window.__pname(),t:txt.slice(0,140)}});return true}
 function netTopic(){return 'realtime:loot-'+NET.sc+'-'+NET.ch}
 function netSend(topic,event,payload){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify({topic,event,payload,ref:String(++NET.ref)}))}
@@ -2485,7 +2543,7 @@ function drawOther(o,t){const fr=heroFrame(o.a==='run'||o.a==='walk'?o.a:'idle',
   ctx.drawImage(fr[0],fr[1],fr[2],fr[3],fr[4],X-w/2+ox,Y-h+4+oy,w,h);
   ctx.save();ctx.setTransform(Z,0,0,Z,0,CYO);label(o.n,o.x,o.y-(hl+4)/Z-18/Z,'#ffffff',18,'Lv '+o.l);ctx.restore()}
 let netEl=null,netPop=null;
-function netUi(){if(!netEl)return;const on=NET.sc&&NET.ws&&NET.ws.readyState===1;netEl.style.display=(SC==='m'||SC==='p')&&netCl().ready?'block':'none';
+function netUi(){if(!netEl)return;const on=NET.sc&&NET.ws&&NET.ws.readyState===1;netEl.style.display=(SC==='c'||SC==='m'||SC==='p')&&netCl().ready?'block':'none';
   const n=Object.keys(NET.pres).length;netEl.textContent=on?(NET.joined?('Kanal '+NET.ch+' · '+Math.max(1,n)+' Spieler ▾'):'Verbinde …'):'Offline ▾';
   if(netPop&&netPop.style.display==='block')netPopDraw()}
 function netPopDraw(){netPop.innerHTML='<div style="display:flex;align-items:center;gap:8px;justify-content:center"><button id="nchm" style="width:30px">◀</button><b>Kanal '+NET.ch+'</b><button id="nchp" style="width:30px">▶</button></div><div style="font-size:12px;opacity:.8;margin-top:6px;text-align:center">Bis zu '+NETMAX+' Spieler pro Kanal</div>';
@@ -2498,7 +2556,7 @@ function netInit(){const f=document.getElementById('frame');netEl=document.creat
   netEl.onclick=()=>{netPop.style.display=netPop.style.display==='block'?'none':'block';if(netPop.style.display==='block')netPopDraw()};
   setInterval(netTick,250)}
 function netTick(){const C=netCl();if(!C.ready||!C.tok||!C.tok()){return}
-  const want=(SC==='m'||SC==='p')&&!TRANS?SC:null;netUi();
+  const want=(SC==='c'||SC==='m'||SC==='p')&&!TRANS?SC:null;netUi();
   if((!NET.ws||NET.ws.readyState>1)&&Date.now()>=NET.retry)netOpen();netSubs();
   if(want!==NET.sc||(want&&NET.want!==NET.ch)){
     if(NET.sc)netLeave();
@@ -2520,7 +2578,7 @@ function startHero(){
     try{const c=document.createElement('canvas');c.width=c.height=240;const im=himg['idleS'],fw=im.width/4,fh=im.height/4;
       c.getContext('2d').drawImage(im,0,0,fw,fh,-20,6,fw*1.9*0.92,fh*1.9*0.92);document.getElementById('pimg').src=c.toDataURL()}catch(e){}
     const cv=vw;camUpd(true);
-    const NPCS=[{"n": "Fenn", "r": "Tr\u00e4nkeh\u00e4ndler", "x": 450, "y": 330, "t": "Willkommen! Heiltr\u00e4nke, Manatr\u00e4nke und mehr. Mein Sortiment ist noch im Aufbau \u2013 schau bald wieder vorbei."}, {"n": "Odo", "r": "Monsterdrops", "x": 600, "y": 330, "t": "Bring mir die Beute deiner K\u00e4mpfe. Fellb\u00fcschel, Z\u00e4hne, Schleim \u2013 ich kaufe alles an. Der Ankauf folgt in einem sp\u00e4teren Update."}, {"n": "Karl", "r": "Holz & Stein", "x": 750, "y": 330, "t": "Holz und Steine kann man immer brauchen. Sammle Rohstoffe, ich zahle gut. Der Ankauf folgt bald."}, {"n": "Elias", "r": "Questgeber", "x": 900, "y": 330, "t": "Ah, ein Abenteurer! Ich h\u00e4tte Aufgaben f\u00fcr dich \u2013 aber das Auftragsbuch ist noch leer. Komm sp\u00e4ter wieder."}];
+    const NPCS=[{"n": "Fenn", "r": "Tr\u00e4nkeh\u00e4ndler", "x": 440, "y": 748, "t": "Willkommen! Heiltr\u00e4nke, Manatr\u00e4nke und mehr. Mein Sortiment ist noch im Aufbau \u2013 schauen Sie bald wieder vorbei."}, {"n": "Odo", "r": "Monsterdrops", "x": 410, "y": 288, "t": "Bringen Sie mir die Beute Ihrer K\u00e4mpfe. Fellb\u00fcschel, Z\u00e4hne, Schleim \u2013 ich kaufe alles an. Der Ankauf folgt in einem sp\u00e4teren Update."}, {"n": "Karl", "r": "Holz & Stein", "x": 750, "y": 330, "t": "Holz und Steine kann man immer brauchen. Sammeln Sie Rohstoffe, ich zahle gut. Der Ankauf folgt bald."}, {"n": "Elias", "r": "Questgeber", "x": 1560, "y": 650, "t": "Ah, ein Abenteurer! Ich h\u00e4tte Aufgaben f\u00fcr Sie \u2013 aber das Auftragsbuch ist noch leer. Kommen Sie sp\u00e4ter wieder."}];
     const dlg=document.createElement('div');dlg.style.cssText='position:absolute;left:50%;bottom:130px;transform:translateX(-50%);width:520px;padding:16px 20px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.94),rgba(18,26,60,.94));color:#f6e3a8;font:700 17px var(--font-ui);display:none;z-index:30;box-shadow:0 6px 24px rgba(0,0,0,.45)';
     dlg.innerHTML='<div id="dn" style="font-size:22px;font-weight:800;color:#bff8ff"></div><div id="dr" style="font-size:14px;color:#9be8a0;margin-bottom:8px"></div><div id="dt" style="line-height:1.45"></div><button id="dx" style="margin-top:12px;padding:6px 18px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Schließen</button>';
     document.getElementById('frame').appendChild(dlg);document.getElementById('dx').onmousedown=e=>{e.stopPropagation();dlg.style.display='none'};
@@ -2536,21 +2594,21 @@ function startHero(){
     window.renderShop=()=>{shopEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div><div style="font-size:22px;font-weight:800;color:#bff8ff">Fenn · Tränkehändler</div><div style="font-size:13px;color:#9be8a0">„Frisch gebraut, jeden Morgen!"</div></div><div style="font-size:18px;font-weight:800">Taler: <span style="color:#ffe27a">${st.taler}</span></div></div>`+
       POTS.filter(p=>!['hp2','hp3'].includes(p.id)).map(p=>`<div style="display:flex;align-items:center;gap:14px;padding:8px 10px;margin-bottom:6px;border-radius:10px;background:rgba(255,255,255,.07)">${bottle(p.c)}<div style="flex:1"><div style="font-size:17px;font-weight:800">${p.n}</div><div style="font-size:13px;opacity:.85">${p.d}</div><div style="font-size:12px;color:#9be8a0">Im Besitz: ${st.inv[p.id]||0}</div></div><div style="font-size:16px;color:#ffe27a;min-width:70px;text-align:right">${p.p} Taler</div><button data-b="${p.id}" style="padding:7px 16px;border-radius:10px;border:2px solid #f0c25a;background:${st.taler>=p.p?'linear-gradient(180deg,#4a8a4a,#2c5c30)':'#3a3f55'};color:#f6e3a8;font:800 15px var(--font-ui);cursor:${st.taler>=p.p?'pointer':'not-allowed'};opacity:${st.taler>=p.p?1:.55}">Kaufen</button></div>`).join('')+
       `<div style="text-align:right;margin-top:10px"><button id="shx" style="padding:7px 22px;border-radius:10px;border:2px solid #f0c25a;background:#2b3866;color:#f6e3a8;font:800 15px var(--font-ui);cursor:pointer">Schließen</button></div>`;
-      shopEl.querySelectorAll('button[data-b]').forEach(b=>b.onmousedown=e=>{e.stopPropagation();const p=POTS.find(q=>q.id===b.dataset.b);if(st.taler>=p.p){st.taler-=p.p;st.inv[p.id]=(st.inv[p.id]||0)+1;(window.__persist||persist)();renderShop()}});
+      shopEl.querySelectorAll('button[data-b]').forEach(b=>b.onmousedown=e=>{e.stopPropagation();const p=POTS.find(q=>q.id===b.dataset.b);if(st.taler>=p.p){st.taler-=p.p;st.inv[p.id]=(st.inv[p.id]||0)+1;try{if(p.id==='hp1'){const q_=qSt();if(q_.pot===1){q_.bought=(q_.bought||0)+1;qhUpdate();if(q_.bought===5){chatAdd('Alle 5 Heiltränke gekauft – zurück zu Elias!','System','#ffe27a');toast('Kehren Sie zu Elias zurück')}}}}catch(e){}(window.__persist||persist)();renderShop()}});
       shopEl.querySelector('#shx').onmousedown=e=>{e.stopPropagation();closeShop()}};
     addEventListener('keydown',e=>{if(e.key==='Escape'){closeShop();dlg.style.display='none'}});
     shopEl.addEventListener('mousedown',e=>e.stopPropagation());
 
     /* ---- Panel oben links + Inventar ---- */
-    window.__st=st;const _fresh=!st.lvl;st.lvl=st.lvl||1;st.xp=st.xp||0;let LPMAX=361+(st.lvl-2)*45;if(_fresh){st.lp=LPMAX;st.ep=100}else{st.lp=st.lp||280;st.ep=st.ep||93}window.__lpmax=()=>LPMAX;window.__setLpMax=v=>{LPMAX=v};
+    window.__st=st;const _fresh=!st.lvl;st.lvl=st.lvl||1;st.xp=st.xp||0;let LPMAX=100+(st.lvl-1)*20;if(_fresh){st.lp=LPMAX;st.ep=100}else{st.lp=Math.min(st.lp||LPMAX,LPMAX);st.ep=st.ep||93}window.__lpmax=()=>LPMAX;window.__setLpMax=v=>{LPMAX=v};
     const panel=document.querySelector('#hudl .hud.panel');
     panel.innerHTML=`<div style="position:absolute;left:12px;top:14px;width:84px;height:84px;border-radius:50%;border:3px solid #f0c25a;background:radial-gradient(circle at 50% 35%,#b9d8f5,#7fa8dd);overflow:hidden;box-shadow:0 0 0 2px #2b3866"><canvas id="pcv" width="168" height="168" style="width:100%;height:100%"></canvas></div>
       <div class="hud out" style="left:108px;top:5px;font-size:22px;font-weight:800;color:#f6e3a8;line-height:26px">Kaledoss</div>
       <div class="hud out" style="left:108px;top:36px;font-size:15px;font-weight:800;width:30px;line-height:21px">HP</div>
       <div class="hud bar" style="position:absolute;left:140px;top:36px;width:226px"><i style="width:77%;background:linear-gradient(180deg,#9cf08a,#3f9e4a)"></i><span>280/361</span></div>
-      <div class="hud out" style="left:108px;top:62px;font-size:15px;font-weight:800;width:30px;line-height:21px">MP</div>
-      <div class="hud bar" style="position:absolute;left:140px;top:62px;width:226px"><i style="width:93%;background:linear-gradient(180deg,#8fc6ff,#2f6fd0)"></i><span>93 %</span></div>
-      <div class="hud out" style="left:108px;top:88px;font-size:14px;font-weight:700;color:#f6e3a8;line-height:18px;white-space:nowrap"><span id="lvltxt">Stufe 2 · Krieger</span></div><div title="Erfahrung" style="position:absolute;left:108px;top:104px;width:258px;height:7px;border-radius:4px;background:#1b2542;border:1px solid #fff;overflow:hidden"><i id="xpbar" style="display:block;height:100%;width:0%;background:linear-gradient(180deg,#ff8a8a,#d01c1c)"></i></div>`;
+      <div class="hud out" style="display:none;left:108px;top:62px;font-size:15px;font-weight:800;width:30px;line-height:21px">MP</div>
+      <div class="hud bar" style="display:none;position:absolute;left:140px;top:62px;width:226px"><i style="width:93%;background:linear-gradient(180deg,#8fc6ff,#2f6fd0)"></i><span>93 %</span></div>
+      <div class="hud out" style="left:108px;top:64px;font-size:14px;font-weight:700;color:#f6e3a8;line-height:18px;white-space:nowrap"><span id="lvltxt">Stufe 2 · Krieger</span></div><div title="Erfahrung" style="position:absolute;left:108px;top:84px;width:258px;height:7px;border-radius:4px;background:#1b2542;border:1px solid #fff;overflow:hidden"><i id="xpbar" style="display:block;height:100%;width:0%;background:linear-gradient(180deg,#ff8a8a,#d01c1c)"></i></div>`;
     const bars=panel.querySelectorAll('.hud.bar');
     {const im=himg['idleS'];const fw=im.width/4,fh=im.height/4;const t=document.createElement('canvas');t.width=fw;t.height=fh;const x=t.getContext('2d');x.drawImage(im,0,0,fw,fh,0,0,fw,fh);
       const d=x.getImageData(0,0,fw,fh).data;let y0=fh,x0=fw,x1=0;for(let yy=0;yy<fh;yy++)for(let xx=0;xx<fw;xx++)if(d[(yy*fw+xx)*4+3]>40){if(yy<y0)y0=yy;if(xx<x0)x0=xx;if(xx>x1)x1=xx}
@@ -2568,7 +2626,7 @@ function startHero(){
     const invEl=document.createElement('div');invEl.style.cssText='position:absolute;left:24px;top:215px;width:360px;padding:14px 16px 16px;border:3px solid #f0c25a;border-radius:14px;background:linear-gradient(180deg,rgba(30,44,90,.96),rgba(18,26,60,.96));color:#f6e3a8;font:700 15px var(--font-ui);display:none;z-index:40;box-shadow:0 8px 32px rgba(0,0,0,.5)';
     document.getElementById('frame').appendChild(invEl);invEl.addEventListener('mousedown',e=>e.stopPropagation());
     const EFF={hp1:['lp',50],hp2:['lp',150],hp3:['lp',400],mp1:['ep',30],ag1:['cure',0]};
-    window.__DROPS=[{id:'sg',n:'Grüner Schleim',d:'Klebriger Schleim. ',c:'#8fe36a',p:1,drop:1},{id:'sb',n:'Blauer Schleim',d:'Kühler Schleim. ',c:'#86c8ff',p:1,drop:1},{id:'sp',n:'Rosa Schleim',d:'Zäher Schleim. ',c:'#f0a0d8',p:2,drop:1}];window.__slimeIcon=c=>`<svg width="44" height="54" viewBox="0 0 44 54"><path d="M6 42 Q4 28 13 20 Q15 8 24 14 Q31 10 32 22 Q41 28 38 42 Q38 51 22 51 Q8 51 6 42Z" fill="${c}" stroke="#2a2140" stroke-width="2.4"/><ellipse cx="16" cy="30" rx="5" ry="3" fill="#fff" opacity=".5"/><ellipse cx="29" cy="43" rx="4" ry="2" fill="#fff" opacity=".25"/></svg>`;window.__POTS=POTS;window.__EFF=EFF;window.__bottle=bottle;let invMsg='';
+    window.__DROPS=[{id:'sg',n:'Grüne Schleimreste',d:'Klebriger Schleim. ',c:'#8fe36a',p:1,drop:1},{id:'sb',n:'Blaue Schleimreste',d:'Kühler Schleim. ',c:'#86c8ff',p:1,drop:1},{id:'sp',n:'Rosa Schleimreste',d:'Zäher Schleim. ',c:'#f0a0d8',p:2,drop:1}];window.__slimeIcon=c=>`<svg width="44" height="54" viewBox="0 0 44 54"><path d="M6 42 Q4 28 13 20 Q15 8 24 14 Q31 10 32 22 Q41 28 38 42 Q38 51 22 51 Q8 51 6 42Z" fill="${c}" stroke="#2a2140" stroke-width="2.4"/><ellipse cx="16" cy="30" rx="5" ry="3" fill="#fff" opacity=".5"/><ellipse cx="29" cy="43" rx="4" ry="2" fill="#fff" opacity=".25"/></svg>`;window.__POTS=POTS;window.__EFF=EFF;window.__bottle=bottle;let invMsg='';
     window.renderInv=()=>{
       const items=POTS.concat(window.__DROPS).filter(p=>(st.inv[p.id]||0)>0);
       let cells='';for(let i=0;i<24;i++){const p=items[i];cells+=p?`<div data-u="${p.id}" title="${p.n} – ${p.d} (Klick zum Benutzen)" style="position:relative;height:56px;border-radius:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="transform:scale(.8)">${p.drop?window.__slimeIcon(p.c):bottle(p.c)}</div><span style="position:absolute;right:4px;bottom:1px;font-size:13px;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000">${st.inv[p.id]}</span></div>`:`<div style="height:56px;border-radius:8px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.1)"></div>`}
@@ -2576,16 +2634,16 @@ function startHero(){
       invEl.querySelectorAll('[data-u]').forEach(el=>el.onmousedown=e=>{e.stopPropagation();const id=el.dataset.u,p=POTS.concat(window.__DROPS).find(q=>q.id===id),ef=EFF[id];if(!ef){invMsg=p.n+': Ein Monster-Drop. Verkaufe ihn bei Odo.';return renderInv()}
         if(ef[0]==='lp'){if(st.lp>=LPMAX){invMsg='Deine HP sind schon voll.';return renderInv()}st.lp=Math.min(LPMAX,st.lp+ef[1]);invMsg=p.n+': +'+ef[1]+' HP'}
         else if(ef[0]==='ep'){if(st.ep>=100){invMsg='Deine MP sind schon voll.';return renderInv()}st.ep=Math.min(100,st.ep+ef[1]);invMsg=p.n+': +'+ef[1]+' % MP'}
-        else invMsg='Gegengift benutzt – du bist nicht vergiftet.';
+        else invMsg='Gegengift benutzt – Sie sind nicht vergiftet.';
         st.inv[id]--;persist2();renderInv()});
       invEl.querySelector('#ivx').onmousedown=e=>{e.stopPropagation();invEl.style.display='none'}};
     const toggleInv=()=>{if(invEl.style.display==='block'){invEl.style.display='none'}else{invMsg='';renderInv();invEl.style.display='block'}};
     addEventListener('keydown',e=>{if(e.code==='KeyE'&&!e.repeat){e.preventDefault();toggleInv()}if(e.key==='Escape')invEl.style.display='none'});
     updHud();
     window.openNpc=n=>{if(n.n==='Fenn'){renderShop();shopEl.style.display='block';return}document.getElementById('dn').textContent=n.n;document.getElementById('dr').textContent=n.r;document.getElementById('dt').textContent=n.t;dlg.style.display='block'};
-    NPCS.push({n:'Hugo',r:'Verwaltung von Looteria',x:1260,y:195,t:'Willkommen in Looteria! Ich kümmere mich um die Verwaltung der Stadt. Das Rathaus öffnet bald seine Türen – bis dahin kann ich dir leider noch nichts abnehmen.'});window.__npcs=NPCS;
+    NPCS.push({n:'Hugo',r:'Verwaltung von Looteria',x:1260,y:195,t:'Willkommen in Looteria! Ich kümmere mich um die Verwaltung der Stadt. Das Rathaus öffnet bald seine Türen – bis dahin kann ich Ihnen leider noch nichts abnehmen.'});window.__npcs=NPCS;
     cv.addEventListener('mousedown',e=>{if(AUTO)setAuto(false);const r0=cv.getBoundingClientRect();const mx=((e.clientX-r0.left)/r0.width*1600/vz+cam.x)/Z,my=((e.clientY-r0.top)/r0.height*900/vz+cam.y-CYO)/Z;
-      for(const n of (SC==='c'?NPCS:[])){if(Math.abs(mx-n.x)<34&&my>n.y-118&&my<n.y+10){hero.talk=n;hero.tx=n.x;hero.ty=n.y+58;if(!walkable(hero.tx,hero.ty)){hero.tx=n.x+40;hero.ty=n.y+50}dlg.style.display='none';return}}
+      for(const n of (SC==='c'?NPCS:[])){if(!(window.__npcHid&&window.__npcHid(n.n))&&Math.abs(mx-n.x)<34&&my>n.y-118&&my<n.y+10){hero.talk=n;hero.tx=n.x;hero.ty=n.y+58;if(!walkable(hero.tx,hero.ty)){hero.tx=n.x+40;hero.ty=n.y+50}dlg.style.display='none';return}}
       hero.talk=null;dlg.style.display='none';
       const r=cv.getBoundingClientRect();const x=((e.clientX-r.left)/r.width*1600/vz+cam.x)/Z,y=((e.clientY-r.top)/r.height*900/vz+cam.y-CYO)/Z;
       if(walkable(x,y)){hero.tx=x;hero.ty=y}});
@@ -2659,7 +2717,7 @@ function done(){C.ready=!!sess;if(sess)setTimeout(checkOwnName,2500);if(ov){ov.r
 function loading(t){overlay('<div style="text-align:center"><div style="font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:10px">Story of Looteria</div><div>'+t+'</div></div>')}
 function form(mode,msg,ok){mode=mode||'in';const inp='width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border-radius:10px;border:2px solid #f0c25a;background:#1a2552;color:#f6e3a8;font:700 16px var(--font-ui,sans-serif);outline:none';
   const tab=(m,t)=>`<button data-m="${m}" style="flex:1;padding:8px;border-radius:10px 10px 0 0;border:2px solid #f0c25a;border-bottom:0;background:${mode===m?'#2b3866':'#141c40'};color:#f6e3a8;font:800 15px var(--font-ui,sans-serif);cursor:pointer">${t}</button>`;
-  overlay(`<div style="width:430px;padding:24px 28px;border:3px solid #f0c25a;border-radius:16px;background:linear-gradient(180deg,rgba(30,44,90,.98),rgba(18,26,60,.98));box-shadow:0 10px 40px rgba(0,0,0,.65)"><div style="text-align:center;font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:4px">Story of Looteria</div><div style="text-align:center;font-size:13px;opacity:.8;margin-bottom:14px">Melde dich mit Benutzername und Passwort an, damit dein Spielstand in der Cloud gesichert wird.</div>
+  overlay(`<div style="width:430px;padding:24px 28px;border:3px solid #f0c25a;border-radius:16px;background:linear-gradient(180deg,rgba(30,44,90,.98),rgba(18,26,60,.98));box-shadow:0 10px 40px rgba(0,0,0,.65)"><div style="text-align:center;font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:4px">Story of Looteria</div><div style="text-align:center;font-size:13px;opacity:.8;margin-bottom:14px">Melden Sie sich mit Benutzername und Passwort an, damit Ihr Spielstand in der Cloud gesichert wird.</div>
   <div style="display:flex;gap:4px">${tab('in','Anmelden')}${tab('up','Registrieren')}</div><div style="border:2px solid #f0c25a;border-radius:0 0 10px 10px;padding:14px;background:#2b3866">
   <input id="aem" type="text" maxlength="20" placeholder="Benutzername" autocomplete="username" spellcheck="false" style="${inp}"><input id="apw" type="password" placeholder="Passwort (mind. 6 Zeichen)" autocomplete="${mode==='in'?'current-password':'new-password'}" style="${inp}">
   <div id="amsg" style="min-height:36px;font-size:13px;color:${ok?'#9be8a0':'#ff8a80'};margin-bottom:8px">${msg||''}</div>
@@ -2678,13 +2736,14 @@ function form(mode,msg,ok){mode=mode||'in';const inp='width:100%;box-sizing:bord
       if(r.ok&&r.j&&r.j.access_token){store(r.j);loading('Spielstand wird geladen …');await sync(true);return}
       if(r.ok&&mode==='up'){form('in','Konto erstellt, aber noch nicht freigeschaltet: In Supabase muss „Confirm email“ ausgeschaltet sein.')
       ;return}
-      form(mode,mapErr(r))}catch(x){busy=false;form(mode,'Keine Verbindung zum Server. Bitte prüfe dein Internet.')}};
+      form(mode,mapErr(r))}catch(x){busy=false;form(mode,'Keine Verbindung zum Server. Bitte prüfen Sie Ihr Internet.')}};
   go.onclick=run;pw.addEventListener('keydown',ev=>{if(ev.key==='Enter')run()});em.addEventListener('keydown',ev=>{if(ev.key==='Enter')pw.focus()});setTimeout(()=>(em.value?pw:em).focus(),50)}
 function snap(){const s=window.__st;if(!s)return null;const c=Object.assign({},s);delete c.savedAt;return JSON.stringify(c)}
 async function upload(keep){if(!sess||!window.__st)return;try{await fresh();const s=window.__st;const body=JSON.stringify({user_id:sess.uid,data:s,updated_at:new Date().toISOString()});
   const r=await fetch(URL_+'/rest/v1/saves?on_conflict=user_id',{method:'POST',keepalive:!!keep&&body.length<60000,headers:Object.assign(H(sess.access_token),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body});
   if(r.ok){lastSent=snap();C.last=Date.now();C.status='Cloud gesichert'}else C.status='Cloud-Fehler ('+r.status+')'}catch(e){C.status='Offline – wird später gesichert'}}
-async function tick(keep){const s=window.__st;if(!s||!sess)return;const sn=snap();if(sn&&sn!==lastSent){s.savedAt=Date.now();try{window.__persist()}catch(e){}await upload(keep)}}
+let resetting=false;
+async function tick(keep){const s=window.__st;if(!s||!sess||resetting)return;const sn=snap();if(sn&&sn!==lastSent){s.savedAt=Date.now();try{window.__persist()}catch(e){}await upload(keep)}}
 function applyAndReload(data){window.__persist=function(){};ls.set(SAVE,typeof data==='string'?data:JSON.stringify(data));ls.set(UK,sess.uid);location.reload()}
 async function sync(first){try{await fresh();
     const r=await api('/rest/v1/saves?user_id=eq.'+sess.uid+'&select=data,updated_at',{headers:H(sess.access_token)});
@@ -2710,7 +2769,8 @@ C.claimName=async function(v){try{await fresh();const k=nkey(v),hd=Object.assign
   return r.ok?'ok':(r.status===409?'taken':'error')}catch(e){return'error'}};
 async function checkOwnName(){const s=window.__st;if(!sess||!s||!s.name||C.nameOk)return;const r=await C.claimName(s.name);
   if(r==='ok'){C.nameOk=true;return}
-  if(r==='taken'){const old=s.name;delete s.name;try{window.__persist()}catch(e){}if(window.__nameAsk){window.__nameAsk();const er=document.querySelector('#nmerr');if(er)er.textContent='Der Name „'+old+'“ ist schon vergeben. Bitte wähle einen neuen.'}}}
+  if(r==='taken'){const old=s.name;delete s.name;try{window.__persist()}catch(e){}if(window.__nameAsk){window.__nameAsk();const er=document.querySelector('#nmerr');if(er)er.textContent='Der Name „'+old+'“ ist schon vergeben. Bitte wählen Sie einen neuen.'}}}
+window.__resetSave=async function(){resetting=true;window.__persist=function(){};if(sess){try{await fresh();await fetch(URL_+'/rest/v1/saves?user_id=eq.'+sess.uid,{method:'PATCH',headers:Object.assign(H(sess.access_token),{'Prefer':'return=minimal'}),body:JSON.stringify({data:{},updated_at:new Date().toISOString()})})}catch(e){}}ls.del(SAVE);location.reload()};
 window.__logout=async function(){try{await tick(true)}catch(e){}sess=null;ls.del(AK);window.__persist=function(){};location.reload()};
 loading('Verbinde …');
 try{sess=JSON.parse(ls.get(AK)||'null')}catch(e){sess=null}
