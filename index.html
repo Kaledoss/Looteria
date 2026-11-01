@@ -1661,8 +1661,8 @@ function heroLoop(ts){
   const drawHero=()=>{ctx.save();ctx.setTransform(Z,0,0,Z,0,0);shadowEll(hero.x,hero.y-2,26/Z,8/Z);ctx.restore();ctx.drawImage(fr[0],fr[1],fr[2],fr[3],fr[4],hX-w/2+ox,hY-h+4+oy,w,h);drawn=true};
   const after=[];let occ=false;const hx0=hX-w/2+ox,hy0=hY-h+4+oy;
   const order=LAYERS.map((L,i)=>[layerKey(L),i,L]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
-  const mons=SC==='p'?MON.filter(m=>m.hp>0||m.dead>0).sort((a,b)=>a.y-b.y):[];let mi=0;
-  const flushMon=lim=>{while(mi<mons.length&&mons[mi].y<=lim){if(!drawn&&mons[mi].y>hero.y)drawHero();drawMon(mons[mi++],t)}};
+  const mons=(SC==='p'?MON.filter(m=>m.hp>0||m.dead>0):[]).concat(netOthers()).sort((a,b)=>a.y-b.y);let mi=0;
+  const flushMon=lim=>{while(mi<mons.length&&mons[mi].y<=lim){if(!drawn&&mons[mi].y>hero.y)drawHero();(mons[mi].rp?drawOther(mons[mi++],t):drawMon(mons[mi++],t))}};
   for(const [kk,ii,L] of order){flushMon(kk);if(!drawn&&kk>hero.y)drawHero();
     if(drawn&&L.x<hx0+w&&L.x+L.c.width>hx0&&L.y0<hy0+h&&L.y0+L.c.height>hy0){occ=true;after.push(L)}
     ctx.drawImage(L.c,L.x,L.y0)}
@@ -2043,9 +2043,10 @@ function chatSend(txt){txt=txt.trim();if(!txt)return;
   if(txt[0]==='/'){const c=txt.slice(1).toLowerCase();
     if(c==='hilfe'||c==='help'){chatAdd('Tasten: WASD/Klick laufen · Leertaste/F Angriff · X Auto-Kampf · E Inventar · C Ausrüstung · M Karte · Enter Chat · +/− Zoom','System','#9be8a0')}
     else chatAdd('Unbekannter Befehl. Tippe /hilfe.','System','#ff8a7a');return}
-  const ch=CH.cur==='Alle'?'Nähe':CH.cur;
+  const ch=CH.cur==='Alle'?'Welt':CH.cur;
+  if(ch==='Nähe'||ch==='Gebiet'||ch==='Welt'){const r=netChat(ch,txt);if(r!==true){chatAdd(r,'System','#ff8a7a');return}chatAdd(txt.slice(0,140),ch,ch==='Welt'?'#9be8ff':(ch==='Gebiet'?'#ffe27a':'#ffffff'),window.__pname());return}
   chatAdd(txt,ch,'#ffffff',window.__pname());
-  if(ch!=='Nähe')chatAdd('Im Kanal „'+ch+'“ hört noch niemand zu – Mehrspieler folgt.','System','#aab4d8')}
+  chatAdd('Im Kanal „'+ch+'“ hört noch niemand zu – kommt später.','System','#aab4d8')}
 function initUi(){
   const inp=document.getElementById('chatin');
   ['#autobtn','#mapbtn','#qh','#chatin','.tab'].forEach(q=>document.querySelectorAll(q).forEach(x=>{x.style.pointerEvents='auto';if(q==='.tab')x.style.cursor='pointer'}));
@@ -2162,7 +2163,7 @@ function openOdo(){if(!odoEl){odoEl=document.createElement('div');odoEl.style.cs
     document.getElementById('frame').appendChild(odoEl);odoEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')odoEl.style.display='none'})}
   renderOdo();odoEl.style.display='block'}
 
-const GAME_VERSION='0.0.6';
+const GAME_VERSION='0.0.7';
 /* ---- Sound (Platzhalter, per WebAudio synthetisiert) ---- */
 const SFX=(()=>{let ac=null,mg=null;const U=()=>{const s=window.__st;if(!s)return{snd:true,vol:.6,mini:true};if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;if(s.ui.snd===undefined)s.ui.snd=true;if(s.ui.vol===undefined)s.ui.vol=.6;return s.ui};
  function ctx(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
@@ -2433,8 +2434,82 @@ addEventListener('keydown',e=>{if(e.key!=='Escape')return;
   const open=[...document.querySelectorAll('#frame > div')].some(d=>{const c=getComputedStyle(d);return d!==escEl&&c.display!=='none'&&c.pointerEvents!=='none'&&+c.zIndex>=40&&c.opacity!=='0'});
   if(!open)openEsc()},true);
 
+/* ---- Online: andere Spieler (Supabase Realtime, Broadcast + Presence) ---- */
+const NET={ws:null,sc:null,ch:1,want:1,manual:false,peers:{},ref:0,hb:null,joined:false,pres:{},tries:0,retry:0,lastSend:0,px:0,py:0,mv:0,tokT:0,full:0};
+const NETMAX=20;
+function netCl(){return window.__cloud||{}}
+const NETW='realtime:loot-world';NET.subs={};NET.lastChat=0;
+function NETA(){return (SC==='m'||SC==='p')?'realtime:loot-area-'+SC:null}
+function netSub(t){NET.subs[t]=1;netSend(t,'phx_join',{config:{broadcast:{ack:false,self:false},presence:{key:netCl().uid()},private:false},access_token:netCl().tok()})}
+function netUnsub(t){delete NET.subs[t];netSend(t,'phx_leave',{})}
+function netSubs(){if(!NET.ws||NET.ws.readyState!==1){NET.subs={};return}const want={};want[NETW]=1;const A=NETA();if(A&&!TRANS)want[A]=1;
+  for(const t in NET.subs)if(!want[t])netUnsub(t);for(const t in want)if(!NET.subs[t])netSub(t)}
+function netChat(ch,txt){const now=Date.now();if(now-NET.lastChat<800)return'Nicht so schnell.';
+  let t=null;if(ch==='Welt')t=NETW;else if(ch==='Gebiet')t=NETA();else if(ch==='Nähe'&&NET.sc&&NET.joined)t=netTopic();
+  if(!t||!NET.ws||NET.ws.readyState!==1||!NET.subs[t]&&t!==netTopic())return ch==='Welt'?'Chat ist offline.':(ch==='Gebiet'?'Der Gebietschat funktioniert nur in der Oberwelt.':'In der Stadt hört im Kanal „Nähe“ niemand zu. Nutze „Welt“.');
+  NET.lastChat=now;netSend(t,'broadcast',{type:'broadcast',event:'c',payload:{u:netCl().uid(),n:window.__pname(),t:txt.slice(0,140)}});return true}
+function netTopic(){return 'realtime:loot-'+NET.sc+'-'+NET.ch}
+function netSend(topic,event,payload){if(NET.ws&&NET.ws.readyState===1)NET.ws.send(JSON.stringify({topic,event,payload,ref:String(++NET.ref)}))}
+function netLeave(){if(NET.ws&&NET.ws.readyState===1&&NET.sc){try{netSend(netTopic(),'phx_leave',{})}catch(e){}}NET.sc=null;NET.joined=false;NET.peers={};NET.pres={};netUi()}
+function netOpen(){const C=netCl();if(NET.ws&&NET.ws.readyState<=1)return;
+  const ws=new WebSocket('wss://gtmtlavfrxetmhzlenom.supabase.co/realtime/v1/websocket?apikey='+C.key+'&vsn=1.0.0');NET.ws=ws;
+  ws.onopen=()=>{NET.hb=setInterval(()=>netSend('phoenix','heartbeat',{}),25000);if(NET.sc)netJoin()};
+  ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(e){return}netMsg(m)};
+  ws.onclose=()=>{NET.subs={};clearInterval(NET.hb);NET.joined=false;NET.peers={};NET.pres={};NET.ws=null;NET.retry=Date.now()+3000;netUi()};
+  ws.onerror=()=>{}}
+function netJoin(){const C=netCl();NET.joined=false;NET.pres={};NET.peers={};
+  netSend(netTopic(),'phx_join',{config:{broadcast:{ack:false,self:false},presence:{key:C.uid()},private:false},access_token:C.tok()})}
+function netChatIn(m,ch){const d=(m.payload&&m.payload.payload)||{};if(!d.u||d.u===netCl().uid()||typeof d.t!=='string')return;const t=d.t.slice(0,140).trim();if(!t)return;chatAdd(t,ch,ch==='Welt'?'#9be8ff':(ch==='Gebiet'?'#ffe27a':'#ffffff'),String(d.n||'Spieler').slice(0,20))}
+function netMsg(m){
+  if(m.event==='broadcast'&&m.payload&&m.payload.event==='c'){if(m.topic===NETW)netChatIn(m,'Welt');else if(m.topic===NETA())netChatIn(m,'Gebiet');else if(NET.sc&&m.topic===netTopic())netChatIn(m,'Nähe');return}
+  if(!NET.sc||m.topic!==netTopic())return;const C=netCl(),me=C.uid();
+  if(m.event==='phx_reply'&&m.payload&&m.payload.status==='ok'&&!NET.joined){NET.joined=true;NET.tries=0;
+    netSend(netTopic(),'presence',{type:'presence',event:'track',payload:{name:window.__pname(),lv:(window.__st&&__st.lvl)||1}});netUi();return}
+  if(m.event==='phx_reply'&&m.payload&&m.payload.status==='error'){NET.joined=false;return}
+  if(m.event==='presence_state'){NET.pres={};for(const k in m.payload)NET.pres[k]=(m.payload[k].metas||[{}])[0];netCheckFull();netUi();return}
+  if(m.event==='presence_diff'){const j=m.payload.joins||{},l=m.payload.leaves||{};for(const k in l){if(!(k in j)){delete NET.pres[k];delete NET.peers[k]}}for(const k in j)NET.pres[k]=(j[k].metas||[{}])[0];netCheckFull();netUi();return}
+  if(m.event==='broadcast'&&m.payload&&m.payload.event==='p'){const d=m.payload.payload||{};if(!d.u||d.u===me)return;
+    let p=NET.peers[d.u];if(!p){p=NET.peers[d.u]={rp:true,u:d.u,x:d.x,y:d.y};}
+    p.tx=d.x;p.ty=d.y;p.f=d.f;p.a=d.a;p.n=d.n||'Spieler';p.l=d.l||1;p.seen=performance.now();if(Math.hypot(p.x-d.x,p.y-d.y)>400){p.x=d.x;p.y=d.y}}}
+function netCheckFull(){const n=Object.keys(NET.pres).length;
+  if(n>NETMAX&&NET.tries<30){if(NET.manual){toast('Kanal '+NET.ch+' ist voll.');NET.manual=false;NET.want=NET.prev||1}else{NET.want=NET.ch+1;NET.tries++}}else if(NET.joined)NET.prev=NET.ch}
+function netOthers(){const now=performance.now(),a=[];for(const u in NET.peers){const p=NET.peers[u];if(now-p.seen>7000){delete NET.peers[u];continue}p.x+=(p.tx-p.x)*.2;p.y+=(p.ty-p.y)*.2;a.push(p)}return a}
+function drawOther(o,t){const fr=heroFrame(o.a==='run'||o.a==='walk'?o.a:'idle',HFACE[o.f]||'SW',t+(o.u.charCodeAt(0)%7)*.37);
+  const sc=.6,kk=fr[5]||1,w=fr[3]*sc*kk,h=fr[4]*sc*kk,ox=(fr[6]||0)*sc,oy=(fr[7]||0)*sc,hl=(fr[5]?261:fr[4])*sc,X=o.x*Z,Y=o.y*Z;
+  ctx.save();ctx.setTransform(Z,0,0,Z,0,0);shadowEll(o.x,o.y-2,26/Z,8/Z);ctx.restore();
+  ctx.drawImage(fr[0],fr[1],fr[2],fr[3],fr[4],X-w/2+ox,Y-h+4+oy,w,h);
+  ctx.save();ctx.setTransform(Z,0,0,Z,0,0);label(o.n,o.x,o.y-(hl+4)/Z-18/Z,'#ffffff',18,'Lv '+o.l);ctx.restore()}
+let netEl=null,netPop=null;
+function netUi(){if(!netEl)return;const on=NET.sc&&NET.ws&&NET.ws.readyState===1;netEl.style.display=(SC==='m'||SC==='p')&&netCl().ready?'block':'none';
+  const n=Object.keys(NET.pres).length;netEl.textContent=on?(NET.joined?('Kanal '+NET.ch+' · '+Math.max(1,n)+' Spieler ▾'):'Verbinde …'):'Offline ▾';
+  if(netPop&&netPop.style.display==='block')netPopDraw()}
+function netPopDraw(){netPop.innerHTML='<div style="display:flex;align-items:center;gap:8px;justify-content:center"><button id="nchm" style="width:30px">◀</button><b>Kanal '+NET.ch+'</b><button id="nchp" style="width:30px">▶</button></div><div style="font-size:12px;opacity:.8;margin-top:6px;text-align:center">Bis zu '+NETMAX+' Spieler pro Kanal</div>';
+  const st='border:2px solid #f0c25a;border-radius:8px;background:#2b3866;color:#f6e3a8;font:800 14px var(--font-ui);cursor:pointer';netPop.querySelectorAll('button').forEach(b=>{b.style.cssText+=';'+st;b.onmousedown=e=>e.stopPropagation()});
+  netPop.querySelector('#nchm').onclick=()=>netSet(NET.want-1);netPop.querySelector('#nchp').onclick=()=>netSet(NET.want+1)}
+function netSet(c){c=Math.max(1,Math.min(99,c));NET.want=c;NET.manual=true;netPopDraw()}
+function netInit(){const f=document.getElementById('frame');netEl=document.createElement('div');netEl.style.cssText='position:absolute;right:14px;bottom:158px;z-index:41;padding:4px 12px;border-radius:10px;border:2px solid #f0c25a;background:rgba(30,44,90,.92);color:#f6e3a8;font:800 13px var(--font-ui);cursor:pointer;display:none';
+  netPop=document.createElement('div');netPop.style.cssText='position:absolute;right:14px;bottom:188px;z-index:41;padding:10px 14px;border-radius:10px;border:2px solid #f0c25a;background:rgba(30,44,90,.97);color:#f6e3a8;font:700 14px var(--font-ui);display:none';
+  [netEl,netPop].forEach(e=>{f.appendChild(e);e.addEventListener('mousedown',ev=>ev.stopPropagation())});
+  netEl.onclick=()=>{netPop.style.display=netPop.style.display==='block'?'none':'block';if(netPop.style.display==='block')netPopDraw()};
+  setInterval(netTick,250)}
+function netTick(){const C=netCl();if(!C.ready||!C.tok||!C.tok()){return}
+  const want=(SC==='m'||SC==='p')&&!TRANS?SC:null;netUi();
+  if((!NET.ws||NET.ws.readyState>1)&&Date.now()>=NET.retry)netOpen();netSubs();
+  if(want!==NET.sc||(want&&NET.want!==NET.ch)){
+    if(NET.sc)netLeave();
+    if(want){NET.sc=want;NET.ch=NET.want;if(!NET.ws||NET.ws.readyState>1){if(Date.now()>=NET.retry)netOpen()}else if(NET.ws.readyState===1)netJoin()}}
+  if(NET.sc&&(!NET.ws||NET.ws.readyState>1)&&Date.now()>=NET.retry)netOpen();
+  const now=performance.now();
+  if(NET.sc&&NET.joined&&now-NET.lastSend>200){NET.lastSend=now;const mv=Math.hypot(hero.x-NET.px,hero.y-NET.py)>.3;NET.px=hero.x;NET.py=hero.y;if(mv)NET.mv=now;
+    const a=(hero.fx==='death'||hero.fx==='hit')?'idle':(now-NET.mv<350?(hkeys.shift?'run':'walk'):'idle');
+    netSend(netTopic(),'broadcast',{type:'broadcast',event:'p',payload:{u:C.uid(),n:window.__pname(),l:(window.__st&&__st.lvl)||1,x:Math.round(hero.x),y:Math.round(hero.y),f:hero.face,a}})}
+  if(NET.ws&&NET.ws.readyState===1&&now-NET.tokT>600000){NET.tokT=now;C.refresh&&C.refresh().then(ok=>{if(ok&&NET.sc)netSend(netTopic(),'access_token',{access_token:C.tok()})})}}
+window.__net=NET;
+window.__go=goScene;
+
+
 function startHero(){
-  window.__hero=hero;setTimeout(function w(){if(window.__st&&window.__POTS&&document.querySelector('#hudl .slot'))potInit();else setTimeout(w,200)},0);
+  window.__hero=hero;netInit();setTimeout(function w(){if(window.__st&&window.__POTS&&document.querySelector('#hudl .slot'))potInit();else setTimeout(w,200)},0);
   heroLoad().then(()=>{
     try{const c=document.createElement('canvas');c.width=c.height=240;const im=himg['idleS'],fw=im.width/4,fh=im.height/4;
       c.getContext('2d').drawImage(im,0,0,fw,fh,-20,6,fw*1.9*0.92,fh*1.9*0.92);document.getElementById('pimg').src=c.toDataURL()}catch(e){}
@@ -2552,7 +2627,7 @@ render().then(()=>{
 (function(){
 const URL_='https://gtmtlavfrxetmhzlenom.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0bXRsYXZmcnhldG1oemxlbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NDQ5MTEsImV4cCI6MjEwOTEyMDkxMX0.wpdCwhfHWvB5QIzFn5-DdskftByO8wcv6Y7YHn6Ox3A';
 const SAVE='looteria_shop_v1',AK='looteria_auth',UK='looteria_uid';
-const C=window.__cloud={status:'Nicht angemeldet',email:'',last:0};
+const C=window.__cloud={status:'Nicht angemeldet',email:'',last:0,key:KEY,ready:false,tok:()=>sess&&sess.access_token,uid:()=>sess&&sess.uid,refresh:()=>fresh().then(()=>true,()=>false)};
 let sess=null,ov=null,lastSent='',busy=false;
 const DOM='@looteria.game',nm=e=>(e||'').replace(/@looteria\.game$/,''),toMail=u=>u.trim().toLowerCase()+DOM;
 const $=s=>document.querySelector(s);
@@ -2574,7 +2649,7 @@ async function fresh(){if(!sess)return false;if(sess.expires_at-60>Date.now()/10
   if(r.status>=400&&r.status<500){sess=null;ls.del(AK)}
   throw new Error('refresh '+r.status)}
 function overlay(html){if(!ov){ov=document.createElement('div');ov.id='authov';ov.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;z-index:90;background:radial-gradient(ellipse at 50% 40%,#233a78 0%,#0b1020 75%);display:flex;align-items:center;justify-content:center;color:#f6e3a8;font:700 15px var(--font-ui,sans-serif)';ov.addEventListener('mousedown',e=>e.stopPropagation());['keydown','keyup','keypress'].forEach(t=>ov.addEventListener(t,e=>e.stopPropagation()));document.getElementById('frame').appendChild(ov)}ov.innerHTML=html}
-function done(){if(ov){ov.remove();ov=null}}
+function done(){C.ready=!!sess;if(ov){ov.remove();ov=null}}
 function loading(t){overlay('<div style="text-align:center"><div style="font-size:30px;font-weight:800;color:#bff8ff;margin-bottom:10px">Story of Looteria</div><div>'+t+'</div></div>')}
 function form(mode,msg,ok){mode=mode||'in';const inp='width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border-radius:10px;border:2px solid #f0c25a;background:#1a2552;color:#f6e3a8;font:700 16px var(--font-ui,sans-serif);outline:none';
   const tab=(m,t)=>`<button data-m="${m}" style="flex:1;padding:8px;border-radius:10px 10px 0 0;border:2px solid #f0c25a;border-bottom:0;background:${mode===m?'#2b3866':'#141c40'};color:#f6e3a8;font:800 15px var(--font-ui,sans-serif);cursor:pointer">${t}</button>`;
