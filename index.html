@@ -1411,6 +1411,7 @@ function figure(dir,o){
   }catch(err){console.error(err);return figureSVG(dir,o);}
 }
 function label(txt,x,y,col='#7dff5a',sz=19,sub){
+  {const _k0=ctx.getTransform().a;if(_k0>0&&typeof LBC_!=='undefined'){const key=txt+'|'+col+'|'+sz+'|'+(sub||'');let e=LBC_.get(key);if(!e){e=lbMk_(txt,col,sz,sub);if(LBC_.size>400)LBC_.clear();LBC_.set(key,e)}ctx.drawImage(e.c,x-e.w/2/_k0,y-e.b/_k0,e.w/_k0,e.h/_k0);return}}
   const _k=ctx.getTransform().a;sz=sz/_k;const LW=4/_k;
   ctx.font=`800 ${sz}px Nunito, system-ui, sans-serif`;ctx.textAlign='center';ctx.lineJoin='round';
   if(sub){ctx.lineWidth=LW;ctx.strokeStyle='#1d2a14';ctx.strokeText(sub,x,y);ctx.fillStyle='#bff5a0';ctx.fillText(sub,x,y);y-=sz+1;}
@@ -1845,10 +1846,10 @@ function goScene(to){
 let hintK=null;
 function chkExit(){
   if(TRANS)return;
-  if(SC==='c'){if(hero.x>2262&&hero.y>1040&&hero.y<1340)goScene('m');return}
-  if(SC==='p'){if(hero.y>1336&&hero.x>560&&hero.x<860)goScene('m');return}
-  if(hero.y<334&&hero.x>570&&hero.x<740){goScene('p');return}
-  if(hero.x<95&&hero.y>1010&&hero.y<1190){goScene('c');return}
+  if(SC==='c'){if(hero.x>2235&&hero.y>1010&&hero.y<1340)goScene('m');return}
+  if(SC==='p'){if(hero.y>1318&&hero.x>540&&hero.x<880)goScene('m');return}
+  if(hero.y<362&&hero.x>540&&hero.x<780){goScene('p');return}
+  if(hero.x<118&&hero.y>990&&hero.y<1210){goScene('c');return}
   const H=[['E',2290,520,'Der Weg nach Osten ist noch gesperrt.'],['S',1895,1335,'Der Weg nach Süden ist noch gesperrt.']];
   let near=null;for(const q of H)if(Math.hypot(hero.x-q[1],(hero.y-q[2])*1.5)<110)near=q;
   if(near&&hintK!==near[0]){hintK=near[0];toast(near[3])}else if(!near)hintK=null}
@@ -2417,6 +2418,12 @@ let LPC_=null;
 window.__LPC=()=>{if(LPC_)return LPC_;const c=document.createElement('canvas');c.width=400;c.height=225;const x=c.getContext('2d');
   let g=x.createRadialGradient(65,15,10,200,112,300);g.addColorStop(0,'rgba(255,236,180,.16)');g.addColorStop(.6,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(40,60,120,.14)');x.fillStyle=g;x.fillRect(0,0,400,225);
   g=x.createRadialGradient(200,112,101,200,112,236);g.addColorStop(0,'rgba(10,16,30,0)');g.addColorStop(1,'rgba(10,16,30,.28)');x.fillStyle=g;x.fillRect(0,0,400,225);LPC_=c;return c};
+
+const LBC_=new Map();
+function lbMk_(txt,col,sz,sub){const m=document.createElement('canvas').getContext('2d');m.font=`800 ${sz}px Nunito, system-ui, sans-serif`;const tw=Math.ceil(Math.max(m.measureText(txt).width,sub?m.measureText(sub).width:0))+14,H=Math.ceil(sz*(sub?2.4:1.4))+10;const c=document.createElement('canvas');c.width=tw;c.height=H;const x=c.getContext('2d');x.font=m.font;x.textAlign='center';x.lineJoin='round';x.lineWidth=4;x.strokeStyle='#1d2a14';let y=H-6;
+  if(sub){x.strokeText(sub,tw/2,y);x.fillStyle='#bff5a0';x.fillText(sub,tw/2,y);y-=sz+1}
+  x.strokeText(txt,tw/2,y);x.fillStyle=col;x.fillText(txt,tw/2,y);return {c,w:tw,h:H,b:H-6}}
+try{document.fonts&&document.fonts.ready.then(()=>LBC_.clear())}catch(e){}
 function chatRender(){const el=document.getElementById('chatlog');if(!el)return;
   const L=CH.log.filter(m=>CH.cur==='Alle'||m.ch===CH.cur),nb=el.scrollHeight-el.scrollTop-el.clientHeight<40;
   el.innerHTML='<div style="margin-top:auto">'+L.map(m=>`<div style="color:${m.ch==='System'?(/(Haupt|Neben)quest|Aufgabe|Ziel erreicht|wartet auf|nimmt .* entgegen|Erfolg|Prestige/.test(m.t)?'#ffe27a':'#ff5a4a'):m.col}">${m.who?'<b style="color:#bff8ff">'+esc(m.who)+':</b> ':''}${esc(m.t)}</div>`).join('')+'</div>';if(nb)el.scrollTop=el.scrollHeight}
@@ -2548,7 +2555,7 @@ function openOdo(){if(!odoEl){odoEl=document.createElement('div');odoEl.style.cs
     document.getElementById('frame').appendChild(odoEl);odoEl.addEventListener('mousedown',e=>e.stopPropagation());addEventListener('keydown',e=>{if(e.key==='Escape')odoEl.style.display='none'})}
   renderOdo();odoEl.style.display='block'}
 
-const GAME_VERSION='0.0.13';
+const GAME_VERSION='0.0.14';
 /* ---- Sound (Platzhalter, per WebAudio synthetisiert) ---- */
 const SFX=(()=>{let ac=null,mg=null;const U=()=>{const s=window.__st;if(!s)return{snd:true,vol:.6,mini:true};if(!s.ui)s.ui={};if(s.ui.mini===undefined)s.ui.mini=true;if(s.ui.snd===undefined)s.ui.snd=true;if(s.ui.vol===undefined)s.ui.vol=.6;return s.ui};
  function ctx(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.connect(ac.destination)}catch(e){return null}}if(ac.state==='suspended')ac.resume();return ac}
@@ -3214,8 +3221,8 @@ function startHero(){
     cv.addEventListener('mousedown',e=>{if(AUTO)setAuto(false);const r0=cv.getBoundingClientRect();const mx=((e.clientX-r0.left)/r0.width*1600/vz+cam.x)/Z,my=((e.clientY-r0.top)/r0.height*900/vz+cam.y-CYO)/Z;
       for(const n of (SC==='c'?NPCS:[])){if(!(window.__npcHid&&window.__npcHid(n.n))&&Math.abs(mx-n.x)<34&&my>n.y-118&&my<n.y+10){hero.talk=n;hero.tx=n.x;hero.ty=n.y+58;if(!walkable(hero.tx,hero.ty)){hero.tx=n.x+40;hero.ty=n.y+50}dlg.style.display='none';return}}
       hero.talk=null;dlg.style.display='none';
-      const r=cv.getBoundingClientRect();const x=((e.clientX-r.left)/r.width*1600/vz+cam.x)/Z,y=((e.clientY-r.top)/r.height*900/vz+cam.y-CYO)/Z;
-      if(walkable(x,y)){hero.tx=x;hero.ty=y}});
+      const r=cv.getBoundingClientRect();let x=((e.clientX-r.left)/r.width*1600/vz+cam.x)/Z,y=((e.clientY-r.top)/r.height*900/vz+cam.y-CYO)/Z;
+      if(SC==='p'&&y>1250&&x>560&&x<860)y=1338;else if(SC==='m'&&y<430&&x>560&&x<760)y=325;else if(SC==='m'&&x<200&&y>1000&&y<1200)x=70;else if(SC==='c'&&x>2160&&y>1050&&y<1330)x=2300;if(walkable(x,y)){hero.tx=x;hero.ty=y}else{for(let t_=.97;t_>0.04;t_-=.03){const px_=hero.x+(x-hero.x)*t_,py_=hero.y+(y-hero.y)*t_;if(walkable(px_,py_)){hero.tx=px_;hero.ty=py_;break}}}});
     cv.addEventListener('wheel',e=>{e.preventDefault();setZoom(vzT*(e.deltaY<0?1.12:1/1.12))},{passive:false});
     {const b=document.createElement('div');b.style.cssText='position:absolute;right:14px;top:12px;display:flex;gap:6px;align-items:center;z-index:20;font:800 16px var(--font-ui)';
      const mk=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='width:36px;height:36px;border-radius:50%;border:2px solid #f0c25a;background:linear-gradient(180deg,#34498f,#1e2c60);color:#f6e3a8;font:800 20px var(--font-ui);cursor:pointer';x.onmousedown=e=>{e.stopPropagation();f()};return x};
@@ -3313,13 +3320,15 @@ async function upload(keep){if(!sess||!window.__st)return;try{await fresh();cons
   if(r.ok){lastSent=snap();C.last=Date.now();C.status='Cloud gesichert'}else C.status='Cloud-Fehler ('+r.status+')'}catch(e){C.status='Offline – wird später gesichert'}}
 let resetting=false;
 async function tick(keep){const s=window.__st;if(!s||!sess||resetting)return;const sn=snap();if(sn&&sn!==lastSent){s.savedAt=Date.now();try{window.__persist()}catch(e){}await upload(keep)}}
-function applyAndReload(data){window.__persist=function(){};ls.set(SAVE,typeof data==='string'?data:JSON.stringify(data));ls.set(UK,sess.uid);location.reload()}
+function reloadGuard(){try{const n=+(sessionStorage.getItem('looteria_rl')||0),t=+(sessionStorage.getItem('looteria_rlt')||0);if(Date.now()-t>60000){sessionStorage.setItem('looteria_rl','1');sessionStorage.setItem('looteria_rlt',String(Date.now()));return true}if(n>=1)return false;sessionStorage.setItem('looteria_rl',String(n+1));return true}catch(e){return false}}
+function applyInPlace(cd){const s=window.__st;if(!s)return false;try{const d=typeof cd==='string'?JSON.parse(cd):cd;Object.keys(s).forEach(k=>{delete s[k]});Object.assign(s,d);ls.set(UK,sess.uid);try{window.__persist()}catch(e){}lastSent=snap();C.status='Cloud gesichert';done();return true}catch(e){return false}}
+function applyAndReload(data){const str=typeof data==='string'?data:JSON.stringify(data);const w=ls.set(SAVE,str);const ok=ls.get(SAVE)===str;if(!ok||!reloadGuard()){if(applyInPlace(data))return}window.__persist=function(){};ls.set(SAVE,str);ls.set(UK,sess.uid);location.reload()}
 async function sync(first){try{await fresh();
     const r=await api('/rest/v1/saves?user_id=eq.'+sess.uid+'&select=data,updated_at',{headers:H(sess.access_token)});
     if(!r.ok){if(r.status===404||/saves/.test(JSON.stringify(r.j||'')))throw new Error('Tabelle "saves" fehlt – bitte das SQL-Skript in Supabase ausführen.');throw new Error('Status '+r.status)}
     const row=(r.j||[])[0],marker=ls.get(UK),s=window.__st||{};
     let local=null;try{local=JSON.parse(ls.get(SAVE)||'null')}catch(e){}
-    if(!row){ if(marker&&marker!==sess.uid){ls.del(SAVE);ls.set(UK,sess.uid);window.__persist=function(){};location.reload();return}
+    if(!row){ if(marker&&marker!==sess.uid){ls.del(SAVE);ls.set(UK,sess.uid);if(!reloadGuard()){lastSent='';await tick();done();return}window.__persist=function(){};location.reload();return}
       ls.set(UK,sess.uid);lastSent='';await tick();done();C.status='Cloud gesichert';return}
     const cd=row.data||{},cT=cd.savedAt||0,lT=(marker===sess.uid&&local&&local.savedAt)||0;
     if(marker!==sess.uid||cT>lT){applyAndReload(cd);return}
